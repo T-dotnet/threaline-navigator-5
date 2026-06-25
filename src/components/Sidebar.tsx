@@ -39,7 +39,7 @@ export default function Sidebar({ currentPage, onPageChange }: SidebarProps) {
     <motion.aside
       animate={{ width: (isCollapsed || isAllChildrenPage) ? 80 : 240 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="flex-shrink-0 bg-[var(--color-thread-off-white)] border-r border-black/5 flex flex-col p-6 max-md:w-[70px] max-md:px-2 relative"
+      className="flex-shrink-0 bg-[var(--color-thread-off-white)] border-r border-black/5 flex flex-col p-6 max-md:hidden relative"
     >
       {!isAllChildrenPage && (
         <button
@@ -56,7 +56,7 @@ export default function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 
       <div
         className="flex items-center gap-2.5 px-2.5 pb-8 cursor-pointer group"
-        onClick={() => onPageChange("home")}
+        onClick={() => onPageChange("all-children")}
       >
         <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
           <svg width="23" height="23" viewBox="0 0 22 22" fill="none">
@@ -94,12 +94,13 @@ export default function Sidebar({ currentPage, onPageChange }: SidebarProps) {
       {!isAllChildrenPage && (
         <nav className="flex flex-col gap-1">
           {navItems.map((item) => (
-            <button
+            <motion.button
               key={item.id}
+              whileTap={{ scale: 0.98 }}
               onClick={() => onPageChange(item.id as Page)}
               title={isCollapsed ? item.label : undefined}
               className={cn(
-                "flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-[var(--color-thread-muted-green)] font-medium text-[0.92rem] transition-all cursor-pointer hover:bg-black/5 hover:text-[var(--color-thread-dark-slate)] relative group/nav",
+                "flex items-center gap-3.5 px-3 py-3 rounded-xl text-[var(--color-thread-muted-green)] font-medium text-[0.92rem] transition-all cursor-pointer hover:bg-black/5 hover:text-[var(--color-thread-dark-slate)] relative group/nav min-h-[44px]",
                 currentPage === item.id &&
                   "bg-[var(--color-thread-light-green)] text-[var(--color-thread-dark-slate)] font-semibold",
               )}
@@ -115,7 +116,7 @@ export default function Sidebar({ currentPage, onPageChange }: SidebarProps) {
               >
                 {item.label}
               </span>
-            </button>
+            </motion.button>
           ))}
         </nav>
       )}
@@ -124,11 +125,12 @@ export default function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 
       {!isAllChildrenPage && (
         <div className="border-t border-black/5 pt-2.5">
-          <button
+          <motion.button
+            whileTap={{ scale: 0.98 }}
             onClick={() => onPageChange("settings")}
             title={isCollapsed ? "Settings" : undefined}
             className={cn(
-              "flex items-center gap-3.5 px-3 py-2.5 rounded-lg text-[var(--color-thread-muted-green)] font-medium text-[0.92rem] transition-all cursor-pointer hover:bg-black/5 hover:text-[var(--color-thread-dark-slate)] w-full",
+              "flex items-center gap-3.5 px-3 py-3 rounded-lg text-[var(--color-thread-muted-green)] font-medium text-[0.92rem] transition-all cursor-pointer hover:bg-black/5 hover:text-[var(--color-thread-dark-slate)] w-full min-h-[44px]",
               currentPage === "settings" &&
                 "bg-[var(--color-thread-light-green)] text-[var(--color-thread-dark-slate)] font-semibold",
             )}
@@ -144,7 +146,7 @@ export default function Sidebar({ currentPage, onPageChange }: SidebarProps) {
             >
               Settings
             </span>
-          </button>
+          </motion.button>
         </div>
       )}
     </motion.aside>

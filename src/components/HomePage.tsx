@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Check, ChevronRight, Calendar, Plus, Send } from "lucide-react";
+import { Check, ChevronRight, Calendar, Plus, Send, Download, Play, Printer } from "lucide-react";
 import { cn } from "../lib/utils";
 import React, { useState, useRef } from "react";
 import { Child } from "../types";
@@ -12,73 +12,25 @@ import { FadeInScroll } from "./ui/FadeInScroll";
 import { Button } from "./ui/Button";
 import { TimelineItem } from "./ui/TimelineItem";
 import { QuickLink } from "./ui/QuickLink";
+import { LockerItem } from "./ui/LockerItem";
+import { AICopilotBar } from "./ui/AICopilotBar";
+import { InsightSection } from "./ui/InsightSection";
 
 import { PlanProgressCard } from "./ui/PlanProgressCard";
+import img2912 from "../assets/images/IMG_2912.jpeg";
+
+import { PageContainer } from "./ui/PageContainer";
+
+import { useCurrentChild } from "../context/ChildContext";
 
 export default function HomePage({
   onPageChange,
-  currentChild,
 }: {
   onPageChange: (page: any) => void;
-  currentChild: Child;
 }) {
+  const { currentChild } = useCurrentChild();
   const [isActionDone, setIsActionDone] = useState(false);
   const data = getChildData(currentChild).home;
-
-  const [aiInput, setAiInput] = useState("");
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showResponse, setShowResponse] = useState(false);
-  const [responseMessage, setResponseMessage] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setAttachedFile(e.target.files[0]);
-    }
-  };
-
-  const triggerFileUpload = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleAISubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!aiInput.trim() && !attachedFile) return;
-
-    setIsSubmitting(true);
-    setShowResponse(true);
-
-    const userQuery = aiInput.toLowerCase();
-    let response = `I've analyzed your request for ${currentChild.name}. Let me prepare a tailored recommendation for you...`;
-
-    if (
-      userQuery.includes("letter") ||
-      userQuery.includes("school") ||
-      userQuery.includes("teacher")
-    ) {
-      response = `Drafted a school advocacy outline for ${currentChild.name} regarding transition support. This asks teachers to offer clear visual warnings 3 minutes before any major routine changes. Ready in resources.`;
-    } else if (
-      userQuery.includes("routine") ||
-      userQuery.includes("morning") ||
-      userQuery.includes("at home")
-    ) {
-      response = `Recommended action: Create a structured routine grid of early morning stages for ${currentChild.name}, utilising visual timers or tick-off charts.`;
-    } else if (userQuery.includes("focus") || userQuery.includes("attention")) {
-      response = `Instruction strategy: Introduce brief, 5-minute play-based co-regulation tactics for ${currentChild.name} to anchor focus prior to high-performance tasks.`;
-    } else {
-      response = `AI analysis active: Preparing proactive behavioral and academic adjustments based on ${currentChild.name}'s current clinical patterns.`;
-    }
-
-    setResponseMessage("Drafting recommendations...");
-
-    setTimeout(() => {
-      setResponseMessage(response);
-      setIsSubmitting(false);
-    }, 1200);
-
-    setAiInput("");
-  };
 
   const isLiam = currentChild.name === "Liam";
   const synthesisQuote = isLiam 
@@ -94,19 +46,20 @@ export default function HomePage({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-[1000px] mx-auto pt-16 px-11 pb-16 max-md:px-5"
+      className="pt-16 pb-16"
     >
-      <PageHeader
+      <PageContainer>
+        <PageHeader
         kicker="Tuesday · Good morning"
         title="Here's where to put your energy today, Sarah."
-        titleClassName="text-[4rem] leading-[4.5rem] max-w-[18ch]"
+        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[18ch]"
         className="mb-28"
       />
 
-      <div className="grid grid-cols-[1.6fr_1fr] md:gap-x-10 max-md:grid-cols-1 max-md:gap-y-14">
+      <div className="grid grid-cols-[1.6fr_1fr] md:gap-6 max-md:grid-cols-1 max-md:gap-y-12">
         <div className="flex flex-col max-md:gap-y-14 md:contents">
           {/* Focus Card */}
-          <FadeInScroll className="md:col-start-1 md:row-start-1">
+          <FadeInScroll className="md:col-start-1 md:row-start-1 md:h-full md:flex md:flex-col">
             <HeroQuoteCard
               kicker="Key synthesis"
               quote={synthesisQuote}
@@ -130,12 +83,13 @@ export default function HomePage({
 
         <div className="flex flex-col max-md:gap-y-6 md:contents">
           {/* Stat Card */}
-          <FadeInScroll delay={0.1} className="md:col-start-2 md:row-start-1">
+          <FadeInScroll delay={0.1} className="md:col-start-2 md:row-start-1 md:h-full md:flex md:flex-col w-full">
             <PlanProgressCard
               progress={progressValue}
               statusText={progressStatus}
               nextReview={nextReview}
               title="This quarter's plan"
+              className="w-full h-full"
             />
           </FadeInScroll>
         </div>
@@ -143,8 +97,8 @@ export default function HomePage({
 
       {/* Timeline List - Full Width */}
       <FadeInScroll delay={0.1} className="mt-20 mb-10">
-        <div className="flex items-baseline justify-between mb-2">
-          <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2.5 sm:gap-4 mb-4">
+          <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-bold">
             Now · Next · Later
           </span>
           <ActionLink
@@ -187,97 +141,59 @@ export default function HomePage({
         </div>
       </FadeInScroll>
 
-      {/* AI Sticky Floating Input Bar */}
-      <div className="sticky bottom-6 left-0 right-0 z-40 mt-14">
-        {showResponse && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="max-w-[640px] mx-auto mb-4 bg-white/95 backdrop-blur border border-black/5 rounded-tl-[32px] p-5 shadow-[0_12px_40px_-10px_rgba(22,36,60,0.12)] relative"
-          >
-            <button
-              onClick={() => setShowResponse(false)}
-              className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 transition-colors w-6 h-6 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 cursor-pointer text-[1rem]"
-            >
-              ×
-            </button>
-            <div className="text-[0.66rem] tracking-[0.14em] uppercase text-[var(--color-thread-mid-green)] font-bold mb-1.5">
-              Co-Pilot Assistant
-            </div>
-            <p
-              className={cn(
-                "text-[0.94rem] leading-relaxed transition-opacity duration-200",
-                isSubmitting
-                  ? "text-slate-400 italic font-normal"
-                  : "text-slate-700",
-              )}
-            >
-              {responseMessage}
-            </p>
-          </motion.div>
-        )}
+      {/* Watchlist Sleep Section */}
+      <InsightSection
+        className="mt-20"
+        kicker="On the watchlist"
+        title="Sleep"
+        description={isLiam
+          ? "Liam's sleep hygiene remains optimal. We are maintaining current wind-down routines to support his high-performance learning phases."
+          : "Maya is showing signs of increased evening fatigue. We are currently monitoring latency patterns and bedtime routine transitions for consistency."}
+        image={img2912}
+        actionText="View sleep log"
+        onActionClick={() => onPageChange('priorities')}
+      />
 
-        <form
-          onSubmit={handleAISubmit}
-          className="bg-white rounded-full p-2 pl-4 pr-2 flex items-center gap-2.5 shadow-[0_12px_40px_-8px_rgba(22,36,60,0.15),_0_0_20px_2px_rgba(108,122,114,0.06)] border border-black/5 max-w-[640px] mx-auto hover:border-black/10 hover:shadow-[0_16px_48px_-8px_rgba(22,36,60,0.18),_0_0_24px_4px_rgba(108,122,114,0.08)] transition-all duration-300"
-        >
-          <input
-            type="file"
-            id="ai-file-upload"
-            className="hidden"
-            onChange={handleFileChange}
-            ref={fileInputRef}
+      {/* Aids & Exercises Locker */}
+      <FadeInScroll delay={0.15} className="mt-20 mb-16">
+        <div className="mb-6">
+          <span className="text-[0.66rem] tracking-[0.2em] uppercase text-slate-500 font-semibold mb-2.5 block text-uppercase">
+            Aids & exercises locker
+          </span>
+          <h2 className="font-semibold text-[1.4rem] tracking-tight">
+            Quick activities locker.
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1">
+          <LockerItem
+            icon={<Download className="w-[19px] h-[19px] stroke-[1.8]" />}
+            title="Download templates"
+            description="Editable letter templates, transition checklists and customisable behaviour journals."
+            action="Download printable PDFs"
+            cornerClass="rounded-tl-[32px]"
           />
-          <button
-            type="button"
-            onClick={triggerFileUpload}
-            className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-50 hover:bg-[var(--color-thread-off-white)] text-[var(--color-thread-muted-green)] hover:text-[var(--color-thread-mid-green)] flex items-center justify-center transition-all cursor-pointer relative"
-            title="Attach file"
-          >
-            <Plus className="w-[19px] h-[19px] stroke-[2]" />
-            {attachedFile && (
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-[var(--color-thread-mid-green)] rounded-full" />
-            )}
-          </button>
-
-          <input
-            type="text"
-            value={aiInput}
-            onChange={(e) => setAiInput(e.target.value)}
-            placeholder={`Ask AI or draft a letter for ${currentChild.name}...`}
-            className="flex-1 bg-transparent border-none outline-none focus:ring-0 text-[0.98rem] text-slate-800 placeholder:text-slate-400 py-1.5 focus:outline-none"
+          <LockerItem
+            icon={<Play className="w-[19px] h-[19px] stroke-[1.8]" />}
+            title="Watch short videos"
+            description="5-minute play-based co-regulation tactics designed for real parents."
+            action="Launch video player"
+            cornerClass="rounded-tr-[32px]"
           />
+          <LockerItem
+            icon={<Printer className="w-[19px] h-[19px] stroke-[1.8]" />}
+            title="Print classroom guides"
+            description="Double-sided sheets designed for teachers, tutors and clinical aides."
+            action="Generate print format"
+            cornerClass="rounded-br-[32px]"
+          />
+        </div>
+      </FadeInScroll>
 
-          <button
-            type="submit"
-            disabled={!aiInput.trim() && !attachedFile}
-            className={cn(
-              "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer",
-              aiInput.trim() || attachedFile
-                ? "bg-[var(--color-thread-mid-green)] text-white hover:opacity-90 shadow-sm"
-                : "bg-slate-100 text-slate-300 cursor-not-allowed",
-            )}
-          >
-            <Send className="w-[17px] h-[17px] stroke-[2.2]" />
-          </button>
-        </form>
-        {attachedFile && (
-          <div className="max-w-[640px] mx-auto mt-2.5 px-4 animate-in fade-in slide-in-from-bottom-1 duration-200">
-            <div className="inline-flex items-center gap-2 bg-[var(--color-thread-light-green)]/40 border border-[var(--color-thread-mid-green)]/20 px-3 py-1 rounded-full text-[0.82rem] text-[var(--color-thread-mid-green)] font-medium">
-              <span className="truncate max-w-[200px]">
-                {attachedFile.name}
-              </span>
-              <button
-                type="button"
-                onClick={() => setAttachedFile(null)}
-                className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer text-[1.1rem] leading-none"
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      </PageContainer>
+
+      {/* Reusable, Modular AICopilotBar */}
+      <AICopilotBar currentChildName={currentChild.name} />
     </motion.div>
   );
 }

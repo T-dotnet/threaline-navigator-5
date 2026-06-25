@@ -22,27 +22,32 @@ import { FadeInScroll } from "./ui/FadeInScroll";
 import { TimelineStep } from "./ui/TimelineStep";
 import { Button } from "./ui/Button";
 import { AreaItem } from "./ui/AreaItem";
+import { StrategyCard } from "./ui/StrategyCard";
 import { PageFooterCTA } from "./ui/PageFooterCTA";
+
+import { PageContainer } from "./ui/PageContainer";
+
+import { useCurrentChild } from "../context/ChildContext";
 
 export default function RoadmapPage({
   onPageChange,
-  currentChild,
 }: {
   onPageChange: (page: any) => void;
-  currentChild: Child;
 }) {
+  const { currentChild } = useCurrentChild();
   const isLiam = currentChild.name === "Liam";
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-[1000px] mx-auto pt-16 px-11 pb-16 max-md:px-5"
+      className="pt-16 pb-16"
     >
-      <PageHeader
+      <PageContainer>
+        <PageHeader
         kicker="Roadmap · What to do"
         title={isLiam ? "Plan complete." : "Your plan, in clear steps."}
-        titleClassName="text-[4rem] leading-[4.5rem] max-w-[16ch]"
+        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[16ch]"
         className="mb-24"
         description={
           <div className="flex gap-4.5 text-[0.82rem] text-[var(--color-thread-gray)] flex-wrap">
@@ -162,8 +167,8 @@ export default function RoadmapPage({
           </SectionTitle>
         </div>
 
-        <div className="relative rounded-br-[36px] p-7.5 bg-watercolor">
-          <div className="grid grid-cols-2 gap-4.5 max-md:grid-cols-1">
+        <div className="relative rounded-br-[36px] p-12 bg-watercolor">
+          <div className="grid grid-cols-2 gap-6 max-md:grid-cols-1">
             <StrategyCard
               title="At school"
               icon={<FileText className="w-[18px] h-[18px] stroke-[1.8]" />}
@@ -178,6 +183,7 @@ export default function RoadmapPage({
                 "Agree a quiet signal for when she's drifting, instead of calling it out.",
               ]}
               cornerClass="rounded-tr-[28px]"
+              className="shadow-premium border border-black/[0.03]"
             />
             <StrategyCard
               title="At home"
@@ -193,6 +199,7 @@ export default function RoadmapPage({
                 "Notice and name what went well, however small.",
               ]}
               cornerClass="rounded-bl-[28px]"
+              className="shadow-premium border border-black/[0.03]"
             />
           </div>
         </div>
@@ -208,7 +215,7 @@ export default function RoadmapPage({
             Options, not obligations.
           </SectionTitle>
         </div>
-        <SectionDescription className="mb-4.5">
+        <SectionDescription className="mb-6">
           {isLiam ? (
             "Liam's support structure is now self-sustaining. These options are for future enrichment."
           ) : (
@@ -235,6 +242,8 @@ export default function RoadmapPage({
         </div>
       </FadeInScroll>
 
+      </PageContainer>
+
       {/* Forward Button */}
       <PageFooterCTA
         title="A plan only works if you track it."
@@ -242,46 +251,5 @@ export default function RoadmapPage({
         onClick={() => onPageChange("reviews")}
       />
     </motion.div>
-  );
-}
-
-
-
-function StrategyCard({
-  title,
-  icon,
-  items,
-  cornerClass = "rounded-[18px]",
-}: any) {
-  return (
-    <div
-      className={cn(
-        "bg-white p-6.5 shadow-premium",
-        cornerClass,
-      )}
-    >
-      <div className="flex items-center gap-2.75 mb-3.5">
-        <div className="w-[34px] h-[34px] rounded-[9px] bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] flex items-center justify-center flex-shrink-0">
-          {icon}
-        </div>
-        <h3 className="text-[1.05rem] font-semibold tracking-tight leading-none text-[var(--color-thread-dark-slate)]">
-          {title}
-        </h3>
-      </div>
-      <div className="flex flex-col">
-        {items.map((item: string, i: number) => (
-          <div
-            key={i}
-            className={cn(
-              "flex gap-2.75 py-2.75 border-t border-[var(--color-thread-light-gray)]/50 text-[0.92rem] text-[var(--color-thread-dark-slate)] leading-relaxed",
-              i === 0 && "border-t-0 pt-0",
-            )}
-          >
-            <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-[var(--color-thread-mid-green)] mt-[8px]" />
-            {item}
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }

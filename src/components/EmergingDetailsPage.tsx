@@ -10,6 +10,8 @@ import {
   ShieldCheck,
   Download,
   Search,
+  Activity,
+  Eye,
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { Child } from "../types";
@@ -19,7 +21,7 @@ import { PageIcon } from "./ui/PageIcon";
 import { HeroActionCard } from "./ui/HeroActionCard";
 import { SectionTitle } from "./ui/SectionTitle";
 import { SectionLabel } from "./ui/SectionLabel";
-import { InsightCard } from "./ui/InsightCard";
+import { LockerItem } from "./ui/LockerItem";
 import { FactRow } from "./ui/FactRow";
 import { ValueCard } from "./ui/ValueCard";
 import { AreaItem } from "./ui/AreaItem";
@@ -27,13 +29,16 @@ import { FadeInScroll } from "./ui/FadeInScroll";
 import { Button } from "./ui/Button";
 import { PageFooterCTA } from "./ui/PageFooterCTA";
 
+import { PageContainer } from "./ui/PageContainer";
+
+import { useCurrentChild } from "../context/ChildContext";
+
 export default function EmergingDetailsPage({
   onPageChange,
-  currentChild,
 }: {
   onPageChange: (page: any) => void;
-  currentChild: Child;
 }) {
+  const { currentChild } = useCurrentChild();
   const isLiam = currentChild.name === "Liam";
   const focusTopic = isLiam ? "Social Leadership" : "Sleep";
   const focusDescription = isLiam 
@@ -44,13 +49,14 @@ export default function EmergingDetailsPage({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-[1000px] mx-auto pt-16 px-11 pb-16 max-md:px-5"
+      className="pt-16 pb-16"
     >
-      {/* Header Template */}
+      <PageContainer>
+        {/* Header Template */}
       <PageHeader
         kicker="Emerging · Primary focus"
         title={`A clear picture of how ${currentChild.name}'s ${focusTopic.toLowerCase()} is doing.`}
-        titleClassName="text-[4rem] leading-[4.5rem] max-w-[17ch]"
+        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[17ch]"
         className="mb-24"
         description={
           <div className="flex gap-4.5 text-[0.82rem] text-[var(--color-thread-gray)] flex-wrap">
@@ -126,27 +132,28 @@ export default function EmergingDetailsPage({
           </SectionTitle>
         </div>
 
-        <div className="bg-watercolor rounded-tr-[36px] p-8 md:p-10">
-          <div className="grid grid-cols-3 gap-5 max-md:grid-cols-1">
-            <InsightCard
-              title="Sensory Cool-down"
-              description="Keep overhead lights dim after 7:30 PM. Swap tablets for physical books or audiobooks with calm background narration."
-              cornerClass="rounded-[24px]"
-              variant="premium"
-            />
-            <InsightCard
-              title="Energy Outflow"
-              description="Promote physical exertion or raw energy release activities before 4:30 PM to clear adrenaline well before bedtime."
-              cornerClass="rounded-[24px]"
-              variant="premium"
-            />
-            <InsightCard
-              title="Gentle Observation"
-              description="No need to change trackers. Allow natural play routines and check in if you pattern-spot afternoon fatigue."
-              cornerClass="rounded-[24px]"
-              variant="premium"
-            />
-          </div>
+        <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1 mt-8">
+          <LockerItem
+            icon={<Moon className="w-[19px] h-[19px] stroke-[1.8]" />}
+            title="Sensory Cool-down"
+            description="Keep overhead lights dim after 7:30 PM. Swap tablets for physical books or audiobooks with calm background narration."
+            action="View setup guide"
+            cornerClass="rounded-tl-[32px]"
+          />
+          <LockerItem
+            icon={<Activity className="w-[19px] h-[19px] stroke-[1.8]" />}
+            title="Energy Outflow"
+            description="Promote physical exertion or raw energy release activities before 4:30 PM to clear adrenaline well before bedtime."
+            action="See activity ideas"
+            cornerClass="rounded-tr-[32px]"
+          />
+          <LockerItem
+            icon={<Eye className="w-[19px] h-[19px] stroke-[1.8]" />}
+            title="Gentle Observation"
+            description="No need to change trackers. Allow natural play routines and check in if you pattern-spot afternoon fatigue."
+            action="Open observation log"
+            cornerClass="rounded-br-[32px]"
+          />
         </div>
 
         <div className="mt-10 mb-24">
@@ -170,14 +177,15 @@ export default function EmergingDetailsPage({
               Responsive and fluid update thresholds
             </SectionTitle>
           </div>
-          <div className="grid grid-cols-2 gap-4.5 max-md:grid-cols-1">
+          <div className="grid grid-cols-2 gap-6 max-md:grid-cols-1">
             <ValueCard
-              solid
+              variant="mint"
               title="Evidence → formulation"
               content="Every insight here is traced to its source and reviewed by a qualified clinician — not generated in isolation. Where the evidence is strong, we say so plainly."
               cornerClass="rounded-tr-[32px]"
             />
             <ValueCard
+              variant="white"
               title="Honest about uncertainty"
               content="Where the evidence isn't strong enough, we don't force a conclusion. 'More to explore' is a valid, useful result — and the picture keeps building as new information arrives."
               cornerClass="rounded-bl-[32px]"
@@ -185,6 +193,8 @@ export default function EmergingDetailsPage({
           </div>
         </div>
       </FadeInScroll>
+
+      </PageContainer>
 
       {/* Footer Nav Template */}
       <PageFooterCTA

@@ -13,7 +13,7 @@ export function HeroActionCard({ icon, title, subtitle, className, ...props }: H
   return (
     <div 
       className={cn(
-        "relative bg-[var(--hero-secondary-bg)] p-6 rounded-tl-[32px] flex-shrink-0 cursor-pointer hover:shadow-xl transition-all w-[180px] text-center group shadow-premium flex flex-col items-center justify-center text-[var(--hero-secondary-text)]",
+        "relative bg-[var(--hero-secondary-bg)] p-6 rounded-tl-[32px] flex-shrink-0 cursor-pointer transition-all w-[180px] text-center group flex flex-col items-center justify-center text-[var(--hero-secondary-text)]",
         className
       )}
       {...props}

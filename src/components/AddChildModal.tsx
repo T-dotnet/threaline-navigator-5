@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Child } from "../types";
 import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
@@ -19,7 +19,7 @@ export default function AddChildModal({
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !age.trim()) return;
 
@@ -34,7 +34,7 @@ export default function AddChildModal({
     setName("");
     setAge("");
     onClose();
-  };
+  }, [name, age, onAdd, onClose]);
 
   return (
     <AnimatePresence>

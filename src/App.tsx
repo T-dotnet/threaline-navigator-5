@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Page, Child } from './types';
 import DashboardLayout from './components/DashboardLayout';
 import HomePage from './components/HomePage';
@@ -17,6 +18,7 @@ import SettingsPage from './components/SettingsPage';
 import EmergingDetailsPage from './components/EmergingDetailsPage';
 import AllChildrenPage from './components/AllChildrenPage';
 import StyleGuidePage from './components/StyleGuidePage';
+import ScrollToTop from './components/ScrollToTop';
 
 const INITIAL_CHILDREN: Child[] = [
   { name: 'Maya', age: 9, initial: 'M' },
@@ -24,10 +26,20 @@ const INITIAL_CHILDREN: Child[] = [
   { name: 'Sophia', age: 12, initial: 'S' }
 ];
 
-export default function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('all-children');
-  const [childrenList, setChildrenList] = useState<Child[]>(INITIAL_CHILDREN);
-  const [currentChild, setCurrentChild] = useState<Child>(INITIAL_CHILDREN[0]);
+import { ChildProvider } from './context/ChildContext';
+import { LockerProvider } from './context/LockerContext';
+
+function AppContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Derive currentPage from location
+  const getCurrentPage = (): Page => {
+    const path = location.pathname.substring(1) || 'all-children';
+    return path as Page;
+  };
+
+  const currentPage = getCurrentPage();
   const [isAddChildModalOpen, setIsAddChildModalOpen] = useState(false);
 
   // Initialize themes safely from localStorage or fallback
@@ -52,67 +64,52 @@ export default function App() {
     document.documentElement.setAttribute('data-hero-secondary', savedSecondaryStyle);
   }, []);
 
-  const handleAddChild = (child: Child) => {
-    setChildrenList(prev => [...prev, child]);
-    setCurrentChild(child); // Switch to the new child automatically
-  };
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'home':
-        return <HomePage onPageChange={setCurrentPage} currentChild={currentChild} />;
-      case 'understanding':
-        return <UnderstandingPage onPageChange={setCurrentPage} currentChild={currentChild} />;
-      case 'priorities':
-        return <PrioritiesPage onPageChange={setCurrentPage} currentChild={currentChild} />;
-      case 'roadmap':
-        return <RoadmapPage onPageChange={setCurrentPage} currentChild={currentChild} />;
-      case 'reviews':
-        return <ReviewsPage onPageChange={setCurrentPage} currentChild={currentChild} />;
-      case 'resources':
-        return <ResourcesPage currentChild={currentChild} />;
-      case 'documents':
-        return <DocumentsPage currentChild={currentChild} />;
-      case 'settings':
-        return <SettingsPage 
-          onPageChange={setCurrentPage} 
-          currentChild={currentChild} 
-          childrenList={childrenList} 
-          onChildChange={setCurrentChild} 
-          onAddChildRequest={() => setIsAddChildModalOpen(true)}
-        />;
-      case 'emerging-details':
-        return <EmergingDetailsPage onPageChange={setCurrentPage} currentChild={currentChild} />;
-      case 'all-children':
-        return <AllChildrenPage 
-          onPageChange={setCurrentPage} 
-          childrenList={childrenList} 
-          onChildChange={setCurrentChild} 
-        />;
-      case 'style-guide':
-        return <StyleGuidePage onPageChange={setCurrentPage} />;
-      default:
-        return <AllChildrenPage 
-          onPageChange={setCurrentPage} 
-          childrenList={childrenList} 
-          onChildChange={setCurrentChild} 
-        />;
-    }
+  const handlePageChange = (page: Page) => {
+    navigate(`/${page === 'all-children' ? '' : page}`);
   };
 
   return (
-    <DashboardLayout
-      currentPage={currentPage}
-      onPageChange={setCurrentPage}
-      currentChild={currentChild}
-      childrenList={childrenList}
-      onChildChange={setCurrentChild}
-      isAddChildModalOpen={isAddChildModalOpen}
-      onAddChildRequest={() => setIsAddChildModalOpen(true)}
-      onCloseAddChildModal={() => setIsAddChildModalOpen(false)}
-      onAddChild={handleAddChild}
-    >
-      {renderPage()}
-    </DashboardLayout>
+    <>
+      <ScrollToTop />
+      <DashboardLayout
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
+        isAddChildModalOpen={isAddChildModalOpen}
+        onAddChildRequest={() => setIsAddChildModalOpen(true)}
+        onCloseAddChildModal={() => setIsAddChildModalOpen(false)}
+      >
+        <Routes>
+          <Route path="/" element={<AllChildrenPage onPageChange={handlePageChange} />} />
+          <Route path="/home" element={<HomePage onPageChange={handlePageChange} />} />
+          <Route path="/understanding" element={<UnderstandingPage onPageChange={handlePageChange} />} />
+          <Route path="/priorities" element={<PrioritiesPage onPageChange={handlePageChange} />} />
+          <Route path="/roadmap" element={<RoadmapPage onPageChange={handlePageChange} />} />
+          <Route path="/reviews" element={<ReviewsPage onPageChange={handlePageChange} />} />
+          <Route path="/resources" element={<ResourcesPage />} />
+          <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/settings" element={
+            <SettingsPage 
+              onPageChange={handlePageChange} 
+              onAddChildRequest={() => setIsAddChildModalOpen(true)}
+            />
+          } />
+          <Route path="/emerging-details" element={<EmergingDetailsPage onPageChange={handlePageChange} />} />
+          <Route path="/style-guide" element={<StyleGuidePage onPageChange={handlePageChange} />} />
+          <Route path="*" element={<AllChildrenPage onPageChange={handlePageChange} />} />
+        </Routes>
+      </DashboardLayout>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <ChildProvider>
+        <LockerProvider>
+          <AppContent />
+        </LockerProvider>
+      </ChildProvider>
+    </BrowserRouter>
   );
 }

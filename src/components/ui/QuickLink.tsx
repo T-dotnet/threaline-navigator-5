@@ -1,10 +1,13 @@
 import * as React from "react"
+import { motion } from "motion/react"
 import { cn } from "../../lib/utils"
 import { ChevronRight } from "lucide-react"
+import { buttonPress } from "../../lib/motion-presets"
 
 export function QuickLink({ label, onClick }: any) {
   return (
-    <div
+    <motion.div
+      {...buttonPress}
       onClick={onClick}
       className={cn(
         "flex items-center gap-3.5 py-4 px-0.5 border-t border-black/10 transition-all",
@@ -15,6 +18,6 @@ export function QuickLink({ label, onClick }: any) {
         {label}
       </span>
       <ChevronRight className="w-4 h-4 text-slate-500 stroke-[1.8]" />
-    </div>
+    </motion.div>
   );
 }

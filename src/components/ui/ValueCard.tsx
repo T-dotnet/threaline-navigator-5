@@ -5,20 +5,26 @@ interface ValueCardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'con
   title: string;
   content: string | React.ReactNode;
   solid?: boolean;
+  variant?: 'default' | 'mint' | 'white';
   cornerClass?: string;
 }
 
 export const ValueCard = React.forwardRef<HTMLDivElement, ValueCardProps>(
-  ({ className, title, content, solid = false, cornerClass = "rounded-[20px]", ...props }, ref) => {
+  ({ className, title, content, solid = false, variant = 'default', cornerClass = "rounded-[20px]", ...props }, ref) => {
+    const isMint = variant === 'mint';
+    const isWhite = variant === 'white';
+    const isSolid = solid && variant === 'default';
+
     return (
       <div
         ref={ref}
         className={cn(
           "p-7.5 relative overflow-hidden",
           cornerClass,
-          solid
-            ? "bg-[var(--color-thread-mid-green)] text-white"
-            : "bg-[var(--color-thread-cream)] text-[var(--color-thread-darkest)]",
+          isSolid ? "bg-[var(--color-thread-mid-green)] text-white" :
+          isMint ? "bg-[#E6F4ED] text-[var(--color-thread-darkest)]" :
+          isWhite ? "bg-white text-[var(--color-thread-darkest)]" :
+          "bg-[var(--color-thread-cream)] text-[var(--color-thread-darkest)]",
           className
         )}
         {...props}
@@ -33,8 +39,8 @@ export const ValueCard = React.forwardRef<HTMLDivElement, ValueCardProps>(
             cy="120"
             r="48"
             fill="none"
-            stroke={solid ? "white" : "black"}
-            strokeOpacity={solid ? "1" : "0.2"}
+            stroke={isSolid ? "white" : "black"}
+            strokeOpacity={isSolid ? "1" : "0.2"}
             strokeWidth="1"
           />
           <circle
@@ -42,8 +48,8 @@ export const ValueCard = React.forwardRef<HTMLDivElement, ValueCardProps>(
             cy="120"
             r="82"
             fill="none"
-            stroke={solid ? "white" : "black"}
-            strokeOpacity={solid ? "1" : "0.2"}
+            stroke={isSolid ? "white" : "black"}
+            strokeOpacity={isSolid ? "1" : "0.2"}
             strokeWidth="1"
           />
           <circle
@@ -51,8 +57,8 @@ export const ValueCard = React.forwardRef<HTMLDivElement, ValueCardProps>(
             cy="120"
             r="116"
             fill="none"
-            stroke={solid ? "white" : "black"}
-            strokeOpacity={solid ? "1" : "0.2"}
+            stroke={isSolid ? "white" : "black"}
+            strokeOpacity={isSolid ? "1" : "0.2"}
             strokeWidth="1"
           />
         </svg>
@@ -63,7 +69,7 @@ export const ValueCard = React.forwardRef<HTMLDivElement, ValueCardProps>(
           <p
             className={cn(
               "text-[0.92rem] leading-relaxed relative",
-              solid ? "text-white/85" : "text-[var(--color-thread-gray)]",
+              isSolid ? "text-white/85" : "text-[var(--color-thread-gray)]",
             )}
           >
             {content}

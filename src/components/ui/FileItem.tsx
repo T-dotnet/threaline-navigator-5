@@ -23,20 +23,20 @@ export function FileItem({
         <Icon className="w-5 h-5 stroke-[1.7]" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[1.04rem] font-bold tracking-tight truncate">
+        <div className="text-[1.12rem] font-medium tracking-tight leading-[1.3] text-[var(--color-thread-dark-slate)]">
           {name}
         </div>
-        <div className="flex items-center gap-3 mt-1.25">
-          <span className="text-[0.56rem] tracking-[0.12em] uppercase font-bold text-[var(--color-thread-mid-green)] bg-[var(--color-thread-light-green)] rounded-full px-2.25 py-0.75">
+        <div className="flex items-center gap-3.5 mt-1.5 text-[0.78rem] text-[var(--color-thread-gray)]">
+          <span className="text-[0.6rem] tracking-[0.12em] uppercase font-bold text-[var(--color-thread-mid-green)]">
             {typeName}
           </span>
-          <span className="text-[0.78rem] text-slate-400 font-medium">
+          <span>
             {date}
           </span>
         </div>
         <div
           className={cn(
-            "text-[0.8rem] mt-2 flex items-center gap-1.75",
+            "text-[0.85rem] mt-2.5 flex items-center gap-1.75",
             shared ? "text-[var(--color-thread-mid-green)] font-medium" : "text-slate-400",
           )}
         >

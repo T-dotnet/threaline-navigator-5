@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { motion } from "motion/react";
 import { Clock, Info, ArrowRight, Download, ChevronRight } from "lucide-react";
 import { cn } from "../lib/utils";
@@ -17,27 +18,73 @@ import { ActionLink } from "./ui/ActionLink";
 import { Button } from "./ui/Button";
 import { TimelineItem } from "./ui/TimelineItem";
 import { PriorityCard } from "./ui/PriorityCard";
+import { InsightSection } from "./ui/InsightSection";
 import { PageFooterCTA } from "./ui/PageFooterCTA";
+
+import img2912 from "../assets/images/IMG_2912.jpeg";
+import classroomImg from "../assets/images/classroom_fatigue_thumbnail_1781935350699.jpg";
+import breathingImg from "../assets/images/breathing_exercises_thumbnail_1781935364678.jpg";
+import pediatricianImg from "../assets/images/pediatrician_questions_thumbnail_1781935339183.jpg";
+
+import { PageContainer } from "./ui/PageContainer";
+
+import { useCurrentChild } from "../context/ChildContext";
 
 export default function PrioritiesPage({
   onPageChange,
-  currentChild,
 }: {
   onPageChange: (page: any) => void;
-  currentChild: Child;
 }) {
+  const { currentChild } = useCurrentChild();
   const isLiam = currentChild.name === "Liam";
+  const [activePriorityId, setActivePriorityId] = useState("sleep");
+
+  const prioritiesData = useMemo(() => [
+    {
+      id: "sleep",
+      label: "On the watchlist",
+      title: "Sleep",
+      description: isLiam 
+        ? "Liam's sleep hygiene remains optimal. We are maintaining current wind-down routines to support his high-performance learning phases."
+        : `Not a ranked priority yet — but because sleep can feed into attention, we're keeping an eye on ${currentChild.name}'s patterns. If the signal grows, it may move into Now or Next.`,
+      image: img2912
+    },
+    {
+      id: "attention",
+      label: "Current focus",
+      title: "Attention",
+      description: `Addressing ${currentChild.name}'s classroom focus is our primary objective. Strengthening this foundation is the most effective way to unlock progress in learning and peer socialisation.`,
+      image: classroomImg
+    },
+    {
+      id: "regulation",
+      label: "Next phase",
+      title: "Emotional regulation",
+      description: `Once attention stability is established, we'll pivot to proactive emotional tools. This sequence prevents 'effort fatigue' by focusing on one core skill set at a time.`,
+      image: breathingImg
+    },
+    {
+      id: "school",
+      label: "Long-term goal",
+      title: "School participation",
+      description: `Meaningful engagement in school life is the ultimate outcome of our current work. Every focus area we tackle today is a building block for this future independence.`,
+      image: pediatricianImg
+    }
+  ], [isLiam, currentChild.name]);
+
+  const activePriority = prioritiesData.find(p => p.id === activePriorityId) || prioritiesData[0];
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-[1000px] mx-auto pt-16 px-11 pb-16 max-md:px-5"
+      className="pt-16 pb-16"
     >
-      <PageHeader
+      <PageContainer>
+        <PageHeader
         kicker="Priorities · What matters most"
         title="Where to focus — and why."
-        titleClassName="text-[4rem] leading-[4.5rem] max-w-[16ch]"
+        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[16ch]"
         className="mb-28"
         description={
           <div className="flex gap-4.5 text-[0.82rem] text-[var(--color-thread-gray)] flex-wrap">
@@ -182,7 +229,7 @@ export default function PrioritiesPage({
       </FadeInScroll>
 
       {/* Connect Section */}
-      <FadeInScroll className="mb-24">
+      <FadeInScroll className="mb-12">
         <div>
           <SectionLabel>
             How these connect
@@ -191,76 +238,29 @@ export default function PrioritiesPage({
             Priorities aren't independent.
           </SectionTitle>
         </div>
-        <div className="flex items-center gap-2.5 max-md:flex-col max-md:items-stretch mb-4.5 w-full">
-          <ListItemCard>Sleep</ListItemCard>
-          <ListItemCard>Attention</ListItemCard>
-          <ListItemCard>Emotional regulation</ListItemCard>
-          <ListItemCard>School participation</ListItemCard>
+        <div className="flex items-center gap-4 max-md:flex-col max-md:items-stretch mb-6 w-full">
+          {prioritiesData.map((priority) => (
+            <ListItemCard 
+              key={priority.id}
+              active={activePriorityId === priority.id}
+              onClick={() => setActivePriorityId(priority.id)}
+            >
+              {priority.title}
+            </ListItemCard>
+          ))}
         </div>
-        <SectionDescription className="mt-8">
-          {isLiam ? (
-            <>
-              For Liam, we previously saw how sleep stability anchored his gains in attention. 
-              Now that these are robust, we're monitoring how this foundation supports higher-level social complex tasks.
-            </>
-          ) : (
-            <>
-              Sleep can feed into attention, which shapes emotional regulation and
-              how {currentChild.name} takes part at school. Ordering priorities along this chain
-              means each step you take makes the next one easier — and stops you
-              spreading effort across things that may resolve on their own.
-            </>
-          )}
-        </SectionDescription>
       </FadeInScroll>
 
-      {/* Watchlist Section */}
-      <FadeInScroll className="relative bg-[var(--color-thread-cream)] rounded-br-[36px] p-7 overflow-hidden mb-24">
-        <svg
-          className="absolute -right-[70px] -top-[80px] opacity-10 pointer-events-none"
-          width="220"
-          height="220"
-        >
-          <circle
-            cx="110"
-            cy="110"
-            r="45"
-            fill="none"
-            stroke="black"
-            strokeOpacity="1"
-            strokeWidth="1"
-          />
-          <circle
-            cx="110"
-            cy="110"
-            r="75"
-            fill="none"
-            stroke="black"
-            strokeOpacity="1"
-            strokeWidth="1"
-          />
-          <circle
-            cx="110"
-            cy="110"
-            r="105"
-            fill="none"
-            stroke="black"
-            strokeOpacity="1"
-            strokeWidth="1"
-          />
-        </svg>
-        <SectionLabel className="mb-3">
-          On the watchlist
-        </SectionLabel>
-        <SectionTitle className="relative">
-          Sleep
-        </SectionTitle>
-        <SectionDescription className="relative">
-          Not a ranked priority yet — but because sleep can feed into attention,
-          we're keeping an eye on it. If the signal grows, it may move into Now
-          or Next, and you'll be the first to know.
-        </SectionDescription>
-      </FadeInScroll>
+      {/* Watchlist Sleep Section */}
+      <InsightSection
+        className="mb-24"
+        kicker={activePriority.label}
+        title={activePriority.title}
+        description={activePriority.description}
+        image={activePriority.image}
+      />
+
+      </PageContainer>
 
       {/* Forward Button */}
       <PageFooterCTA

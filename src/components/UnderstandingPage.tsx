@@ -15,25 +15,35 @@ import { AreaItem } from "./ui/AreaItem";
 import { FadeInScroll } from "./ui/FadeInScroll";
 import { Button } from "./ui/Button";
 import { PageFooterCTA } from "./ui/PageFooterCTA";
+import { GuideCard } from "./ui/GuideCard";
+
+import img2912 from "../assets/images/IMG_2912.jpeg";
+import img2947 from "../assets/images/IMG_2947.jpeg";
+import creativePlayImg from "../assets/images/classroom_fatigue_thumbnail_1781935350699.jpg";
+import empathyImg from "../assets/images/breathing_exercises_thumbnail_1781935364678.jpg";
+
+import { PageContainer } from "./ui/PageContainer";
+
+import { useCurrentChild } from "../context/ChildContext";
 
 export default function UnderstandingPage({
   onPageChange,
-  currentChild,
 }: {
   onPageChange: (page: any) => void;
-  currentChild: Child;
 }) {
+  const { currentChild } = useCurrentChild();
   const data = getChildData(currentChild).understanding;
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-[1000px] mx-auto pt-16 px-11 pb-16 max-md:px-5"
+      className="pt-16 pb-16"
     >
-      <PageHeader
+      <PageContainer>
+        <PageHeader
         kicker="Understanding · What's happening"
         title={`A clear picture of how ${currentChild.name} is doing.`}
-        titleClassName="text-[4rem] leading-[4.5rem] max-w-[16ch]"
+        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[16ch]"
         className="mb-24"
         description={
           <div className="flex gap-4.5 text-[0.82rem] text-[var(--color-thread-gray)] flex-wrap">
@@ -76,68 +86,34 @@ export default function UnderstandingPage({
           </SectionTitle>
         </div>
 
-        <div className="relative rounded-br-[36px] p-7.5 bg-watercolor">
-          <div className="grid grid-cols-3 gap-5 max-md:grid-cols-1">
-            <InsightCard
-              icon={
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                >
-                  <circle cx="9" cy="9" r="3.4" />
-                  <circle cx="15" cy="9" r="3.4" />
-                  <circle cx="9" cy="15" r="3.4" />
-                  <circle cx="15" cy="15" r="3.4" />
-                </svg>
-              }
-              title="Creative Play"
-              description="Displays rich imaginative flow, abstract play and artistic task retention. A real strength to integrate into curriculum pathways."
-              cornerClass="rounded-tr-[28px]"
-              variant="premium"
-            />
-            <InsightCard
-              icon={
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                >
-                  <path d="M12 3l8 8-8 8-8-8z" />
-                  <path d="M12 8l4 4-4 4-4-4z" />
-                </svg>
-              }
-              title="Verbal Comprehension"
-              description="Excellent grasp of spoken guidelines and a highly adaptive communicative scope. Enthusiastic sharing is seen daily."
-              cornerClass="rounded-tl-[28px]"
-              variant="premium"
-            />
-            <InsightCard
-              icon={
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                >
-                  <circle cx="12" cy="12" r="3" />
-                  <circle cx="12" cy="12" r="7" />
-                </svg>
-              }
-              title="Social Empathy"
-              description="Deep sensitivity to family members and primary playground buddies. Welcomes constructive social feedback loop cues."
-              cornerClass="rounded-bl-[28px]"
-              variant="premium"
-            />
-          </div>
+        <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1 mt-8">
+          <GuideCard
+            category="High Competency"
+            title="Creative Play"
+            description="Displays rich imaginative flow, abstract play and artistic task retention. A real strength to integrate into curriculum pathways."
+            readTime=""
+            image={creativePlayImg}
+            cornerClass="rounded-tr-[32px]"
+            actionText="Explore strength"
+          />
+          <GuideCard
+            category="Exceptional Grasp"
+            title="Verbal Comprehension"
+            description="Excellent grasp of spoken guidelines and a highly adaptive communicative scope. Enthusiastic sharing is seen daily."
+            readTime=""
+            image={img2947}
+            cornerClass="rounded-tl-[32px]"
+            actionText="Explore strength"
+          />
+          <GuideCard
+            category="Active Skillset"
+            title="Social Empathy"
+            description="Deep sensitivity to family members and primary playground buddies. Welcomes constructive social feedback loop cues."
+            readTime=""
+            image={img2912}
+            cornerClass="rounded-bl-[32px]"
+            actionText="Explore strength"
+          />
         </div>
       </FadeInScroll>
 
@@ -167,19 +143,22 @@ export default function UnderstandingPage({
       </FadeInScroll>
 
       {/* Values Section */}
-      <FadeInScroll className="grid grid-cols-2 gap-4.5 mb-24 max-md:grid-cols-1">
+      <FadeInScroll className="grid grid-cols-2 gap-6 mb-24 max-md:grid-cols-1">
         <ValueCard
-          solid
+          variant="mint"
           title="Evidence → formulation"
           content="Every insight here is traced to its source and reviewed by a qualified clinician — not generated in isolation. Where the evidence is strong, we say so plainly."
           cornerClass="rounded-tr-[32px]"
         />
         <ValueCard
+          variant="white"
           title="Honest about uncertainty"
           content="Where the evidence isn't strong enough, we don't force a conclusion. 'More to explore' is a valid, useful result — and the picture keeps building as new information arrives."
           cornerClass="rounded-bl-[32px]"
         />
       </FadeInScroll>
+
+      </PageContainer>
 
       {/* Forward Button */}
       <PageFooterCTA

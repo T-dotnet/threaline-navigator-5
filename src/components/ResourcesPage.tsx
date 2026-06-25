@@ -8,8 +8,12 @@ import {
   Check,
 } from "lucide-react";
 import { cn } from "../lib/utils";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { ActionLink } from "./ui/ActionLink";
+import { PageHeader } from "./ui/PageHeader";
+import { SectionTitle } from "./ui/SectionTitle";
+import { SectionLabel } from "./ui/SectionLabel";
+import { SectionDescription } from "./ui/SectionDescription";
 import { ListItemCard } from "./ui/ListItemCard";
 import { FadeInScroll } from "./ui/FadeInScroll";
 import { Input } from "./ui/Input";
@@ -18,6 +22,8 @@ import { FilterTab } from "./ui/FilterTab";
 import { GuideCard } from "./ui/GuideCard";
 import { LockerItem } from "./ui/LockerItem";
 import { HeroQuoteCard } from "./ui/HeroQuoteCard";
+import { PageContainer } from "./ui/PageContainer";
+import { useCurrentChild } from "../context/ChildContext";
 
 import img2912 from "../assets/images/IMG_2912.jpeg";
 import img2947 from "../assets/images/IMG_2947.jpeg";
@@ -70,11 +76,17 @@ const ALL_GUIDES = [
   },
 ];
 
-export default function ResourcesPage({ currentChild }: { currentChild: any }) {
+export default function ResourcesPage() {
+  const { currentChild } = useCurrentChild();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
   const isLiam = currentChild.name === "Liam";
+
+  const handleClear = useCallback(() => {
+    setSearch("");
+    setFilter("all");
+  }, []);
 
   const guidesWithDynamicName = useMemo(() => {
     return ALL_GUIDES.map(g => ({
@@ -97,57 +109,64 @@ export default function ResourcesPage({ currentChild }: { currentChild: any }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-[1000px] mx-auto pt-16 px-11 pb-16 max-md:px-5"
+      className="pt-16 pb-16"
     >
-      <div className="mb-24">
-        <span className="text-[0.66rem] tracking-[0.2em] uppercase text-slate-500 font-semibold mb-6 block">
-          Resource library · Clinical-grade guidance
-        </span>
-        <h1 className="font-semibold text-4xl tracking-tighter leading-[1.08] max-w-[16ch]">
-          Personalised resources.
-        </h1>
-        <p className="text-[1.05rem] text-slate-500 leading-relaxed max-w-[58ch] mt-8">
-          Short, practical, clinical-grade guides — tailored to {currentChild.name}'s current
-          focus areas, so what you see first is what's most useful right now.
-        </p>
-        <div className="flex items-center gap-2 text-[0.8rem] text-slate-500 mt-3.5">
-          <Check className="w-3.5 h-3.5 text-[var(--color-thread-mid-green)] stroke-[1.8]" /> Sorted
-          by clinical focus matching
-        </div>
-      </div>
-
-      <HeroQuoteCard
-        kicker="Featured guide"
-        quote={isLiam ? "Fostering long-term developmental velocity." : "Starting the upcoming school term with confidence."}
-        showQuotes={false}
-        className="mb-24"
+      <PageContainer>
+        <PageHeader
+        kicker="Resource library · Clinical-grade guidance"
+        title="Personalised resources."
+        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[16ch]"
         description={
-          isLiam ? (
-            `Advanced strategies for ${currentChild.name} to generalise his social integration wins into diverse, unstructured environments.`
-          ) : (
-            `Strategies to manage ADHD-linked morning fatigue and prepare sensory transitions before ${currentChild.name} steps into the new classroom.`
-          )
+          <>
+            <SectionDescription>
+              Short, practical, clinical-grade guides — tailored to {currentChild.name}'s current
+              focus areas, so what you see first is what's most useful right now.
+            </SectionDescription>
+            <div className="flex items-center gap-2 text-[0.8rem] text-[var(--color-thread-gray)] mt-6">
+              <Check className="w-3.5 h-3.5 text-[var(--color-thread-mid-green)] stroke-[1.8]" /> Sorted
+              by clinical focus matching
+            </div>
+          </>
         }
-        action={
-          <Button
-            variant="mint"
-            className="relative"
-            rightIcon={<ChevronRight className="w-3.5 h-3.5 stroke-[2]" />}
-          >
-            Read article
-          </Button>
-        }
+        className="mb-24"
       />
+
+      <FadeInScroll className="mb-24">
+        <div className="relative rounded-br-[36px] p-12 bg-watercolor">
+          <HeroQuoteCard
+            kicker="Featured guide"
+            quote={isLiam ? "Fostering long-term developmental velocity." : "Starting the upcoming school term with confidence."}
+            showQuotes={false}
+            className="mb-0 shadow-premium"
+            description={
+              isLiam ? (
+                `Advanced strategies for ${currentChild.name} to generalise his social integration wins into diverse, unstructured environments.`
+              ) : (
+                `Strategies to manage ADHD-linked morning fatigue and prepare sensory transitions before ${currentChild.name} steps into the new classroom.`
+              )
+            }
+            action={
+              <Button
+                variant="mint"
+                className="relative"
+                rightIcon={<ChevronRight className="w-3.5 h-3.5 stroke-[2]" />}
+              >
+                Read article
+              </Button>
+            }
+          />
+        </div>
+      </FadeInScroll>
 
       {/* Modules Section */}
       <FadeInScroll className="mb-24">
-        <div className="mb-5.5">
-          <span className="text-[0.66rem] tracking-[0.2em] uppercase text-slate-500 font-semibold mb-2.5 block text-uppercase">
-            Available modules
+        <div className="mb-8">
+          <span className="text-[0.68rem] tracking-[0.12em] uppercase font-bold text-[var(--color-thread-mid-green)] mb-3 block">
+            AVAILABLE MODULES
           </span>
-          <h2 className="font-semibold text-[1.4rem] tracking-tight">
+          <SectionTitle className="mb-0">
             Personalised to {currentChild.name}'s focus.
-          </h2>
+          </SectionTitle>
         </div>
 
         <div className="relative mb-4">
@@ -195,7 +214,7 @@ export default function ResourcesPage({ currentChild }: { currentChild: any }) {
         </span>
 
         {filteredGuides.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
+          <div className="grid grid-cols-2 gap-6 max-md:grid-cols-1">
             {filteredGuides.map((guide, i) => {
               const cornerClasses = [
                 "rounded-tr-[32px]",
@@ -204,7 +223,7 @@ export default function ResourcesPage({ currentChild }: { currentChild: any }) {
                 "rounded-bl-[32px]",
               ];
               const cornerClass = cornerClasses[i % cornerClasses.length];
-              return <GuideCard key={i} {...guide} cornerClass={cornerClass} childName={currentChild.name} />;
+              return <GuideCard key={i} {...guide} cornerClass={cornerClass} />;
             })}
           </div>
         ) : (
@@ -213,10 +232,7 @@ export default function ResourcesPage({ currentChild }: { currentChild: any }) {
             <ActionLink
               variant="default"
               as="button"
-              onClick={() => {
-                setSearch("");
-                setFilter("all");
-              }}
+              onClick={handleClear}
               className="mt-3 block mx-auto font-semibold"
             >
               Clear search
@@ -227,15 +243,15 @@ export default function ResourcesPage({ currentChild }: { currentChild: any }) {
 
       {/* Directory Section */}
       <FadeInScroll className="mb-24">
-        <div className="mb-5.5">
-          <span className="text-[0.66rem] tracking-[0.2em] uppercase text-slate-500 font-semibold mb-2.5 block text-uppercase">
+        <div className="mb-6">
+          <SectionLabel>
             Browse directory
-          </span>
-          <h2 className="font-semibold text-[1.4rem] tracking-tight">
+          </SectionLabel>
+          <SectionTitle>
             Browse by topic.
-          </h2>
+          </SectionTitle>
         </div>
-        <div className="grid grid-cols-3 gap-2.5 max-md:grid-cols-1">
+        <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1">
           {[
             "Understanding ADHD",
             "Emotional Regulation",
@@ -244,30 +260,33 @@ export default function ResourcesPage({ currentChild }: { currentChild: any }) {
             "Daily Routines",
             "Working with Professionals",
           ].map((t, i) => (
-            <ListItemCard key={i}>{t}</ListItemCard>
+            <ListItemCard key={i} className="bg-white border-white/5 transition-all">
+              {t}
+            </ListItemCard>
           ))}
         </div>
       </FadeInScroll>
 
       {/* Locker Section */}
       <FadeInScroll className="mb-24">
-        <div className="mb-5.5">
-          <span className="text-[0.66rem] tracking-[0.2em] uppercase text-slate-500 font-semibold mb-2.5 block text-uppercase">
+        <div>
+          <SectionLabel>
             Aids & exercises locker
-          </span>
-          <h2 className="font-semibold text-[1.4rem] tracking-tight">
+          </SectionLabel>
+          <SectionTitle>
             Quick activities locker.
-          </h2>
+          </SectionTitle>
         </div>
 
-        <div className="relative rounded-br-[36px] p-7.5 bg-watercolor">
-          <div className="grid grid-cols-3 gap-3.5 max-md:grid-cols-1">
+        <div className="relative rounded-br-[36px] p-12 bg-watercolor">
+          <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1">
             <LockerItem
               icon={<Download className="w-[19px] h-[19px] stroke-[1.8]" />}
               title="Download templates"
               description="Editable letter templates, transition checklists and customisable behaviour journals."
               action="Download printable PDFs"
               cornerClass="rounded-tl-[32px]"
+              className="shadow-premium border border-black/[0.03]"
             />
             <LockerItem
               icon={<Play className="w-[19px] h-[19px] stroke-[1.8]" />}
@@ -275,6 +294,7 @@ export default function ResourcesPage({ currentChild }: { currentChild: any }) {
               description="5-minute play-based co-regulation tactics designed for real parents."
               action="Launch video player"
               cornerClass="rounded-tr-[32px]"
+              className="shadow-premium border border-black/[0.03]"
             />
             <LockerItem
               icon={<Printer className="w-[19px] h-[19px] stroke-[1.8]" />}
@@ -282,10 +302,12 @@ export default function ResourcesPage({ currentChild }: { currentChild: any }) {
               description="Double-sided sheets designed for teachers, tutors and clinical aides."
               action="Generate print format"
               cornerClass="rounded-br-[32px]"
+              className="shadow-premium border border-black/[0.03]"
             />
           </div>
         </div>
       </FadeInScroll>
+      </PageContainer>
     </motion.div>
   );
 }

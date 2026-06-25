@@ -33,19 +33,17 @@ export function PlanProgressCard({
         {title}
       </span>
       
-      <div className="flex-1 min-h-[1.5rem]"></div>
+      <div className="flex flex-col gap-1 mb-5.5">
+        <div className="font-serif text-[4rem] leading-[4rem] tracking-[-2.2px]">
+          {progress}%
+        </div>
+        <div className="text-[1.125rem] opacity-80 leading-snug">
+          {mainStatus} —<br />
+          <span className="opacity-75 text-[0.95em]">{subStatus}</span>
+        </div>
+      </div>
       
       <div className="flex flex-col mt-auto">
-        <div className="flex items-end gap-3.5 mb-5.5">
-          <div className="font-serif text-[4rem] leading-[4.5rem] tracking-[-2.2px]">
-            {progress}%
-          </div>
-          <div className="text-[1.125rem] opacity-80 leading-tight pb-[0.8rem]">
-            {mainStatus} —<br />
-            <span className="opacity-75 text-[0.95em]">{subStatus}</span>
-          </div>
-        </div>
-        
         <div className="mb-5.5">
           <ProgressBar
             value={progress}

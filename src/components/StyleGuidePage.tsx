@@ -28,7 +28,11 @@ import {
   Activity,
   ArrowUpRight,
   Minus,
-  Plus
+  Plus,
+  FileText,
+  Share2,
+  Lock,
+  Settings
 } from "lucide-react";
 import { useState } from "react";
 import { Page } from "../types";
@@ -48,6 +52,14 @@ import { EvidenceBadge } from "./ui/EvidenceBadge";
 import { InsightCard } from "./ui/InsightCard";
 import { LockerItem } from "./ui/LockerItem";
 import { Switch } from "./ui/Switch";
+import { FilterTab } from "./ui/FilterTab";
+import { FileItem } from "./ui/FileItem";
+import { IconButton } from "./ui/IconButton";
+import { QuickLink } from "./ui/QuickLink";
+import { ValueCard } from "./ui/ValueCard";
+import { HeroActionCard } from "./ui/HeroActionCard";
+
+import { PageContainer } from "./ui/PageContainer";
 
 interface StyleGuidePageProps {
   onPageChange: (page: Page) => void;
@@ -78,6 +90,82 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
   const [synthesisExpanded, setSynthesisExpanded] = useState<boolean>(false);
   const [demoSwitchOn, setDemoSwitchOn] = useState<boolean>(true);
   const [demoProgress, setDemoProgress] = useState<number>(45);
+  const [demoFilter, setDemoFilter] = useState<string>("classroom");
+  const [demoFileShared, setDemoFileShared] = useState<boolean>(true);
+
+  // Dynamic Theme States inside StyleGuidePage
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem("thread-theme") || "energetic";
+    } catch {
+      return "energetic";
+    }
+  });
+  const [font, setFont] = useState(() => {
+    try {
+      return localStorage.getItem("thread-font") || "modern-serif";
+    } catch {
+      return "modern-serif";
+    }
+  });
+  const [heroStyle, setHeroStyle] = useState(() => {
+    try {
+      return localStorage.getItem("thread-hero-style") || "white";
+    } catch {
+      return "white";
+    }
+  });
+  const [secondaryStyle, setSecondaryStyle] = useState(() => {
+    try {
+      return localStorage.getItem("thread-secondary-style") || "light";
+    } catch {
+      return "light";
+    }
+  });
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    try {
+      localStorage.setItem("thread-theme", newTheme);
+    } catch (e) {
+      console.warn(e);
+    }
+    document.documentElement.setAttribute("data-theme", newTheme);
+    addLog(`Switched global theme to: ${newTheme === 'energetic' ? 'Energetic Mint' : 'Classic Vintage'}`);
+  };
+
+  const handleFontChange = (newFont: string) => {
+    setFont(newFont);
+    try {
+      localStorage.setItem("thread-font", newFont);
+    } catch (e) {
+      console.warn(e);
+    }
+    document.documentElement.setAttribute("data-font", newFont);
+    addLog(`Switched serif typeface to: ${newFont === 'modern-serif' ? 'Fraunces' : 'Frank Ruhl Libre'}`);
+  };
+
+  const handleHeroStyleChange = (newStyle: string) => {
+    setHeroStyle(newStyle);
+    try {
+      localStorage.setItem("thread-hero-style", newStyle);
+    } catch (e) {
+      console.warn(e);
+    }
+    document.documentElement.setAttribute("data-hero-style", newStyle);
+    addLog(`Switched primary hero style to: ${newStyle === 'white' ? 'White Canvas' : 'Solid Accent'}`);
+  };
+
+  const handleSecondaryStyleChange = (newStyle: string) => {
+    setSecondaryStyle(newStyle);
+    try {
+      localStorage.setItem("thread-secondary-style", newStyle);
+    } catch (e) {
+      console.warn(e);
+    }
+    document.documentElement.setAttribute("data-hero-secondary", newStyle);
+    addLog(`Switched secondary background highlight to: ${newStyle === 'light' ? 'Mint Soft' : 'Forest Dark'}`);
+  };
 
   const addLog = (msg: string) => {
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
@@ -391,14 +479,15 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="max-w-[1100px] mx-auto pt-16 px-11 pb-24 max-md:px-5 font-sans"
+      className="pt-16 pb-24 font-sans"
     >
-      {/* Page Header */}
+      <PageContainer>
+        {/* Page Header */}
       <div className="mb-16">
         <span className="text-[0.75rem] tracking-[0.12em] uppercase text-[var(--color-thread-mid-green)] font-bold mb-4 block">
           Internal Design Token & Style Audit
         </span>
-        <h1 className="font-serif font-normal text-[3.8rem] leading-[4.3rem] tracking-[-0.075rem] text-[var(--color-thread-heading)]">
+        <h1 className="font-serif font-normal text-[2.2rem] sm:text-[3.2rem] md:text-[3.8rem] leading-[1.15] md:leading-[4.3rem] tracking-[-0.075rem] text-[var(--color-thread-heading)]">
           The Design System.
         </h1>
         <p className="text-[1.02rem] text-[var(--color-thread-gray)] mt-4.5 max-w-[65ch] leading-relaxed">
@@ -587,22 +676,186 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
 
             </div>
 
-            {/* Micro Interaction Tool */}
-            <div className="mt-8 p-6 bg-slate-50/50 border border-black/5 rounded-2xl">
-              <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
-                <span className="text-[0.68rem] tracking-[0.16em] uppercase text-slate-400 font-bold block">
-                  Interactive Background-Color Reader
-                </span>
+            {/* Micro Interaction Tool - Interactive Theme & Colors Customizer */}
+            <div className="mt-8 p-6 sm:p-8 bg-slate-50 border border-black/5 rounded-2xl">
+              <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+                <div>
+                  <span className="text-[0.68rem] tracking-[0.16em] uppercase text-[var(--color-thread-mid-green)] font-bold block">
+                    Interactive Design System Customizer
+                  </span>
+                  <h3 className="text-[1.12rem] font-serif text-[var(--color-thread-heading)] font-normal mt-1">
+                    Live Brand Identity & Variable Controller
+                  </h3>
+                </div>
                 <div className="flex gap-2">
-                  <span className="text-[0.72rem] text-slate-500 font-medium">Current active theme:</span>
-                  <span className="text-[0.72rem] bg-amber-500/10 text-amber-800 font-bold px-2 py-0.5 rounded uppercase tracking-wide">
-                    Classic & Energetic Responsive Stack
+                  <span className="text-[0.72rem] text-slate-500 font-medium">Global State Sync:</span>
+                  <span className="text-[0.72rem] bg-[var(--color-thread-light-green)] text-[var(--color-thread-heading)] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                    Live Active Mode
                   </span>
                 </div>
               </div>
-              <p className="text-[0.84rem] text-slate-600 leading-relaxed max-w-[85ch]">
-                Because our theme shifts dynamically based on user selection (Classic vs Energetic configured in the system user settings), components automatically scale their contrasts. Verify that all child elements read colors from root CSS parameters (like <span className="font-mono text-[0.75rem] text-slate-850 px-1 py-0.5 bg-slate-100 rounded">text-[var(--color-thread-heading)]</span>) to maintain perfect accessibility rules across light, cream, and dark Forest skins.
+
+              <p className="text-[0.84rem] text-slate-600 leading-relaxed max-w-[85ch] mb-8">
+                Adjust the design tokens below. All UI components across the entire application will dynamically adapt to the selected parameters using CSS-variable binding, maintaining perfect accessibility contrasts.
               </p>
+
+              {/* Dynamic Settings Controller Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {/* Theme Mood Selector */}
+                <div className="flex flex-col gap-2">
+                  <span className="text-[0.68rem] font-bold text-slate-400 uppercase tracking-wider">
+                    Primary Theme Mood
+                  </span>
+                  <div className="flex bg-white rounded-xl p-1 border border-black/5 shadow-xs">
+                    <button
+                      onClick={() => handleThemeChange("energetic")}
+                      className={cn(
+                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+                        theme === "energetic"
+                          ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-heading)] shadow-sm font-bold"
+                          : "text-slate-500 hover:text-slate-900"
+                      )}
+                    >
+                      Energetic
+                    </button>
+                    <button
+                      onClick={() => handleThemeChange("classic")}
+                      className={cn(
+                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+                        theme === "classic"
+                          ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-heading)] shadow-sm font-bold"
+                          : "text-slate-500 hover:text-slate-900"
+                      )}
+                    >
+                      Classic
+                    </button>
+                  </div>
+                </div>
+
+                {/* Typography Font Selector */}
+                <div className="flex flex-col gap-2">
+                  <span className="text-[0.68rem] font-bold text-slate-400 uppercase tracking-wider">
+                    Serif Typography Font
+                  </span>
+                  <div className="flex bg-white rounded-xl p-1 border border-black/5 shadow-xs">
+                    <button
+                      onClick={() => handleFontChange("modern-serif")}
+                      className={cn(
+                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+                        font === "modern-serif"
+                          ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-heading)] shadow-sm font-bold"
+                          : "text-slate-500 hover:text-slate-900"
+                      )}
+                    >
+                      Fraunces
+                    </button>
+                    <button
+                      onClick={() => handleFontChange("classic-serif")}
+                      className={cn(
+                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+                        font === "classic-serif"
+                          ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-heading)] shadow-sm font-bold"
+                          : "text-slate-500 hover:text-slate-900"
+                      )}
+                    >
+                      Frank Ruhl
+                    </button>
+                  </div>
+                </div>
+
+                {/* Primary Hero Cards Selector */}
+                <div className="flex flex-col gap-2">
+                  <span className="text-[0.68rem] font-bold text-slate-400 uppercase tracking-wider">
+                    Primary Hero Style
+                  </span>
+                  <div className="flex bg-white rounded-xl p-1 border border-black/5 shadow-xs">
+                    <button
+                      onClick={() => handleHeroStyleChange("white")}
+                      className={cn(
+                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+                        heroStyle === "white"
+                          ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-heading)] shadow-sm font-bold"
+                          : "text-slate-500 hover:text-slate-900"
+                      )}
+                    >
+                      White
+                    </button>
+                    <button
+                      onClick={() => handleHeroStyleChange("green")}
+                      className={cn(
+                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+                        heroStyle === "green"
+                          ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-heading)] shadow-sm font-bold"
+                          : "text-slate-500 hover:text-slate-900"
+                      )}
+                    >
+                      Solid Green
+                    </button>
+                  </div>
+                </div>
+
+                {/* Secondary Highlight Selector */}
+                <div className="flex flex-col gap-2">
+                  <span className="text-[0.68rem] font-bold text-slate-400 uppercase tracking-wider">
+                    Secondary Contrast
+                  </span>
+                  <div className="flex bg-white rounded-xl p-1 border border-black/5 shadow-xs">
+                    <button
+                      onClick={() => handleSecondaryStyleChange("light")}
+                      className={cn(
+                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+                        secondaryStyle === "light"
+                          ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-heading)] shadow-sm font-bold"
+                          : "text-slate-500 hover:text-slate-900"
+                      )}
+                    >
+                      Mint Soft
+                    </button>
+                    <button
+                      onClick={() => handleSecondaryStyleChange("dark")}
+                      className={cn(
+                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+                        secondaryStyle === "dark"
+                          ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-heading)] shadow-sm font-bold"
+                          : "text-slate-500 hover:text-slate-900"
+                      )}
+                    >
+                      Forest Dark
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic State Feedback Bar */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-5 border-t border-black/5 bg-white/50 p-4 rounded-xl">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-8 h-8 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
+                    <Palette className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[0.66rem] uppercase tracking-wider font-bold text-slate-400 block">
+                      Active Palette Variables
+                    </span>
+                    <span className="text-[0.8rem] font-medium text-slate-700">
+                      {theme === "energetic" ? "Mint Energetic (Emerald #108560)" : "Classic Vintage (Forest #2A5B4A)"}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-1 bg-slate-100 rounded-lg px-2.5 py-1.5 border border-black/5">
+                    <span className="w-3 h-3 rounded-full border border-black/5" style={{ backgroundColor: theme === "energetic" ? "#108560" : "#2A5B4A" }} />
+                    <span className="text-[0.7rem] font-mono text-slate-600 font-semibold uppercase">{theme === "energetic" ? "#108560" : "#2A5B4A"}</span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-slate-100 rounded-lg px-2.5 py-1.5 border border-black/5">
+                    <span className="w-3 h-3 rounded-full border border-black/5" style={{ backgroundColor: theme === "energetic" ? "#E6F4ED" : "#E3EBE7" }} />
+                    <span className="text-[0.7rem] font-mono text-slate-600 font-semibold uppercase">{theme === "energetic" ? "#E6F4ED" : "#E3EBE7"}</span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-slate-100 rounded-lg px-2.5 py-1.5 border border-black/5">
+                    <span className="w-3 h-3 rounded-full border border-black/5" style={{ backgroundColor: theme === "energetic" ? "#F5F7F6" : "#F5F5F5" }} />
+                    <span className="text-[0.7rem] font-mono text-slate-600 font-semibold uppercase">{theme === "energetic" ? "#F5F7F6" : "#F5F5F5"}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -1539,7 +1792,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
             </div>
 
             {/* Component 10: PageFooterCTA */}
-            <div>
+            <div className="border-b border-black/5 pb-8">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">10. Page Footer CTA Navigator (PageFooterCTA)</h3>
                 <span className="font-mono text-xs text-slate-400">src/components/ui/PageFooterCTA.tsx</span>
@@ -1552,6 +1805,163 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                   title="Understanding what's happening is the start."
                   buttonText="See what matters most"
                   onClick={() => {}}
+                />
+              </div>
+            </div>
+
+            {/* Component 11: Filter Category Selector (FilterTab) */}
+            <div className="border-b border-black/5 pb-8">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">11. Filter Category Selector (FilterTab)</h3>
+                <span className="font-mono text-xs text-slate-400">src/components/ui/FilterTab.tsx</span>
+              </div>
+              <p className="text-slate-500 text-[0.88rem] mb-6">
+                Interactive pills used to toggle categories of clinical strategies, timelines, or resources. Updates state with seamless active style animations.
+              </p>
+              <div className="p-4 bg-slate-50 rounded-xl border border-black/5 flex flex-wrap gap-2 items-center">
+                {["classroom", "home", "clinical", "all"].map((cat) => (
+                  <FilterTab 
+                    key={cat} 
+                    active={demoFilter === cat} 
+                    label={cat.charAt(0).toUpperCase() + cat.slice(1)} 
+                    onClick={() => {
+                      setDemoFilter(cat);
+                      addLog(`FilterTab clicked: Active filter set to '${cat}'`);
+                    }} 
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Component 12: Interactive File Share Item (FileItem) */}
+            <div className="border-b border-black/5 pb-8">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">12. Interactive File Share Item (FileItem)</h3>
+                <span className="font-mono text-xs text-slate-400">src/components/ui/FileItem.tsx</span>
+              </div>
+              <p className="text-slate-500 text-[0.88rem] mb-6">
+                File display listing for documentation, sources, or worksheets. Includes clinical status tags, dates, and click-to-toggle shared access states.
+              </p>
+              <div className="p-4 bg-slate-50 rounded-xl border border-black/5 max-w-md">
+                <FileItem
+                  name="Speech_and_Language_2026.pdf"
+                  typeName="Diagnostic Assessment"
+                  date="14 Jan 2026"
+                  shared={demoFileShared}
+                  sharedWith="Clinician Team"
+                  icon={FileText}
+                  onToggleShare={() => {
+                    setDemoFileShared(!demoFileShared);
+                    addLog(`FileItem: Shared status toggled to '${!demoFileShared}'`);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Component 13: Circle Action Controls (IconButton) */}
+            <div className="border-b border-black/5 pb-8">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">13. Circle Action Controls (IconButton)</h3>
+                <span className="font-mono text-xs text-slate-400">src/components/ui/IconButton.tsx</span>
+              </div>
+              <p className="text-slate-500 text-[0.88rem] mb-6">
+                Perfectly circular, high-contrast actions supporting sub-elements, status dots, and subtle icon scaling on hover. Widely used in TopBars and headers.
+              </p>
+              <div className="p-4 bg-slate-50 rounded-xl border border-black/5 flex gap-4 items-center">
+                <IconButton 
+                  hasBadge={true} 
+                  onClick={() => addLog("IconButton: Notifications click triggered")}
+                  title="Notifications"
+                >
+                  <Share2 className="w-4 h-4" />
+                </IconButton>
+                <IconButton 
+                  hasBadge={false} 
+                  onClick={() => addLog("IconButton: Settings control click triggered")}
+                  title="Settings"
+                >
+                  <Settings className="w-4 h-4" />
+                </IconButton>
+              </div>
+            </div>
+
+            {/* Component 14: Action Navigator Link (QuickLink) */}
+            <div className="border-b border-black/5 pb-8">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">14. Action Navigator Link (QuickLink)</h3>
+                <span className="font-mono text-xs text-slate-400">src/components/ui/QuickLink.tsx</span>
+              </div>
+              <p className="text-slate-500 text-[0.88rem] mb-6">
+                Full-width line navigation links featuring responsive trailing Chevrons. Designed for drawers or nested utility list navigation.
+              </p>
+              <div className="max-w-sm bg-white border border-black/5 rounded-xl p-4.5 shadow-sm">
+                <QuickLink 
+                  label="View full diagnostic assessment details" 
+                  onClick={() => {
+                    addLog("QuickLink: Opening Diagnostic Details view");
+                    onPageChange("understanding");
+                  }} 
+                />
+                <QuickLink 
+                  label="Configure clinical weightings schema" 
+                  onClick={() => {
+                    addLog("QuickLink: Navigating to Settings panel");
+                    onPageChange("settings");
+                  }} 
+                />
+              </div>
+            </div>
+
+            {/* Component 15: Nested Detail Value Card (ValueCard) */}
+            <div className="border-b border-black/5 pb-8">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">15. Nested Detail Value Card (ValueCard)</h3>
+                <span className="font-mono text-xs text-slate-400">src/components/ui/ValueCard.tsx</span>
+              </div>
+              <p className="text-slate-500 text-[0.88rem] mb-6">
+                Card layouts containing rich metadata with concentric circle SVG decorations. Supports solid theme blocks or clean white/cream layout backdrops.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ValueCard
+                  title="Classroom Strategy"
+                  content="Provide noise-dampening headphones during independent work to mitigate background classroom acoustic clutter."
+                  solid={false}
+                />
+                <ValueCard
+                  title="Target Priority"
+                  content="Tackling active auditory focus limits downstream secondary social or emotional dysregulation events."
+                  solid={true}
+                />
+              </div>
+            </div>
+
+            {/* Component 16: Top Hero Action Card (HeroActionCard) */}
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">16. Top Hero Action Card (HeroActionCard)</h3>
+                <span className="font-mono text-xs text-slate-400">src/components/ui/HeroActionCard.tsx</span>
+              </div>
+              <p className="text-slate-500 text-[0.88rem] mb-6">
+                Highly interactive compact cards mapping core landing tasks, featuring dedicated icons and clean top-left/bottom-right layouts.
+              </p>
+              <div className="flex gap-4 overflow-x-auto pb-2">
+                <HeroActionCard
+                  icon={<Activity className="w-5 h-5 text-[var(--color-thread-mid-green)]" />}
+                  title="Priorities"
+                  subtitle="Tackle Now"
+                  onClick={() => {
+                    addLog("HeroActionCard: Navigating to Priorities page");
+                    onPageChange("priorities");
+                  }}
+                />
+                <HeroActionCard
+                  icon={<FileText className="w-5 h-5 text-[var(--color-thread-mid-green)]" />}
+                  title="Documents"
+                  subtitle="3 Uploaded"
+                  onClick={() => {
+                    addLog("HeroActionCard: Navigating to Documents page");
+                    onPageChange("documents");
+                  }}
                 />
               </div>
             </div>
@@ -1574,6 +1984,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
           Return to Settings page
         </ActionLink>
       </div>
+      </PageContainer>
     </motion.div>
   );
 }

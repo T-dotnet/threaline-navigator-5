@@ -30,7 +30,7 @@ export const HeroQuoteCard = React.forwardRef<HTMLDivElement, HeroQuoteCardProps
             : "bg-[var(--hero-bg)] text-[var(--hero-text)]",
           hasRightNode
             ? "p-10 flex items-center justify-between gap-10 max-md:flex-col max-md:items-start"
-            : "p-9 h-fit flex flex-col justify-between",
+            : "p-10 h-fit flex flex-col justify-between",
           className
         )}
         {...props}
@@ -54,7 +54,7 @@ export const HeroQuoteCard = React.forwardRef<HTMLDivElement, HeroQuoteCardProps
           <>
             <div className="relative flex-1">
               {kicker && (
-                <span className={cn("text-[0.75rem] tracking-[0.1em] uppercase font-bold mb-4.5 block", variant === 'green' ? 'text-emerald-200' : 'text-[var(--hero-accent)]')}>
+                <span className={cn("text-[0.75rem] tracking-[0.1em] uppercase font-bold mb-6 block", variant === 'green' ? 'text-emerald-200' : 'text-[var(--hero-accent)]')}>
                   {kicker}
                 </span>
               )}
@@ -67,7 +67,7 @@ export const HeroQuoteCard = React.forwardRef<HTMLDivElement, HeroQuoteCardProps
                 </div>
               )}
               {(evidenceLevel !== undefined || evidenceText) && (
-                <div className="inline-flex items-center gap-2.5 mt-6.5 relative">
+                <div className="inline-flex items-center gap-2 mt-6 relative">
                   <EvidenceBadge
                     level={evidenceLevel ?? 0}
                     label={evidenceText}
@@ -84,7 +84,7 @@ export const HeroQuoteCard = React.forwardRef<HTMLDivElement, HeroQuoteCardProps
           <>
             <div className="relative">
               {kicker && (
-                <span className={cn("text-[0.75rem] tracking-[0.1em] uppercase font-bold mb-4.5 block", variant === 'green' ? 'text-emerald-200' : 'text-[var(--hero-accent)]')}>
+                <span className={cn("text-[0.75rem] tracking-[0.1em] uppercase font-bold mb-6 block", variant === 'green' ? 'text-emerald-200' : 'text-[var(--hero-accent)]')}>
                   {kicker}
                 </span>
               )}
@@ -100,7 +100,7 @@ export const HeroQuoteCard = React.forwardRef<HTMLDivElement, HeroQuoteCardProps
 
             <div className="flex items-center justify-between mt-auto mb-2 relative flex-wrap gap-4">
               {(evidenceLevel !== undefined || evidenceText) && (
-                <div className="inline-flex items-center gap-2.5">
+                <div className="inline-flex items-center gap-2">
                   <EvidenceBadge
                     level={evidenceLevel ?? 0}
                     label={evidenceText}

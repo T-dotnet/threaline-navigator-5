@@ -11,8 +11,8 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, animated = false, delay = 0, hoverable = false, ...props }, ref) => {
     const baseClasses = cn(
-      'bg-white/80 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden relative',
-      hoverable && 'hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300',
+      'bg-white rounded-2xl overflow-hidden relative',
+      hoverable && 'hover:-translate-y-0.5 transition-all duration-300',
       className
     );
 

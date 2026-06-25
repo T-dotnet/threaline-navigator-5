@@ -89,6 +89,7 @@ body {
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-serif), serif;
+  --font-display: var(--font-serif), serif;
   
   --color-thread-dark-forest: var(--color-thread-dark-forest);
   --color-thread-deep-forest: var(--color-thread-deep-forest);
@@ -104,10 +105,21 @@ body {
   --color-thread-placeholder: var(--color-thread-placeholder);
   --color-thread-heading: var(--color-thread-heading);
 
-  --shadow-premium: 0 22px 44px -28px rgba(22, 36, 60, 0.5);
-  --shadow-premium-light: 0 22px 44px -28px rgba(22, 36, 60, 0.1);
+  --shadow-premium: 0 12px 40px -10px rgba(22, 36, 60, 0.1);
+  --shadow-premium-hover: 0 16px 48px -8px rgba(22, 36, 60, 0.15);
+  --shadow-premium-heavy: 0 22px 44px -28px rgba(22, 36, 60, 0.25);
   --shadow-dropdown: 0 12px 24px -10px rgba(22, 36, 60, 0.15);
   --shadow-modal: 0 24px 48px -12px rgba(22, 36, 60, 0.15);
+}
+
+@layer base {
+  body {
+    @apply font-sans text-[var(--color-thread-dark-slate)] bg-[var(--color-thread-off-white)] selection:bg-[var(--color-thread-light-green)] selection:text-[var(--color-thread-heading)];
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-[var(--color-thread-heading)] tracking-tight;
+  }
 }
 
 @utility bg-watercolor {

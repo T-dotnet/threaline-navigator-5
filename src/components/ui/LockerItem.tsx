@@ -1,6 +1,8 @@
 import * as React from "react"
+import { motion } from "motion/react"
 import { cn } from "../../lib/utils"
 import { ActionLink } from "./ActionLink"
+import { scaleHover } from "../../lib/motion-presets"
 
 export function LockerItem({
   icon,
@@ -8,9 +10,13 @@ export function LockerItem({
   description,
   action,
   cornerClass = "rounded-[18px]",
+  className,
 }: any) {
   return (
-    <div className={cn("bg-white p-6 flex flex-col transition-all hover:-translate-y-0.5 shadow-premium", cornerClass)}>
+    <motion.div 
+      {...scaleHover}
+      className={cn("bg-white p-6 flex flex-col transition-all cursor-pointer", cornerClass, className)}
+    >
       <div className="w-[38px] h-[38px] rounded-[10px] bg-[var(--color-thread-light-green)]/60 text-[var(--color-thread-muted-green)] flex items-center justify-center mb-3.5">
         {icon}
       </div>
@@ -21,10 +27,10 @@ export function LockerItem({
         {description}
       </p>
       <div className="mt-auto pt-2">
-        <ActionLink variant="default" as="button" className="hover:opacity-70">
+        <ActionLink variant="default" as="span" className="group-hover:opacity-70 pointer-events-none">
           {action}
         </ActionLink>
       </div>
-    </div>
+    </motion.div>
   );
 }

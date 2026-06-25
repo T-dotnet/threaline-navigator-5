@@ -8,6 +8,15 @@ import {
   Sliders,
   Users,
   Palette,
+  Menu,
+  X,
+  Home,
+  Info,
+  ListTodo,
+  Milestone,
+  LineChart,
+  BookOpen,
+  Lock,
 } from "lucide-react";
 import { Child } from "../types";
 import { Avatar } from "./ui/Avatar";
@@ -15,29 +24,41 @@ import { IconButton } from "./ui/IconButton";
 import { cn } from "../lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 
+import { useCurrentChild } from "../context/ChildContext";
+import { useCallback } from "react";
+
 interface TopBarProps {
   currentPage?: any;
-  currentChild: Child;
-  childrenList: Child[];
-  onChildChange: (child: Child) => void;
   onAddChildRequest: () => void;
   onPageChange: (page: any) => void;
 }
 
 export default function TopBar({
   currentPage,
-  currentChild,
-  childrenList,
-  onChildChange,
   onAddChildRequest,
   onPageChange,
 }: TopBarProps) {
+  const { currentChild, childrenList, setChild } = useCurrentChild();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const alertsRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  const handleChildSwitch = useCallback((child: Child) => {
+    setChild(child);
+    if (currentPage === "all-children") {
+      onPageChange("home");
+    }
+    setIsDropdownOpen(false);
+  }, [setChild, currentPage, onPageChange]);
+
+  const handleAllChildrenSelect = useCallback(() => {
+    onPageChange("all-children");
+    setIsDropdownOpen(false);
+  }, [onPageChange]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -129,12 +150,9 @@ export default function TopBar({
 
               <div className="flex flex-col">
                 <button
-                  onClick={() => {
-                    onPageChange("all-children");
-                    setIsDropdownOpen(false);
-                  }}
+                  onClick={handleAllChildrenSelect}
                   className={cn(
-                    "flex items-center gap-3.5 px-4 py-3 w-full text-left transition-all border-b border-black/5 group/all",
+                    "flex items-center gap-3.5 px-4 py-4 w-full text-left transition-all border-b border-black/5 group/all min-h-[44px]",
                     currentPage === "all-children"
                       ? "bg-slate-50"
                       : "hover:bg-slate-50"
@@ -168,15 +186,9 @@ export default function TopBar({
                 {childrenList.map((child, idx) => (
                   <button
                     key={idx}
-                    onClick={() => {
-                      onChildChange(child);
-                      if (currentPage === "all-children") {
-                        onPageChange("home");
-                      }
-                      setIsDropdownOpen(false);
-                    }}
+                    onClick={() => handleChildSwitch(child)}
                     className={cn(
-                      "flex items-center gap-3.5 px-4 py-2.5 w-full text-left transition-colors",
+                      "flex items-center gap-3.5 px-4 py-3.5 w-full text-left transition-colors min-h-[44px]",
                       (currentChild.name === child.name && currentPage !== "all-children")
                         ? "bg-slate-50"
                         : "hover:bg-slate-50",
@@ -243,7 +255,7 @@ export default function TopBar({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.96 }}
                 transition={{ duration: 0.15, ease: "easeOut" }}
-                className="absolute top-14 right-0 w-[380px] bg-white rounded-[24px] border border-black/5 shadow-modal py-6 z-50 font-sans"
+                className="fixed sm:absolute top-20 sm:top-14 left-4 right-4 sm:left-auto sm:right-0 w-auto sm:w-[380px] bg-white rounded-[24px] border border-black/5 shadow-modal py-6 z-50 font-sans"
               >
                 <div className="px-6 mb-5">
                   <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-1.5 block">
@@ -330,7 +342,7 @@ export default function TopBar({
                       setIsProfileMenuOpen(false);
                       onPageChange("style-guide");
                     }}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group"
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
                   >
                     <Palette className="w-[18px] h-[18px] text-slate-400 group-hover:text-[var(--color-thread-mid-green)] transition-colors" />
                     <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
@@ -343,7 +355,7 @@ export default function TopBar({
                       setIsProfileMenuOpen(false);
                       onPageChange("settings");
                     }}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group"
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
                   >
                     <Settings className="w-[18px] h-[18px] text-slate-400 group-hover:text-slate-600 transition-colors" />
                     <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
@@ -362,7 +374,7 @@ export default function TopBar({
                         }
                       }, 120);
                     }}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group"
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
                   >
                     <Bell className="w-[18px] h-[18px] text-slate-400 group-hover:text-amber-500 transition-colors" />
                     <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
@@ -374,7 +386,7 @@ export default function TopBar({
 
                   <button 
                     onClick={() => setIsProfileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl w-full text-left hover:bg-red-50 transition-colors group"
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-red-50 transition-colors group min-h-[44px]"
                   >
                     <LogOut className="w-[18px] h-[18px] text-slate-400 group-hover:text-red-500 transition-colors" />
                     <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-red-600">
@@ -386,7 +398,142 @@ export default function TopBar({
             )}
           </AnimatePresence>
         </div>
+
+        {/* Burger Menu Button (Visible on Mobile only, placed right of user avatar) */}
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="md:hidden flex items-center justify-center w-11 h-11 bg-white border border-black/5 rounded-full shadow-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 transition-all cursor-pointer"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="w-5 h-5 stroke-[2]" />
+        </button>
       </div>
+
+      {/* Full-Page Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="fixed inset-0 bg-white z-[999] flex flex-col font-sans p-6 overflow-y-auto"
+          >
+            {/* Header with App Logo and Close Button */}
+            <div className="flex items-center justify-between pb-6 border-b border-black/5 mb-8">
+              <div className="flex items-center gap-2.5">
+                <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                  <svg width="23" height="23" viewBox="0 0 22 22" fill="none">
+                    <path
+                      d="M3 19 C 8 14, 6 8, 11 6 C 16 4, 14 12, 19 9"
+                      stroke="var(--color-thread-mid-green)"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <circle
+                      cx="19"
+                      cy="9"
+                      r="2.4"
+                      fill="var(--color-thread-mid-green)"
+                    />
+                  </svg>
+                </div>
+                <div className="flex flex-col leading-none">
+                  <span className="font-serif font-medium text-[1.22rem] tracking-tight text-[var(--color-thread-heading)]">
+                    Threadline
+                  </span>
+                  <span className="font-sans text-[0.55rem] tracking-[0.22em] uppercase text-[var(--color-thread-gray)] font-semibold mt-1">
+                    Safe Harbor
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-full text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+                aria-label="Close navigation menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Profile context snippet */}
+            <div className="bg-slate-50 rounded-2xl p-4.5 mb-8 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar
+                  size="md"
+                  fallback={currentPage === "all-children" ? <Users className="w-4 h-4 stroke-[2]" /> : currentChild.initial}
+                  className="bg-[var(--color-thread-mid-green)] text-white font-serif"
+                />
+                <div className="flex flex-col text-left leading-none">
+                  <span className="font-semibold text-[0.95rem] text-slate-900">
+                    {currentPage === "all-children" ? "All Children" : currentChild.name}
+                  </span>
+                  <span className="text-[0.74rem] text-slate-500 mt-1">
+                    {currentPage === "all-children" ? "Family Synthesis" : `Age ${currentChild.age}`}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIsDropdownOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="text-xs font-semibold text-[var(--color-thread-mid-green)] bg-white border border-black/5 py-1.5 px-3 rounded-lg shadow-xs cursor-pointer hover:bg-slate-50"
+              >
+                Switch Profile
+              </button>
+            </div>
+
+            {/* Navigation links */}
+            <div className="flex flex-col gap-2.5 flex-1">
+              <span className="text-[0.65rem] tracking-[0.16em] uppercase text-slate-400 font-bold mb-1.5 px-3">
+                Navigation Menu
+              </span>
+              {[
+                { id: "home", label: "Home", icon: Home },
+                { id: "understanding", label: "Understanding", icon: Info },
+                { id: "priorities", label: "Priorities", icon: ListTodo },
+                { id: "roadmap", label: "Roadmap", icon: Milestone },
+                { id: "reviews", label: "Reviews", icon: LineChart },
+                { id: "resources", label: "Resources", icon: BookOpen },
+                { id: "documents", label: "Documents", icon: Lock },
+                { id: "settings", label: "App Settings", icon: Settings },
+                { id: "style-guide", label: "Style Guide & Tokens", icon: Palette },
+              ].map((item) => {
+                const isActive = currentPage === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      onPageChange(item.id as any);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={cn(
+                      "flex items-center gap-4 px-4 py-4 rounded-xl text-[1rem] font-medium transition-all text-left cursor-pointer min-h-[48px]",
+                      isActive
+                        ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-dark-slate)] font-bold shadow-xs"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    )}
+                  >
+                    <item.icon className={cn(
+                      "w-5 h-5 stroke-[2]",
+                      isActive ? "text-[var(--color-thread-mid-green)]" : "text-slate-400"
+                    )} />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Footer Workspace Info */}
+            <div className="mt-12 pt-6 border-t border-black/5 text-center flex flex-col items-center gap-1.5">
+              <span className="text-[0.74rem] text-slate-400">Clinical Workspace</span>
+              <span className="text-[0.80rem] font-medium text-slate-600">dnstudio.syd@gmail.com</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

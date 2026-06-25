@@ -12,7 +12,11 @@ import {
   Check,
 } from "lucide-react";
 import { cn } from "../lib/utils";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { PageHeader } from "./ui/PageHeader";
+import { SectionTitle } from "./ui/SectionTitle";
+import { SectionLabel } from "./ui/SectionLabel";
+import { SectionDescription } from "./ui/SectionDescription";
 import { PageIcon } from "./ui/PageIcon";
 import { ActionLink } from "./ui/ActionLink";
 import { FadeInScroll } from "./ui/FadeInScroll";
@@ -20,131 +24,74 @@ import { Input } from "./ui/Input";
 import { Button } from "./ui/Button";
 import { FilterTab } from "./ui/FilterTab";
 import { FileItem } from "./ui/FileItem";
+import { ChecklistItem } from "./ui/ChecklistItem";
+import { PageContainer } from "./ui/PageContainer";
+import { useCurrentChild } from "../context/ChildContext";
+import { useLocker } from "../context/LockerContext";
 
-const INITIAL_FILES = [
-  {
-    typeId: "report",
-    typeName: "Report",
-    name: "Actionable Clarity Report",
-    date: "8 Jun 2026",
-    shared: false,
-    icon: FileText,
-  },
-  {
-    typeId: "schoolpack",
-    typeName: "School Pack",
-    name: "School Clarity Pack",
-    date: "8 Jun 2026",
-    shared: true,
-    sharedWith: "Homeroom Teacher",
-    icon: Folder,
-  },
-  {
-    typeId: "school",
-    typeName: "School",
-    name: "Teacher Meeting Preparation Notes",
-    date: "10 Jun 2026",
-    shared: false,
-    icon: Camera,
-  },
-  {
-    typeId: "clinical",
-    typeName: "Clinical",
-    name: "Parent Observations Log — Sleep Prep",
-    date: "12 Jun 2026",
-    shared: true,
-    sharedWith: "Dr. Sarah Vance",
-    icon: Activity,
-  },
-  {
-    typeId: "report",
-    typeName: "Report",
-    name: "Progress Review — Early Baseline",
-    date: "15 Jun 2026",
-    shared: false,
-    icon: FileText,
-  },
-];
+export default function DocumentsPage() {
+  const { currentChild } = useCurrentChild();
+  const { search, setSearch, filter, setFilter, toggleShare, filteredFiles } = useLocker();
 
-import { Child } from "../types";
-
-export default function DocumentsPage({ currentChild }: { currentChild: Child }) {
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [files, setFiles] = useState(INITIAL_FILES);
-
-  const filteredFiles = useMemo(() => {
-    return files.filter((f) => {
-      const matchSearch = f.name.toLowerCase().includes(search.toLowerCase());
-      const matchFilter = filter === "all" || f.typeId === filter;
-      return matchSearch && matchFilter;
-    });
-  }, [search, filter, files]);
-
-  const toggleShare = (index: number) => {
-    const newFiles = [...files];
-    const file = newFiles[index];
-    if (file.shared) {
-      file.shared = false;
-      file.sharedWith = undefined;
-    } else {
-      file.shared = true;
-      file.sharedWith = "your care circle";
-    }
-    setFiles(newFiles);
-  };
+  const handleClear = useCallback(() => {
+    setSearch("");
+    setFilter("all");
+  }, [setSearch, setFilter]);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-[1000px] mx-auto pt-16 px-11 pb-16 max-md:px-5"
+      className="pt-16 pb-16"
     >
-      <div className="mb-24">
-        <span className="text-[0.66rem] tracking-[0.2em] uppercase text-slate-500 font-semibold mb-6 block">
-          AES-256 secure storage
-        </span>
-        <h1 className="font-semibold text-4xl tracking-tighter leading-[1.08] max-w-[16ch]">
-          Documents locker.
-        </h1>
-        <p className="text-[1.05rem] text-slate-500 leading-relaxed max-w-[58ch] mt-8">
-          Store, view and share every clinical report, school summary and parent
-          note — in one secure place, shared only when you choose.
-        </p>
-        <div className="flex gap-4.5 mt-6 text-[0.82rem] text-slate-500 flex-wrap">
-          <span className="flex items-center gap-2">
-            <Lock className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-            End-to-end encrypted · AES-256
-          </span>
-          <span className="flex items-center gap-2">
-            <Users className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-            Active child · {currentChild.name}
-          </span>
-        </div>
-      </div>
+      <PageContainer>
+        <PageHeader
+        kicker="AES-256 secure storage"
+        title="Documents locker."
+        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[16ch]"
+        description={
+          <>
+            <SectionDescription>
+              Store, view and share every clinical report, school summary and parent
+              note — in one secure place, shared only when you choose.
+            </SectionDescription>
+            <div className="flex gap-4 mt-6 text-[0.82rem] text-[var(--color-thread-gray)] flex-wrap">
+              <span className="flex items-center gap-2">
+                <Lock className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
+                End-to-end encrypted · AES-256
+              </span>
+              <span className="flex items-center gap-2">
+                <Users className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
+                Active child · {currentChild.name}
+              </span>
+            </div>
+          </>
+        }
+        className="mb-24"
+      />
 
       {/* Upload Section */}
       <FadeInScroll className="mb-24">
-        <div className="bg-watercolor rounded-br-[36px] p-7.5">
+        <div className="bg-watercolor rounded-br-[36px] p-12">
           <div className="bg-white rounded-bl-[32px] p-7.5 shadow-premium">
-            <div className="mb-5.5">
-              <span className="text-[0.66rem] tracking-[0.2em] uppercase text-slate-500 font-semibold mb-2.5 block text-uppercase text-slate-400">
-                Add to locker
-              </span>
-              <h2 className="font-semibold text-[1.4rem] tracking-tight">
+            <div className="mb-8">
+              <SectionLabel>
+                ADD TO LOCKER
+              </SectionLabel>
+              <SectionTitle className="mb-0">
                 Add a custom document or tracker log.
-              </h2>
+              </SectionTitle>
             </div>
-            <p className="text-[0.94rem] text-slate-500 leading-relaxed mb-6">
+            <SectionDescription className="mb-10 max-w-[55ch]">
               Prepare and encrypt clinical paperwork, homework energy logs or
               letters manually.
-            </p>
-            <div className="mt-3.5 border-1.5 border-dashed border-black/10 rounded-tr-[24px] p-10 text-center bg-[var(--color-thread-light-green)]/30 cursor-pointer hover:border-[var(--color-thread-mid-green)] hover:bg-[var(--color-thread-light-green)]/50 transition-all group">
+            </SectionDescription>
+            <div className="mt-4 border-1.5 border-dashed border-black/10 rounded-tr-[24px] p-10 text-center bg-[var(--color-thread-light-green)]/30 cursor-pointer hover:border-[var(--color-thread-mid-green)] hover:bg-[var(--color-thread-light-green)]/50 transition-all group">
               <PageIcon variant="white" icon={<Upload className="w-[22px] h-[22px] stroke-[1.7]" />} className="mx-auto" />
               <div className="text-[1rem] font-semibold tracking-tight text-slate-900">
                 Drag and drop a file here, or click to upload manually
               </div>
-              <div className="text-[0.82rem] text-slate-500 mt-1.75">
+              <div className="text-[0.82rem] text-slate-500 mt-2">
                 PDF, DOC, DOCX, XLS or PNG. Max size 25MB.
               </div>
             </div>
@@ -154,13 +101,13 @@ export default function DocumentsPage({ currentChild }: { currentChild: Child })
 
       {/* Files Section */}
       <FadeInScroll className="mb-24">
-        <div className="mb-5.5">
-          <span className="text-[0.66rem] tracking-[0.2em] uppercase text-slate-500 font-semibold mb-2.5 block text-uppercase">
-            {currentChild.name}'s documents
-          </span>
-          <h2 className="font-semibold text-[1.4rem] tracking-tight">
+        <div className="mb-8">
+          <SectionLabel>
+            {currentChild.name.toUpperCase()}'S DOCUMENTS
+          </SectionLabel>
+          <SectionTitle className="mb-0">
             Everything in one place.
-          </h2>
+          </SectionTitle>
         </div>
 
         <div className="relative mb-4">
@@ -221,7 +168,7 @@ export default function DocumentsPage({ currentChild }: { currentChild: Child })
                 <FileItem
                   key={file.name}
                   {...file}
-                  onToggleShare={() => toggleShare(files.indexOf(file))}
+                  onToggleShare={() => toggleShare(i)}
                   cornerClass={cornerClass}
                 />
               );
@@ -233,10 +180,7 @@ export default function DocumentsPage({ currentChild }: { currentChild: Child })
             <ActionLink
               variant="default"
               as="button"
-              onClick={() => {
-                setSearch("");
-                setFilter("all");
-              }}
+              onClick={handleClear}
               className="mt-3 block mx-auto font-semibold"
             >
               Clear search
@@ -247,81 +191,43 @@ export default function DocumentsPage({ currentChild }: { currentChild: Child })
 
       {/* Education & Advocacy Section */}
       <FadeInScroll className="mb-24">
-        <div className="mb-5.5">
-          <span className="text-[0.66rem] tracking-[0.2em] uppercase text-slate-500 font-semibold mb-2.5 block text-uppercase">
+        <div>
+          <SectionLabel>
             Education & Advocacy
-          </span>
-          <h2 className="font-semibold text-[1.4rem] tracking-tight">
+          </SectionLabel>
+          <SectionTitle>
             About {currentChild.name}'s files cupboard
-          </h2>
+          </SectionTitle>
         </div>
 
         <div className="bg-white rounded-none rounded-tr-[36px] p-7.5 overflow-hidden relative">
-          <p className="text-[0.98rem] text-slate-500 leading-relaxed max-w-[64ch] mb-8 relative z-10">
+          <SectionDescription className="mb-8 relative z-10 max-w-[64ch]">
             Clinical descriptions are frequently heavy and trigger unnecessary
             parenting alarmism. Threadline's summaries and Packs translation
             translate heavy raw medical reports into active school checklists.
-          </p>
+          </SectionDescription>
 
           <div className="flex flex-col gap-6 relative z-10">
-            <div className="flex gap-4">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--color-thread-mid-green)] text-white flex items-center justify-center mt-0.5">
-                <Check className="w-[13px] h-[13px] stroke-[3]" />
-              </div>
-              <div>
-                <h4 className="text-[1.05rem] font-bold tracking-tight text-slate-900">
-                  Clinical Grade
-                </h4>
-                <p className="text-[0.9rem] text-slate-500 mt-1">
-                  All documents are timestamped and clinical summaries are
-                  clinically verified.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--color-thread-mid-green)] text-white flex items-center justify-center mt-0.5">
-                <Check className="w-[13px] h-[13px] stroke-[3]" />
-              </div>
-              <div>
-                <h4 className="text-[1.05rem] font-bold tracking-tight text-slate-900">
-                  100% Private
-                </h4>
-                <p className="text-[0.9rem] text-slate-500 mt-1">
-                  Your records are securely encrypted and can never be traded
-                  with insurers.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--color-thread-mid-green)] text-white flex items-center justify-center mt-0.5">
-                <Check className="w-[13px] h-[13px] stroke-[3]" />
-              </div>
-              <div>
-                <h4 className="text-[1.05rem] font-bold tracking-tight text-slate-900">
-                  School Packs
-                </h4>
-                <p className="text-[0.9rem] text-slate-500 mt-1">
-                  Dynamic sheets focus strictly on school energy needs to help
-                  homeroom teachers integrate accommodations easily.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--color-thread-mid-green)] text-white flex items-center justify-center mt-0.5">
-                <Check className="w-[13px] h-[13px] stroke-[3]" />
-              </div>
-              <div>
-                <h4 className="text-[1.05rem] font-bold tracking-tight text-slate-900">
-                  Doctor Connection
-                </h4>
-                <p className="text-[0.9rem] text-slate-500 mt-1">
-                  Let clinical associates view parent evening logs instantly.
-                </p>
-              </div>
-            </div>
+            <ChecklistItem
+              title="Clinical Grade"
+              description="All documents are timestamped and clinical summaries are clinically verified."
+            />
+            <ChecklistItem
+              title="100% Private"
+              description="Your records are securely encrypted and can never be traded with insurers."
+            />
+            <ChecklistItem
+              title="School Packs"
+              description="Dynamic sheets focus strictly on school energy needs to help homeroom teachers integrate accommodations easily."
+            />
+            <ChecklistItem
+              title="Doctor Connection"
+              description="Let clinical associates view parent evening logs instantly."
+            />
           </div>
         </div>
       </FadeInScroll>
+      </PageContainer>
     </motion.div>
   );
 }

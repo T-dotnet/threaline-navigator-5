@@ -32,6 +32,7 @@ import { FadeInScroll } from "./ui/FadeInScroll";
 import { TimelineStep } from "./ui/TimelineStep";
 import { Button } from "./ui/Button";
 import { AreaItem } from "./ui/AreaItem";
+import { ProgressChartSection } from "./ui/ProgressChartSection";
 import { PageFooterCTA } from "./ui/PageFooterCTA";
 
 const data = [
@@ -52,13 +53,16 @@ const liamData = [
   { name: "End", value: 0 },
 ];
 
+import { PageContainer } from "./ui/PageContainer";
+
+import { useCurrentChild } from "../context/ChildContext";
+
 export default function ReviewsPage({
   onPageChange,
-  currentChild,
 }: {
   onPageChange: (page: any) => void;
-  currentChild: Child;
 }) {
+  const { currentChild } = useCurrentChild();
   const isLiam = currentChild.name === "Liam";
   const activeData = isLiam ? liamData : data;
 
@@ -66,12 +70,13 @@ export default function ReviewsPage({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-[1000px] mx-auto pt-16 px-11 pb-16 max-md:px-5"
+      className="pt-16 pb-16"
     >
-      <PageHeader
+      <PageContainer>
+        <PageHeader
         kicker="Reviews · How we're progressing"
         title={`How ${currentChild.name}'s doing over time.`}
-        titleClassName="text-[4rem] leading-[4.5rem] max-w-[16ch]"
+        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[16ch]"
         className="mb-24"
         description={
           <div className="flex gap-4.5 text-[0.82rem] text-[var(--color-thread-gray)] flex-wrap">
@@ -106,7 +111,7 @@ export default function ReviewsPage({
         }
         action={
           <div>
-            <div className="mt-6 flex items-center gap-3 w-full max-w-[420px] relative">
+            <div className="mt-6 flex items-center gap-4 w-full max-w-[420px] relative">
               <div className="flex-1 h-[5px] rounded-full bg-black/5 overflow-hidden">
                 <div
                   className="bg-[var(--hero-accent)] h-full rounded-full"
@@ -117,7 +122,7 @@ export default function ReviewsPage({
                 {isLiam ? "100% · complete" : "65% · on track"}
               </span>
             </div>
-            <div className="inline-flex items-center gap-2.25 mt-1.5 relative font-semibold text-[0.84rem] opacity-80">
+            <div className="inline-flex items-center gap-2 mt-1.5 relative font-semibold text-[0.84rem] opacity-80">
               {isLiam ? "Maintenance tracking enabled" : "Next full review · 12 September"}
             </div>
           </div>
@@ -126,95 +131,23 @@ export default function ReviewsPage({
 
 
       {/* Progress Chart Section */}
-      <FadeInScroll className="mb-24">
-        <div>
-          <SectionLabel className="mb-2">
-            Progress over time
-          </SectionLabel>
-          <SectionTitle>
-            {isLiam ? "Milestones achieved." : "The trend, not a single moment."}
-          </SectionTitle>
-        </div>
-
-        <div className="bg-[var(--color-thread-light-green)] border-[var(--color-thread-light-gray)] rounded-tr-[36px] p-7.5 pb-4">
-          <SectionLabel className="mb-2">
-            {isLiam ? "Overall Developmental Consolidation" : "Focus & engagement at school"}
-          </SectionLabel>
-          <h3 className="text-[1.15rem] font-semibold tracking-tight text-[var(--color-thread-dark-slate)] mb-5.5">
-            {isLiam ? "Goal reached in June" : "Trending up since the assessment"}
-          </h3>
-
-          <div className="h-[220px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={activeData}
-                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-              >
-                <defs>
-                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-thread-mid-green)"
-                      stopOpacity={0.14}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-thread-mid-green)"
-                      stopOpacity={0}
-                    />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="name" hide={true} />
-                <YAxis hide={true} domain={[0, 200]} reversed />
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke="var(--color-thread-mid-green)"
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#colorValue)"
-                  animationDuration={1500}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="flex justify-between mt-3 text-[0.72rem] text-[var(--color-thread-gray)] px-2 tracking-[0.03em] uppercase font-medium">
-            {isLiam ? (
-              <>
-                <span>Mar</span>
-                <span>Apr</span>
-                <span>May</span>
-                <span className="font-bold text-[var(--color-thread-dark-slate)]">
-                  Jun
-                </span>
-                <span>Now</span>
-              </>
-            ) : (
-              <>
-                <span>14 Jun</span>
-                <span>Jul</span>
-                <span>Aug</span>
-                <span className="font-bold text-[var(--color-thread-dark-slate)]">
-                  Now
-                </span>
-                <span>12 Sep</span>
-              </>
-            )}
-          </div>
-        </div>
-        <SectionDescription className="mt-6">
-          {isLiam ? (
-            "Liam's trajectory mirrors the planned interventions perfectly. He has settled into a maintenance rhythm where new skills are generalized across home and school automatically."
-          ) : (
-            `A steady upward trend since the assessment as the classroom strategies take hold. The predicted path is where we'd expect ${currentChild.name} to be by your first full review on 12 September.`
-          )}
-        </SectionDescription>
-      </FadeInScroll>
+      <ProgressChartSection
+        label="Progress over time"
+        title={isLiam ? "Milestones achieved." : "The trend, not a single moment."}
+        chartLabel={isLiam ? "Overall Developmental Consolidation" : "Focus & engagement at school"}
+        chartSubtitle={isLiam ? "Goal reached in June" : "Trending up since the assessment"}
+        data={activeData}
+        description={isLiam 
+          ? "Liam's trajectory mirrors the planned interventions perfectly. He has settled into a maintenance rhythm where new skills are generalized across home and school automatically."
+          : `A steady upward trend since the assessment as the classroom strategies take hold. The predicted path is where we'd expect ${currentChild.name} to be by your first full review on 12 September.`
+        }
+        xAxisLabels={isLiam ? ["Mar", "Apr", "May", "Jun", "Now"] : ["14 Jun", "Jul", "Aug", "Now", "12 Sep"]}
+        activeLabelIndex={3}
+      />
 
       {/* What's Changed Section */}
       <FadeInScroll className="mb-24">
-        <div className="bg-watercolor rounded-br-[36px] p-7.5">
+        <div className="bg-watercolor rounded-br-[36px] p-12">
           <div className="bg-white rounded-bl-[32px] p-7.5 shadow-premium">
             <div>
               <SectionLabel>
@@ -318,6 +251,8 @@ export default function ReviewsPage({
           />
         </div>
       </FadeInScroll>
+
+      </PageContainer>
 
       {/* Forward Button */}
       <PageFooterCTA

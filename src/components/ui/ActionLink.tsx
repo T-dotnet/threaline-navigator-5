@@ -37,7 +37,7 @@ export const ActionLink = React.forwardRef<HTMLElement, ActionLinkProps>(
         id={id}
         onClick={onClick}
         className={cn(
-          "inline-flex items-center gap-1.5 text-[0.84rem] font-semibold transition-all group/action cursor-pointer",
+          "inline-flex items-center gap-1.5 text-[0.84rem] font-semibold transition-all group/action cursor-pointer py-1.5 min-h-[32px]",
           getVariantClasses(),
           className
         )}

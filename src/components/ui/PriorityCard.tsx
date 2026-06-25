@@ -13,15 +13,17 @@ export function PriorityCard({
   facts = {},
   dependency,
   cornerClass = "rounded-[20px]",
+  className,
 }: any) {
   return (
     <div
       className={cn(
-        "relative bg-white p-7.5 mb-4.5 overflow-hidden",
+        "relative bg-white p-8 mb-6 overflow-hidden",
         cornerClass,
+        className
       )}
     >
-      <div className="flex gap-3.5 items-start mb-4 relative">
+      <div className="flex gap-4 items-start mb-4 relative">
         <span className="text-[0.75rem] tracking-[0.1em] uppercase font-medium px-4 py-2 rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] flex-shrink-0 mt-1">
           {tag}
         </span>
@@ -37,7 +39,7 @@ export function PriorityCard({
       <SectionDescription className="mb-5 relative">
         {why}
       </SectionDescription>
-      <div className="bg-[var(--color-thread-off-white)] rounded-[20px] px-5.5 py-4 mb-4.5 relative">
+      <div className="bg-[var(--color-thread-off-white)] rounded-[20px] px-6 py-4 mb-6 relative">
         <SectionLabel className="mb-2">
           {tag === "Next" ? "Why it ranks here" : "Why it can wait"}
         </SectionLabel>

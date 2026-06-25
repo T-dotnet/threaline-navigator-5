@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import { ChevronRight, Calendar, Users, ArrowRight } from "lucide-react";
 import { cn } from "../lib/utils";
@@ -11,17 +11,18 @@ import { Button } from "./ui/Button";
 import { PlanProgressCard } from "./ui/PlanProgressCard";
 import { HeroQuoteCard } from "./ui/HeroQuoteCard";
 
+import { PageContainer } from "./ui/PageContainer";
+
+import { useCurrentChild } from "../context/ChildContext";
+
 interface AllChildrenPageProps {
   onPageChange: (page: Page) => void;
-  childrenList: Child[];
-  onChildChange: (child: Child) => void;
 }
 
 export default function AllChildrenPage({
   onPageChange,
-  childrenList,
-  onChildChange,
 }: AllChildrenPageProps) {
+  const { childrenList, setChild } = useCurrentChild();
   const [isSecondaryLight, setIsSecondaryLight] = useState(true);
 
   useEffect(() => {
@@ -71,22 +72,23 @@ export default function AllChildrenPage({
     }
   };
 
-  const handleFocusChild = (child: Child) => {
-    onChildChange(child);
+  const handleFocusChild = useCallback((child: Child) => {
+    setChild(child);
     onPageChange("home");
-  };
+  }, [setChild, onPageChange]);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-[1100px] mx-auto pt-16 px-11 pb-16 max-md:px-5 font-sans"
+      className="pt-16 pb-16 font-sans"
     >
-      <PageHeader
+      <PageContainer>
+        <PageHeader
         kicker="Family Synthesis · Overview"
         title="All Children at a glance."
         description="Monitor your family's dynamic clinical profiles and milestones side-by-side. Use any profile card to dive directly into detailed assessments."
-        titleClassName="text-[3.8rem] leading-[4.3rem]"
+        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[3.8rem] leading-[1.15] md:leading-[4.3rem]"
         className="mb-28"
       />
 
@@ -134,13 +136,13 @@ export default function AllChildrenPage({
               </div>
 
               {/* Cards Grid: Synthesis (left) and Quarter Plan (right) */}
-              <div className="grid grid-cols-[1.5fr_1fr] md:gap-x-8 max-md:grid-cols-1 max-md:gap-y-8">
+              <div className="grid grid-cols-[1.5fr_1fr] md:gap-6 max-md:grid-cols-1 max-md:gap-y-8">
                 
                 {/* Dynamic Synthesis Card */}
                 <HeroQuoteCard
                   id={`synthesis-card-${child.name.toLowerCase()}`}
                   variant={isGreenTheme ? "green" : "default"}
-                  className="h-[300px] p-8"
+                  className="h-auto md:h-[300px] p-8"
                   kicker="Clinician Synthesis Summary"
                   quote={childData.quote}
                   evidenceLevel={childData.evidenceLevel}
@@ -149,7 +151,7 @@ export default function AllChildrenPage({
                   action={
                     <Button
                       onClick={() => {
-                        onChildChange(child);
+                        setChild(child);
                         onPageChange("understanding");
                       }}
                       variant={isGreenTheme ? "white" : "mint"}
@@ -162,14 +164,14 @@ export default function AllChildrenPage({
 
                 {/* Quarter Plan Card */}
                 <div
-                  className="h-[300px]"
+                  className="h-auto md:h-[300px]"
                   id={`plan-card-${child.name.toLowerCase()}`}
                 >
                   <PlanProgressCard
                     progress={childData.progress}
                     statusText={childData.progressText}
                     nextReview={childData.nextReview}
-                    className="rounded-bl-[32px]"
+                    className="rounded-bl-[32px] h-full"
                   />
                 </div>
 
@@ -194,6 +196,7 @@ export default function AllChildrenPage({
           Manage profile settings & credentials
         </ActionLink>
       </div>
+      </PageContainer>
     </motion.div>
   );
 }

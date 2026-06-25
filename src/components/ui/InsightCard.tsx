@@ -16,9 +16,8 @@ export const InsightCard = React.forwardRef<HTMLDivElement, InsightCardProps>(
       <div
         ref={ref}
         className={cn(
-          "bg-white p-6.5 text-left h-full flex flex-col transition-all duration-300",
-          variant === 'premium' ? "shadow-premium" : "shadow-sm",
-          hoverScale && "hover:scale-[1.02] hover:shadow-md",
+          "bg-white p-6.5 text-left h-full flex flex-col transition-all duration-300 shadow-premium",
+          hoverScale && "hover:scale-[1.02] hover:shadow-premium-hover",
           cornerClass,
           className
         )}

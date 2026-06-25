@@ -39,3 +39,52 @@ export interface DocFile {
   shared: boolean;
   sharedWith?: string;
 }
+
+export interface StrategyCardProps {
+  title: string;
+  icon: React.ReactNode;
+  items: string[];
+  cornerClass?: string;
+  className?: string;
+}
+
+export interface ChecklistItemProps {
+  title: string;
+  description: string;
+  className?: string;
+  icon?: React.ReactNode;
+}
+
+export interface GuideCardProps {
+  category: string;
+  title: string;
+  description: string;
+  readTime: string;
+  image?: string;
+  cornerClass?: string;
+  actionText?: string;
+  className?: string;
+}
+
+export interface InsightSectionProps {
+  kicker: string;
+  title: string;
+  description: string;
+  image: string;
+  actionText?: string;
+  onActionClick?: () => void;
+  className?: string;
+  reverse?: boolean;
+}
+
+export interface ProgressChartSectionProps {
+  label: string;
+  title: string;
+  chartLabel: string;
+  chartSubtitle: string;
+  data: any[];
+  description: string;
+  xAxisLabels: string[];
+  activeLabelIndex?: number;
+  className?: string;
+}

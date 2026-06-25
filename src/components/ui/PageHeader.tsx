@@ -25,7 +25,7 @@ export const PageHeader = React.forwardRef<HTMLDivElement, PageHeaderProps>(
               </span>
             )}
             <h1 className={cn(
-              "font-serif font-normal text-[3.2rem] sm:text-[3.8rem] md:text-[4rem] leading-[1.1] sm:leading-[1.15] tracking-[-0.075rem] text-[var(--color-thread-heading)] max-w-[22ch]",
+              "font-serif font-normal text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] tracking-[-0.075rem] text-[var(--color-thread-heading)] max-w-[22ch]",
               titleClassName
             )}>
               {title}

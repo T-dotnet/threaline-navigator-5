@@ -1,6 +1,9 @@
 import * as React from "react"
+import { motion } from "motion/react"
 import { cn } from "../../lib/utils"
 import { ActionLink } from "./ActionLink"
+import { GuideCardProps } from "../../types"
+import { scaleHover } from "../../lib/motion-presets"
 
 export function GuideCard({
   category,
@@ -9,12 +12,16 @@ export function GuideCard({
   readTime,
   image,
   cornerClass = "rounded-tr-[32px]",
-}: any) {
+  actionText = "Read guide",
+  className,
+}: GuideCardProps) {
   return (
-    <div
+    <motion.div
+      {...scaleHover}
       className={cn(
-        "bg-white flex flex-col cursor-pointer transition-all group overflow-hidden hover:scale-[1.01]",
+        "bg-white flex flex-col cursor-pointer transition-all group overflow-hidden",
         cornerClass,
+        className
       )}
     >
       {image && (
@@ -23,26 +30,29 @@ export function GuideCard({
             src={image}
             alt={title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            referrerPolicy="no-referrer"
           />
         </div>
       )}
       <div className="p-6 flex flex-col flex-1">
-        <span className="text-[0.58rem] tracking-[0.14em] uppercase text-[var(--color-thread-mid-green)] font-bold mb-3 font-sans">
-          {category}
-        </span>
-        <h3 className="text-[1.18rem] font-semibold tracking-tight leading-tight mb-2 text-slate-900 font-sans">
+        <h3 className="text-[1.12rem] font-medium tracking-tight leading-[1.3] mb-1.5 text-[var(--color-thread-dark-slate)] font-sans">
           {title}
         </h3>
-        <p className="text-[0.9rem] text-slate-500 leading-relaxed flex-1 font-sans">
+        <div className="flex gap-3.5 flex-wrap items-center mb-3 text-[0.78rem] text-[var(--color-thread-gray)] font-sans">
+          <span className="text-[0.6rem] tracking-[0.12em] uppercase font-bold text-[var(--color-thread-mid-green)]">
+            {category}
+          </span>
+          <span>{readTime}</span>
+        </div>
+        <p className="text-[0.92rem] text-[var(--color-thread-gray)] leading-relaxed flex-1 font-sans">
           {description}
         </p>
-        <div className="flex items-center justify-between pt-4 mt-8">
-          <span className="text-[0.78rem] text-slate-400 font-sans">{readTime}</span>
-          <ActionLink variant="slate" as="span" className="group-hover:text-[var(--color-thread-mid-green)]">
-            Read guide
+        <div className="flex items-center justify-between pt-4 mt-6">
+          <ActionLink variant="slate" as="span" className="group-hover:text-[var(--color-thread-mid-green)] font-semibold text-[0.84rem]">
+            {actionText}
           </ActionLink>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
