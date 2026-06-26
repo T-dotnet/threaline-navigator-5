@@ -1,0 +1,375 @@
+import { useState, useCallback, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Check, ChevronRight, X, ArrowLeft, ArrowUp, ArrowDown } from 'lucide-react';
+import { cn } from '../../lib/utils';
+import { QUESTIONS } from '../../questionnaire';
+import watercolorBg from '../../assets/images/watercolor_bg_1782427011739.jpg';
+
+interface QuestionnaireModalProps {
+  isOpen: boolean;
+  section: string | null;
+  answers: Record<string, any>;
+  childName: string;
+  onClose: () => void;
+  onSave: (updatedAnswers: Record<string, any>) => void;
+}
+
+export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, childName, onClose, onSave }: QuestionnaireModalProps) {
+  const [answers, setAnswers] = useState<Record<string, any>>(initialAnswers);
+  const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+  const [isReviewing, setIsReviewing] = useState(false);
+
+  useEffect(() => {
+    setAnswers(initialAnswers);
+  }, [initialAnswers, section]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveQuestionIndex(0);
+      setIsReviewing(false);
+    }
+  }, [isOpen, section]);
+
+  const currentQuestions = QUESTIONS[section || ''] || [];
+
+  const handleSelectOption = useCallback((qId: string, option: string, type: 'choice' | 'multiple-choice' | 'text') => {
+    if (type === 'choice') {
+      setAnswers(prev => ({ ...prev, [qId]: option }));
+      setTimeout(() => {
+        setActiveQuestionIndex(prev => {
+          if (prev < currentQuestions.length - 1) return prev + 1;
+          setIsReviewing(true);
+          return prev;
+        });
+      }, 350);
+    } else if (type === 'multiple-choice') {
+      setAnswers(prev => {
+        const current = prev[qId] || [];
+        const updated = current.includes(option)
+          ? current.filter((o: string) => o !== option)
+          : [...current, option];
+        return { ...prev, [qId]: updated };
+      });
+    }
+  }, [currentQuestions.length]);
+
+  const handleTextChange = useCallback((qId: string, value: string) => {
+    setAnswers(prev => ({ ...prev, [qId]: value }));
+  }, []);
+
+  const handlePrevQuestion = useCallback(() => {
+    if (isReviewing) {
+      setIsReviewing(false);
+      setActiveQuestionIndex(currentQuestions.length - 1);
+    } else if (activeQuestionIndex > 0) {
+      setActiveQuestionIndex(prev => prev - 1);
+    }
+  }, [isReviewing, activeQuestionIndex, currentQuestions.length]);
+
+  const handleNextQuestion = useCallback(() => {
+    if (activeQuestionIndex < currentQuestions.length - 1) {
+      setActiveQuestionIndex(prev => prev + 1);
+    } else {
+      setIsReviewing(true);
+    }
+  }, [activeQuestionIndex, currentQuestions.length]);
+
+  const handleSaveAndClose = useCallback(() => {
+    onSave(answers);
+    onClose();
+  }, [answers, onSave, onClose]);
+
+  useEffect(() => {
+    if (!isOpen || !section) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isTyping = document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA';
+      if (e.key === 'Escape') { handleSaveAndClose(); return; }
+      if (e.key === 'ArrowUp') { e.preventDefault(); handlePrevQuestion(); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); handleNextQuestion(); }
+      else if (e.key === 'Enter') {
+        if (isTyping && document.activeElement instanceof HTMLTextAreaElement) {
+          if (!e.metaKey && !e.ctrlKey) return;
+        }
+        e.preventDefault();
+        handleNextQuestion();
+      } else if (!isTyping) {
+        const key = e.key.toLowerCase();
+        const code = key.charCodeAt(0) - 97;
+        const activeQ = currentQuestions[activeQuestionIndex];
+        if (activeQ && activeQ.options && code >= 0 && code < activeQ.options.length) {
+          e.preventDefault();
+          handleSelectOption(activeQ.id, activeQ.options[code], activeQ.type);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, section, activeQuestionIndex, handlePrevQuestion, handleNextQuestion, handleSelectOption, handleSaveAndClose, currentQuestions]);
+
+  if (!isOpen || !section) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-10"
+        style={{ backgroundImage: `url(${watercolorBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+      >
+        <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px]" />
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 10, scale: 0.97 }}
+          transition={{ duration: 0.3 }}
+          className="relative z-10 w-full max-w-2xl bg-white rounded-3xl shadow-[0_32px_80px_-12px_rgba(0,0,0,0.18)] border border-black/5 flex flex-col max-h-[90vh] overflow-hidden"
+        >
+          <div className="flex flex-col h-full justify-between min-h-[480px]">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 pb-5 border-b border-black/5">
+              <button
+                onClick={handleSaveAndClose}
+                className="text-xs font-bold uppercase tracking-wider text-[var(--color-thread-mid-green)] hover:text-[var(--color-thread-heading)] flex items-center gap-1.5 cursor-pointer transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" /> Save & Exit Section
+              </button>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+                {section}
+              </span>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 py-8 px-6 sm:px-10 flex flex-col justify-center overflow-y-auto">
+              <AnimatePresence mode="wait">
+                {!isReviewing ? (
+                  <motion.div
+                    key={activeQuestionIndex}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-8"
+                  >
+                    {(() => {
+                      const q = currentQuestions[activeQuestionIndex];
+                      if (!q) return null;
+                      const qText = q.text.replace(/\$\{childName\}/g, childName || 'your child');
+                      const qSub = q.subtext?.replace(/\$\{childName\}/g, childName || 'your child');
+
+                      return (
+                        <div className="space-y-6">
+                          <div className="space-y-2">
+                            <div className="flex items-start gap-3">
+                              <span className="text-sm font-bold text-[var(--color-thread-mid-green)] mt-1.5">{String(activeQuestionIndex + 1).padStart(2, '0')} →</span>
+                              <h2 className="font-serif font-normal text-2xl md:text-3xl text-[var(--color-thread-heading)] leading-snug">{qText}</h2>
+                            </div>
+                            {qSub && <p className="text-slate-400 text-[0.92rem] ml-8">{qSub}</p>}
+                          </div>
+
+                          <div className="ml-8">
+                            {q.type === 'choice' && q.options && (
+                              <div className="space-y-2.5 max-w-lg">
+                                {q.options.map((opt, oIdx) => {
+                                  const isSelected = answers[q.id] === opt;
+                                  const letter = String.fromCharCode(65 + oIdx);
+                                  return (
+                                    <button
+                                      key={opt}
+                                      onClick={() => handleSelectOption(q.id, opt, 'choice')}
+                                      className={cn(
+                                        "w-full p-4 rounded-xl border text-left flex items-center justify-between group transition-all duration-200 cursor-pointer shadow-none",
+                                        isSelected
+                                          ? "bg-[var(--color-thread-light-green)] border-[var(--color-thread-mid-green)] text-[var(--color-thread-heading)] font-semibold"
+                                          : "bg-white border-black/10 text-slate-700 hover:border-black/20 hover:bg-slate-50/50"
+                                      )}
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <span className={cn(
+                                          "w-6 h-6 rounded-md border text-[10px] font-mono font-bold flex items-center justify-center transition-colors",
+                                          isSelected
+                                            ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white"
+                                            : "bg-white border-black/10 text-slate-400 group-hover:border-black/20 group-hover:text-slate-600"
+                                        )}>{letter}</span>
+                                        <span className="text-[0.95rem]">{opt}</span>
+                                      </div>
+                                      {isSelected && <Check className="w-4 h-4 text-[var(--color-thread-mid-green)]" />}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            {q.type === 'multiple-choice' && q.options && (
+                              <div className="space-y-2.5 max-w-lg">
+                                {q.options.map((opt, oIdx) => {
+                                  const selectedList = answers[q.id] || [];
+                                  const isSelected = selectedList.includes(opt);
+                                  const letter = String.fromCharCode(65 + oIdx);
+                                  return (
+                                    <button
+                                      key={opt}
+                                      onClick={() => handleSelectOption(q.id, opt, 'multiple-choice')}
+                                      className={cn(
+                                        "w-full p-4 rounded-xl border text-left flex items-center justify-between group transition-all duration-200 cursor-pointer shadow-none",
+                                        isSelected
+                                          ? "bg-[var(--color-thread-light-green)] border-[var(--color-thread-mid-green)] text-[var(--color-thread-heading)] font-semibold"
+                                          : "bg-white border-black/10 text-slate-700 hover:border-black/20 hover:bg-slate-50/50"
+                                      )}
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <span className={cn(
+                                          "w-6 h-6 rounded-md border text-[10px] font-mono font-bold flex items-center justify-center transition-colors",
+                                          isSelected
+                                            ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white"
+                                            : "bg-white border-black/10 text-slate-400 group-hover:border-black/20 group-hover:text-slate-600"
+                                        )}>{letter}</span>
+                                        <span className="text-[0.95rem]">{opt}</span>
+                                      </div>
+                                      <div className={cn(
+                                        "w-5 h-5 rounded-md border flex items-center justify-center transition-all",
+                                        isSelected
+                                          ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white"
+                                          : "border-black/10 group-hover:border-black/20 bg-white"
+                                      )}>
+                                        {isSelected && <Check className="w-3.5 h-3.5" />}
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                                <div className="pt-4 flex items-center gap-3">
+                                  <button
+                                    onClick={handleNextQuestion}
+                                    className="bg-[var(--color-thread-mid-green)] text-white px-6 py-2.5 rounded-xl font-semibold shadow-none hover:bg-[var(--color-thread-heading)] transition-all flex items-center gap-2 cursor-pointer text-sm"
+                                  >
+                                    OK <Check className="w-4 h-4" />
+                                  </button>
+                                  <span className="text-[10px] font-mono text-slate-400">press Enter ↵</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {q.type === 'text' && (
+                              <div className="max-w-xl space-y-4">
+                                <textarea
+                                  value={answers[q.id] || ''}
+                                  onChange={(e) => handleTextChange(q.id, e.target.value)}
+                                  placeholder={q.placeholder || "Type your answer here..."}
+                                  rows={3}
+                                  className="w-full bg-white border border-black/15 rounded-2xl p-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/20 focus:border-[var(--color-thread-mid-green)] transition-all font-sans text-base resize-none"
+                                />
+                                <div className="flex items-center gap-3">
+                                  <button
+                                    onClick={handleNextQuestion}
+                                    className="bg-[var(--color-thread-mid-green)] text-white px-6 py-2.5 rounded-xl font-semibold shadow-none hover:bg-[var(--color-thread-heading)] transition-all flex items-center gap-2 cursor-pointer text-sm"
+                                  >
+                                    OK <Check className="w-4 h-4" />
+                                  </button>
+                                  <span className="text-[10px] font-mono text-slate-400">press Enter ↵ or Ctrl+Enter</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="review"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-6"
+                  >
+                    <div>
+                      <h3 className="font-serif font-normal text-2xl text-[var(--color-thread-heading)] mb-1.5">Review your answers</h3>
+                      <p className="text-slate-500 text-sm">Click on any question to change your answer before saving.</p>
+                    </div>
+
+                    <div className="space-y-3 max-w-xl border-t border-b border-black/5 py-4 my-2 max-h-[300px] overflow-y-auto pr-1">
+                      {currentQuestions.map((q, idx) => {
+                        const ansVal = answers[q.id];
+                        const displayAns = Array.isArray(ansVal)
+                          ? ansVal.join(', ')
+                          : ansVal || <span className="text-rose-500 italic font-normal">Not answered</span>;
+                        return (
+                          <button
+                            key={q.id}
+                            onClick={() => { setActiveQuestionIndex(idx); setIsReviewing(false); }}
+                            className="w-full text-left p-3.5 rounded-xl border border-black/5 hover:border-[var(--color-thread-mid-green)] hover:bg-slate-50/50 transition-all flex justify-between items-start gap-4 cursor-pointer group"
+                          >
+                            <div className="space-y-1.5">
+                              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-[var(--color-thread-mid-green)] transition-colors">Question {idx + 1}</div>
+                              <div className="text-[0.95rem] font-medium text-slate-800 leading-snug">{q.text.replace(/\$\{childName\}/g, childName || 'your child')}</div>
+                              <div className="text-sm text-[var(--color-thread-mid-green)] font-semibold bg-[var(--color-thread-light-green)] inline-block px-3 py-1 rounded-lg mt-2">{displayAns}</div>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors mt-1" />
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleSaveAndClose}
+                        className="bg-[var(--color-thread-mid-green)] text-white px-6 py-2.5 rounded-xl font-semibold shadow-none hover:bg-[var(--color-thread-heading)] transition-all flex items-center gap-2 cursor-pointer text-sm"
+                      >
+                        Confirm & Save Section
+                      </button>
+                      <button
+                        onClick={() => { setIsReviewing(false); setActiveQuestionIndex(0); }}
+                        className="bg-white border border-black/10 hover:border-black/20 text-slate-600 px-5 py-2.5 rounded-xl font-semibold shadow-none transition-all text-sm cursor-pointer"
+                      >
+                        Back to start
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Footer */}
+            <div className="pt-5 pb-6 px-6 sm:px-10 border-t border-black/5 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-xs font-mono font-bold text-slate-400">
+                  {!isReviewing ? `${activeQuestionIndex + 1} of ${currentQuestions.length}` : 'Review screen'}
+                </span>
+                {!isReviewing && (
+                  <div className="w-32 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[var(--color-thread-mid-green)] transition-all duration-300"
+                      style={{ width: `${((activeQuestionIndex + 1) / currentQuestions.length) * 100}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-slate-400 hidden sm:inline-block font-medium animate-pulse">Use Arrow Keys ↑↓ to navigate</span>
+                <div className="flex border border-black/10 rounded-xl overflow-hidden bg-white">
+                  <button
+                    onClick={handlePrevQuestion}
+                    disabled={activeQuestionIndex === 0 && !isReviewing}
+                    className="p-2.5 hover:bg-slate-50 transition-all border-r border-black/10 cursor-pointer text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="Previous (Arrow Up)"
+                  >
+                    <ArrowUp className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={handleNextQuestion}
+                    disabled={isReviewing}
+                    className="p-2.5 hover:bg-slate-50 transition-all cursor-pointer text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="Next (Arrow Down)"
+                  >
+                    <ArrowDown className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}

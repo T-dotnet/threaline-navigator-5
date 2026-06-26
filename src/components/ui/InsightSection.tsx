@@ -13,10 +13,12 @@ export function InsightSection({
   onActionClick,
   className,
   reverse = false,
+  equalHeight = false,
 }: InsightSectionProps) {
   return (
     <div className={cn(
       "grid grid-cols-[1fr_2fr] md:gap-6 max-md:grid-cols-1 max-md:gap-y-12",
+      equalHeight && "items-stretch",
       className
     )}>
       <FadeInScroll 
@@ -25,7 +27,10 @@ export function InsightSection({
           reverse ? "md:col-start-2" : "md:col-start-1 md:row-start-1"
         )}
       >
-        <div className="bg-white rounded-br-[32px] p-7.5 flex flex-col h-full">
+        <div className={cn(
+          "bg-white rounded-br-[32px] p-7.5 flex flex-col h-full",
+          equalHeight && "min-h-[400px]"
+        )}>
           <span className="text-[0.66rem] tracking-[0.14em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-6">
             {kicker}
           </span>
@@ -52,7 +57,10 @@ export function InsightSection({
           reverse ? "md:col-start-1 md:row-start-1" : "md:col-start-2 md:row-start-1"
         )}
       >
-        <div className="rounded-tl-[36px] overflow-hidden h-[400px]">
+        <div className={cn(
+          "rounded-tl-[36px] overflow-hidden h-[400px]",
+          equalHeight && "md:h-full md:min-h-[400px]"
+        )}>
           <img 
             src={image} 
             alt={title} 

@@ -115,7 +115,7 @@ export default function AllChildrenPage({
 
           return (
             <motion.section
-              key={child.name}
+              key={`${child.name}-${index}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}

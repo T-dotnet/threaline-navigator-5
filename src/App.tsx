@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useEffect, type ReactElement } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Page } from './types';
 import DashboardLayout from './components/DashboardLayout';
@@ -61,20 +61,32 @@ function AppContent() {
     document.documentElement.setAttribute('data-hero-secondary', savedSecondaryStyle);
   }, []);
 
+  const [isSetupOpen, setIsSetupOpen] = useState(false);
+
   const handlePageChange = (page: Page) => {
     navigate(`/${page === 'all-children' ? '' : page}`);
   };
 
+  const openSetup = () => setIsSetupOpen(true);
+  const closeSetup = () => setIsSetupOpen(false);
+
   const withPreAssessmentGuard = (element: ReactElement) => (
-    currentChild.isNew ? <NewChildPreviewPage onPageChange={handlePageChange} /> : element
+    currentChild.isNew ? <NewChildPreviewPage onPageChange={handlePageChange} onOpenSetup={openSetup} /> : element
   );
 
   return (
     <>
       <ScrollToTop />
+      {isSetupOpen && (
+        <AddChildFlow
+          asModal
+          onComplete={closeSetup}
+          onCancel={closeSetup}
+        />
+      )}
       <Routes>
         <Route path="/setup" element={
-          <AddChildFlow 
+          <AddChildFlow
             onComplete={() => {
               const params = new URLSearchParams(window.location.search);
               const fromParam = params.get('from');
@@ -83,7 +95,7 @@ function AppContent() {
               } else {
                 handlePageChange('all-children');
               }
-            }} 
+            }}
             onCancel={() => {
               const params = new URLSearchParams(window.location.search);
               const fromParam = params.get('from');
@@ -92,7 +104,7 @@ function AppContent() {
               } else {
                 handlePageChange('all-children');
               }
-            }} 
+            }}
           />
         } />
         <Route path="*" element={
@@ -103,17 +115,17 @@ function AppContent() {
           >
             <Routes>
               <Route path="/" element={<AllChildrenPage onPageChange={handlePageChange} />} />
-              <Route path="/home" element={withPreAssessmentGuard(<HomePage onPageChange={handlePageChange} />)} />
-              <Route path="/preview" element={<NewChildPreviewPage onPageChange={handlePageChange} />} />
-              <Route path="/understanding" element={<UnderstandingPage onPageChange={handlePageChange} />} />
+              <Route path="/home" element={withPreAssessmentGuard(<HomePage onPageChange={handlePageChange} onOpenSetup={openSetup} />)} />
+              <Route path="/preview" element={<NewChildPreviewPage onPageChange={handlePageChange} onOpenSetup={openSetup} />} />
+              <Route path="/understanding" element={<UnderstandingPage onPageChange={handlePageChange} onOpenSetup={openSetup} />} />
               <Route path="/priorities" element={withPreAssessmentGuard(<PrioritiesPage onPageChange={handlePageChange} />)} />
               <Route path="/roadmap" element={withPreAssessmentGuard(<RoadmapPage onPageChange={handlePageChange} />)} />
               <Route path="/reviews" element={withPreAssessmentGuard(<ReviewsPage onPageChange={handlePageChange} />)} />
               <Route path="/resources" element={<ResourcesPage />} />
               <Route path="/documents" element={currentChild.isNew ? <Navigate to="/home" replace /> : <DocumentsPage />} />
               <Route path="/settings" element={
-                <SettingsPage 
-                  onPageChange={handlePageChange} 
+                <SettingsPage
+                  onPageChange={handlePageChange}
                   onAddChildRequest={() => navigate('/setup')}
                 />
               } />

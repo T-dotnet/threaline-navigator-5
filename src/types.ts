@@ -73,6 +73,8 @@ export interface GuideCardProps {
   image?: string;
   cornerClass?: string;
   actionText?: string;
+  onClick?: () => void;
+  disableHover?: boolean;
   className?: string;
 }
 
@@ -85,6 +87,7 @@ export interface InsightSectionProps {
   onActionClick?: () => void;
   className?: string;
   reverse?: boolean;
+  equalHeight?: boolean;
 }
 
 export interface ProgressChartSectionProps {

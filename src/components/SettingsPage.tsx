@@ -212,7 +212,7 @@ export default function SettingsPage({
 
               return (
                 <div
-                  key={child.name}
+                  key={`${child.name}-${i}`}
                   className={cn(
                     "bg-white p-6 transition-all flex items-center justify-between gap-6",
                     isActive

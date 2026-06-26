@@ -1,7 +1,6 @@
 import React from 'react';
-import { Check, ArrowRight, FileText, Calendar, Clock, AlertCircle } from 'lucide-react';
+import { Check, ArrowRight, FileText, Calendar, Clock } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { Button } from './Button';
 import { useCurrentChild } from '../../context/ChildContext';
 import { QUESTIONNAIRE_SECTIONS, getCompletedQuestionnaireSections } from '../../questionnaire';
 
@@ -88,7 +87,7 @@ export function SetupSummary({ childName, onContinueQuestionnaire, onReviewUnder
                     </div>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={isQuestionnaireComplete ? onReviewUnderstanding : onContinueQuestionnaire}
                   className={cn(
                     "text-xs font-bold flex items-center gap-1 group",
@@ -124,7 +123,7 @@ export function SetupSummary({ childName, onContinueQuestionnaire, onReviewUnder
                   <div className="font-serif text-lg text-[var(--color-thread-heading)]">Thu 26 June</div>
                 </div>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm text-slate-600">
                   <Clock className="w-4 h-4 text-slate-400" />

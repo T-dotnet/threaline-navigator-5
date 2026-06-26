@@ -1,6 +1,5 @@
 import { motion } from "motion/react";
 import { ArrowRight, CheckCircle2, LineChart, ListTodo, Lock, Milestone, Users } from "lucide-react";
-import { ActionLink } from "./ui/ActionLink";
 import { Page } from "../types";
 import { useCurrentChild } from "../context/ChildContext";
 import { QUESTIONNAIRE_SECTIONS, getCompletedQuestionnaireSections } from "../questionnaire";
@@ -18,6 +17,7 @@ import { PageFooterCTA } from "./ui/PageFooterCTA";
 
 interface NewChildPreviewPageProps {
   onPageChange: (page: Page) => void;
+  onOpenSetup?: () => void;
 }
 
 const previewSections = [
@@ -55,7 +55,7 @@ const previewSections = [
   },
 ];
 
-export default function NewChildPreviewPage({ onPageChange }: NewChildPreviewPageProps) {
+export default function NewChildPreviewPage({ onPageChange, onOpenSetup }: NewChildPreviewPageProps) {
   const { currentChild } = useCurrentChild();
   const answers = currentChild.intake?.questionnaireAnswers || {};
   const completedSections = getCompletedQuestionnaireSections(answers);
@@ -88,7 +88,7 @@ export default function NewChildPreviewPage({ onPageChange }: NewChildPreviewPag
           action={
             <Button
               variant="forest"
-              onClick={() => window.location.href = "/setup"}
+              onClick={() => onOpenSetup?.()}
               rightIcon={<ArrowRight className="w-3.5 h-3.5 stroke-[2]" />}
             >
               Continue setup
@@ -110,11 +110,7 @@ export default function NewChildPreviewPage({ onPageChange }: NewChildPreviewPag
               return (
                 <div
                   key={section.title}
-                  className={`bg-white border p-7.5 ${corners[index]} transition-all duration-300 ${
-                    hasContext
-                      ? "border-[var(--color-thread-mid-green)]/20 shadow-[0_0_0_1px_var(--color-thread-mid-green)/10,0_4px_24px_0_rgba(0,0,0,0.06)]"
-                      : "border-black/5 shadow-premium-light"
-                  }`}
+                  className={`bg-white border border-black/5 shadow-premium-light p-7.5 ${corners[index]} transition-all duration-300`}
                 >
                   <div className={`w-11 h-11 rounded-full flex items-center justify-center mb-6 transition-colors duration-300 ${
                     hasContext
@@ -132,7 +128,7 @@ export default function NewChildPreviewPage({ onPageChange }: NewChildPreviewPag
                   <p className="text-[0.92rem] leading-relaxed text-slate-500">
                     {section.description}
                   </p>
-                  <div className="mt-5 flex items-center justify-between">
+                  <div className="mt-5">
                     {hasContext ? (
                       <div className="inline-flex items-center gap-2 text-[0.74rem] font-medium text-[var(--color-thread-mid-green)]">
                         <CheckCircle2 className="w-3.5 h-3.5" />
@@ -144,9 +140,6 @@ export default function NewChildPreviewPage({ onPageChange }: NewChildPreviewPag
                         Opens after assessment
                       </div>
                     )}
-                    <ActionLink onClick={() => window.location.href = "/setup"}>
-                      Questionnaire
-                    </ActionLink>
                   </div>
                 </div>
               );
@@ -220,7 +213,7 @@ export default function NewChildPreviewPage({ onPageChange }: NewChildPreviewPag
         title="Ready to add context before the session?"
         buttonText="Continue setup"
         buttonIcon={<ArrowRight className="w-4 h-4 stroke-[2]" />}
-        onClick={() => window.location.href = "/setup"}
+        onClick={() => onOpenSetup?.()}
       />
     </motion.div>
   );

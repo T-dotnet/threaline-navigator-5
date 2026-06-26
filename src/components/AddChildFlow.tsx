@@ -198,11 +198,12 @@ const QUESTIONS: Record<string, Question[]> = {
 interface AddChildFlowProps {
   onComplete: () => void;
   onCancel: () => void;
+  asModal?: boolean;
 }
 
 type StepType = 'welcome' | 1 | 2 | 3 | 4 | 5 | 'done';
 
-export default function AddChildFlow({ onComplete, onCancel }: AddChildFlowProps) {
+export default function AddChildFlow({ onComplete, onCancel, asModal }: AddChildFlowProps) {
   const [step, setStep] = useState<StepType>(() => {
     try {
       const params = new URLSearchParams(window.location.search);
@@ -593,9 +594,21 @@ export default function AddChildFlow({ onComplete, onCancel }: AddChildFlowProps
   const remainingQuestionnaireSections = Math.max(0, Object.keys(QUESTIONS).length - completedQuestionnaireSections.length);
 
   return (
-    <div className="min-h-screen bg-watercolor bg-fixed font-sans flex flex-col relative">
+    <>
+      {asModal && (
+        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={onCancel} />
+      )}
+      <div className={cn(
+        "font-sans flex flex-col",
+        asModal
+          ? "fixed inset-0 z-50 overflow-hidden"
+          : "min-h-screen bg-watercolor bg-fixed relative"
+      )}>
       {/* Top Bar */}
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-black/5">
+      <div className={cn(
+        "bg-white/95 backdrop-blur-md border-b border-black/5",
+        !asModal && "sticky top-0 z-50"
+      )}>
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5 font-serif font-medium text-lg text-[var(--color-thread-heading)]">
             <div className="w-8 h-8 rounded-full bg-[var(--color-thread-heading)] text-white flex items-center justify-center">
@@ -628,8 +641,11 @@ export default function AddChildFlow({ onComplete, onCancel }: AddChildFlowProps
         </div>
       </div>
 
-      {/* Main Container with transparent background over the root watercolor background */}
-      <div className="flex-1 w-full bg-transparent py-8 sm:py-12 md:py-16 px-4 sm:px-6 md:px-8 flex items-start justify-center">
+      {/* Main Container */}
+      <div className={cn(
+        "flex-1 w-full bg-transparent px-4 sm:px-6 md:px-8 flex items-start justify-center",
+        asModal ? "overflow-y-auto py-8" : "py-8 sm:py-12 md:py-16"
+      )}>
         <div className="max-w-5xl w-full bg-white rounded-3xl md:rounded-none md:rounded-tr-[48px] shadow-premium border border-black/5 flex flex-col md:flex-row overflow-hidden min-h-[640px]">
           
           {/* WELCOME STATE */}
@@ -1012,7 +1028,7 @@ export default function AddChildFlow({ onComplete, onCancel }: AddChildFlowProps
                         </div>
                       )}
 
-                      {true ? (
+                      {(
                         <div className="space-y-3">
                           {(() => {
                             const completedSectionsCount = ['Home & family', 'Daily routines', 'At school', 'Development & history'].filter(
@@ -1059,9 +1075,8 @@ export default function AddChildFlow({ onComplete, onCancel }: AddChildFlowProps
                             const status = getSectionStatus(sec);
                             const isDone = status === 'Completed';
                             const qCount = (QUESTIONS[sec] || []).length;
-                            const prevSec = i > 0 ? ['Home & family', 'Daily routines', 'At school', 'Development & history'][i - 1] : null;
-                            const isLocked = i > 0 && getSectionStatus(prevSec!) !== 'Completed';
-                            const isInProgress = !isDone && !isLocked && status !== 'Not started';
+                            const isLocked = false;
+                            const isInProgress = !isDone && status !== 'Not started';
                             return (
                               <button
                                 key={sec}
@@ -1647,5 +1662,6 @@ export default function AddChildFlow({ onComplete, onCancel }: AddChildFlowProps
         </div>
       </div>
     </div>
+    </>
   );
 }

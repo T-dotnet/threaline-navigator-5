@@ -50,8 +50,10 @@ const newChildPreviewCards = [
 
 export default function HomePage({
   onPageChange,
+  onOpenSetup,
 }: {
   onPageChange: (page: any) => void;
+  onOpenSetup?: () => void;
 }) {
   const { currentChild } = useCurrentChild();
   const [isActionDone, setIsActionDone] = useState(false);
@@ -77,7 +79,7 @@ export default function HomePage({
     >
       <PageContainer>
         <PageHeader
-        kicker="Tuesday · Good morning"
+        kicker={currentChild.isNew ? "PREVIEW · ASSESSMENT PENDING" : "Tuesday · Good morning"}
         title="Here's where to put your energy today, Sarah."
         titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[18ch]"
         className={currentChild.isNew ? "mb-12" : "mb-28"}
@@ -133,9 +135,9 @@ export default function HomePage({
                 Setup Progress
               </span>
             </div>
-            <SetupSummary 
-              childName={currentChild.name} 
-              onContinueQuestionnaire={() => window.location.href = '/setup'} 
+            <SetupSummary
+              childName={currentChild.name}
+              onContinueQuestionnaire={() => onOpenSetup?.()}
               onReviewUnderstanding={() => onPageChange("understanding")}
             />
           </div>
