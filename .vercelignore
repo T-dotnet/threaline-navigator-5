@@ -1,0 +1,10 @@
+.npm-cache
+.runtime
+.vercel-cache
+.vercel-home
+app
+correct-threadline-nav-work
+home
+out.txt
+fix-variants.cjs
+replace-weights.js

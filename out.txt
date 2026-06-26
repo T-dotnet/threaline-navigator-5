@@ -1,0 +1,146 @@
+src/components/ui/PageFooterCTA.tsx:                className="text-[0.92rem] font-semibold flex items-center gap-2 border-b-0 pb-0"
+src/components/ui/ClinicalWeighting.tsx:      <span className="text-[0.6rem] tracking-[0.14em] uppercase text-slate-500 font-semibold mb-3 block">
+src/components/ui/GuideCard.tsx:          <ActionLink variant="slate" as="span" className="group-hover:text-[var(--color-thread-mid-green)] font-semibold text-[0.84rem]">
+src/components/ui/LockerItem.tsx:      <h3 className="text-[1.02rem] font-semibold tracking-tight mb-1.75 text-slate-900 leading-tight">
+src/components/ui/ActionLink.tsx:          "inline-flex items-center gap-1.5 text-[0.84rem] font-semibold transition-all group/action cursor-pointer py-1.5 min-h-[32px]",
+src/components/ui/AreaItem.tsx:                labelClassName="font-semibold"
+src/components/ui/AreaItem.tsx:                <strong className="text-[var(--color-thread-dark-slate)] font-semibold">
+src/components/ui/ValueCard.tsx:        <h3 className="text-[1.18rem] font-semibold tracking-tight mb-2.5 relative">
+src/components/ui/PlanProgressCard.tsx:            <strong className="opacity-100 font-semibold ml-1">
+src/components/ui/InsightCard.tsx:        <h3 className="text-[1.14rem] md:text-[1.16rem] font-semibold tracking-tight text-[var(--color-thread-heading)] mb-2.5 leading-tight font-sans">
+src/components/ui/ProgressChartSection.tsx:        <h3 className="text-[1.15rem] font-semibold tracking-tight text-[var(--color-thread-dark-slate)] mb-5.5">
+src/components/ui/Button.tsx:      mint: 'inline-flex items-center gap-1 bg-[var(--color-thread-light-green)] text-[var(--color-thread-heading)] font-semibold text-[0.82rem] px-5 py-3 rounded-full hover:opacity-95 shadow-sm transition-all min-h-[44px]',
+src/components/ui/Button.tsx:      slate: 'bg-[var(--color-thread-dark-slate)] text-white text-[0.98rem] font-semibold px-6 py-3.5 rounded-full hover:opacity-90 transition-all shadow-sm min-h-[48px]',
+src/components/ui/Button.tsx:      white: 'inline-flex items-center gap-1 bg-white text-[var(--color-thread-mid-green)] font-semibold text-[0.82rem] px-5 py-3 rounded-full hover:bg-[var(--color-thread-off-white)] shadow-sm transition-all min-h-[44px]',
+src/components/ui/Button.tsx:      muted: 'text-[0.84rem] font-semibold text-[var(--color-thread-gray)] hover:text-[var(--color-thread-heading)] bg-[var(--color-thread-off-white)] hover:bg-[var(--color-thread-light-green)] border border-black/5 px-4.5 py-2.5 rounded-full transition-colors whitespace-nowrap min-h-[40px]',
+src/components/ui/Button.tsx:      link: 'text-[0.84rem] text-[var(--color-thread-dark-slate)] font-semibold border-b border-[var(--color-thread-dark-slate)] pb-0.5 hover:opacity-70 transition-all min-h-[32px] inline-flex items-center',
+src/components/ui/Button.tsx:      forest: 'inline-flex items-center gap-1 bg-[var(--color-thread-mid-green)] text-white font-semibold text-[0.82rem] px-5 py-3 rounded-full hover:opacity-90 transition-all shadow-sm min-h-[44px]',
+src/components/ui/TimelineItem.tsx:                      <span className="text-[0.6rem] tracking-[0.14em] uppercase text-slate-500 font-semibold mb-2 block">
+src/components/ui/StrategyCard.tsx:        <h3 className="text-[1.05rem] font-semibold tracking-tight leading-none text-[var(--color-thread-dark-slate)]">
+src/components/ui/Badge.tsx:      clinical: 'bg-emerald-50 text-[var(--color-thread-mid-green)] border border-emerald-100/30 text-[0.68rem] px-2.5 py-1 font-semibold',
+src/components/ui/HeroActionCard.tsx:      <span className="font-semibold text-[1.05rem] tracking-tight block">
+src/components/ui/IconItem.tsx:          <h4 className="font-semibold text-slate-900 text-[0.95rem] mb-1">{title}</h4>
+src/components/ui/EvidenceBadge.tsx:              "text-[0.64rem] tracking-[0.1em] uppercase font-semibold",
+src/components/ui/Avatar.tsx:        "rounded-full flex items-center justify-center font-semibold transition-all overflow-hidden shrink-0",
+src/components/SettingsPage.tsx:        <span className="text-[0.66rem] tracking-[0.2em] uppercase text-slate-500 font-semibold mb-3 block">
+src/components/SettingsPage.tsx:        <h1 className="font-semibold text-[2rem] leading-tight tracking-tight mb-3">
+src/components/SettingsPage.tsx:          <h2 className="text-[1.1rem] font-semibold text-slate-900 tracking-tight">
+src/components/SettingsPage.tsx:          <h2 className="text-[1.1rem] font-semibold text-slate-900 tracking-tight">
+src/components/SettingsPage.tsx:                    <div className="w-[46px] h-[46px] rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] flex items-center justify-center font-semibold text-[1.2rem] font-serif flex-shrink-0">
+src/components/SettingsPage.tsx:                      <h3 className="font-semibold text-[1.1rem] text-slate-900 tracking-tight">
+src/components/SettingsPage.tsx:                      className="text-[0.84rem] font-semibold text-slate-600 hover:text-slate-900 bg-[var(--color-thread-off-white)] hover:bg-[var(--color-thread-light-green)] border border-black/5 px-5 py-3 rounded-full transition-colors whitespace-nowrap min-h-[44px]"
+src/components/SettingsPage.tsx:          <h2 className="text-[1.1rem] font-semibold text-slate-900 tracking-tight">
+src/components/SettingsPage.tsx:                  <span className="font-semibold text-[0.95rem] text-slate-900">Energetic Mint</span>
+src/components/SettingsPage.tsx:                  <span className="font-semibold text-[0.95rem] text-slate-900">Classic Vintage</span>
+src/components/SettingsPage.tsx:                      "flex-1 text-center py-3 text-[0.82rem] font-semibold rounded-lg transition-all cursor-pointer min-h-[44px]",
+src/components/SettingsPage.tsx:                      "flex-1 text-center py-3 text-[0.82rem] font-semibold rounded-lg transition-all cursor-pointer min-h-[44px]",
+src/components/SettingsPage.tsx:                      "flex-1 text-center py-3 text-[0.82rem] font-semibold rounded-lg transition-all cursor-pointer min-h-[44px]",
+src/components/SettingsPage.tsx:                      "flex-1 text-center py-3 text-[0.82rem] font-semibold rounded-lg transition-all cursor-pointer min-h-[44px]",
+src/components/SettingsPage.tsx:          <h2 className="text-[1.1rem] font-semibold text-slate-900 tracking-tight">
+src/components/SettingsPage.tsx:              <h3 className="font-semibold text-[1.1rem] text-slate-900 tracking-tight">
+src/components/SettingsPage.tsx:              className="text-[0.84rem] font-semibold text-[var(--color-thread-mid-green)] hover:text-white bg-[var(--color-thread-light-green)] hover:bg-[var(--color-thread-mid-green)] px-6 py-3 rounded-full transition-all whitespace-nowrap inline-flex items-center gap-1.5 shadow-sm min-h-[44px]"
+src/components/StyleGuidePage.tsx:      classes: "font-sans font-semibold text-[1.12rem] tracking-tight text-slate-900",
+src/components/StyleGuidePage.tsx:      classes: "font-sans font-semibold text-[0.82rem] leading-none text-slate-800",
+src/components/StyleGuidePage.tsx:      classes: "font-sans text-[0.84rem] font-semibold underline underline-offset-2 text-[var(--color-thread-dark-forest)] hover:text-[var(--color-thread-deep-forest)] transition-colors inline",
+src/components/StyleGuidePage.tsx:      classes: "font-mono text-[0.72rem] text-slate-500 tracking-normal font-semibold uppercase",
+src/components/StyleGuidePage.tsx:      classes: "font-sans text-[0.7rem] font-semibold text-[var(--color-thread-dark-slate)]",
+src/components/StyleGuidePage.tsx:      classCode: 'bg-[var(--color-thread-dark-forest)] text-white font-semibold text-[0.82rem] px-4.5 py-2.5 rounded-full hover:bg-[var(--color-thread-deep-forest)] transition-all shadow-sm',
+src/components/StyleGuidePage.tsx:      classCode: 'bg-[var(--color-thread-light-green)] text-[var(--color-thread-heading)] font-semibold text-[0.82rem] px-4.5 py-2.5 rounded-full hover:opacity-95 shadow-sm transition-all',
+src/components/StyleGuidePage.tsx:      classCode: 'bg-slate-900 text-white text-[0.98rem] font-semibold px-6 py-3 rounded-full hover:bg-slate-800 transition-colors shadow-sm',
+src/components/StyleGuidePage.tsx:      classCode: 'bg-white text-[var(--color-thread-dark-forest)] font-semibold text-[0.82rem] px-4.5 py-2.5 rounded-full hover:bg-slate-50 shadow-sm transition-all',
+src/components/StyleGuidePage.tsx:      classCode: 'text-[0.84rem] font-semibold text-slate-600 hover:text-slate-900 bg-[var(--color-thread-off-white)] hover:bg-[var(--color-thread-light-green)] border border-black/5 px-4 py-2 rounded-full transition-colors whitespace-nowrap',
+src/components/StyleGuidePage.tsx:      classCode: 'text-[0.84rem] text-[var(--color-thread-dark-slate)] font-semibold border-b border-[var(--color-thread-dark-slate)] pb-0.5 hover:opacity-70 transition-all',
+src/components/StyleGuidePage.tsx:                    className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[0.75rem] font-semibold gap-1.5 transition-opacity"
+src/components/StyleGuidePage.tsx:                  <h3 className="font-semibold text-[0.92rem] text-slate-800 leading-tight">
+src/components/StyleGuidePage.tsx:                    <span className="text-white font-semibold flex items-center gap-1.5">
+src/components/StyleGuidePage.tsx:                    <span className="text-emerald-100/80 font-semibold flex items-center gap-1.5">
+src/components/StyleGuidePage.tsx:                    <span className="text-[var(--color-thread-light-green)] font-semibold flex items-center gap-1.5">
+src/components/StyleGuidePage.tsx:                    <span className="text-[var(--color-thread-heading)] font-semibold flex items-center gap-1.5">
+src/components/StyleGuidePage.tsx:                    <span className="text-slate-800 font-semibold flex items-center gap-1.5">
+src/components/StyleGuidePage.tsx:                    <span className="text-slate-600 font-semibold flex items-center gap-1.5">
+src/components/StyleGuidePage.tsx:                    <span className="text-[var(--color-thread-heading)] font-semibold flex items-center gap-1.5">
+src/components/StyleGuidePage.tsx:                    <span className="text-slate-700 font-semibold flex items-center gap-1.5">
+src/components/StyleGuidePage.tsx:                    <span className="text-[var(--color-thread-mid-green)] font-semibold flex items-center gap-1.5">
+src/components/StyleGuidePage.tsx:                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+src/components/StyleGuidePage.tsx:                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+src/components/StyleGuidePage.tsx:                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+src/components/StyleGuidePage.tsx:                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+src/components/StyleGuidePage.tsx:                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+src/components/StyleGuidePage.tsx:                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+src/components/StyleGuidePage.tsx:                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+src/components/StyleGuidePage.tsx:                        "flex-1 text-center py-2 text-[0.8rem] font-semibold rounded-lg transition-all cursor-pointer",
+src/components/StyleGuidePage.tsx:                    <span className="text-[0.7rem] font-mono text-slate-600 font-semibold uppercase">{theme === "energetic" ? "#108560" : "#2A5B4A"}</span>
+src/components/StyleGuidePage.tsx:                    <span className="text-[0.7rem] font-mono text-slate-600 font-semibold uppercase">{theme === "energetic" ? "#E6F4ED" : "#E3EBE7"}</span>
+src/components/StyleGuidePage.tsx:                    <span className="text-[0.7rem] font-mono text-slate-600 font-semibold uppercase">{theme === "energetic" ? "#F5F7F6" : "#F5F5F5"}</span>
+src/components/StyleGuidePage.tsx:                  <span className="text-[0.7rem] bg-emerald-50 text-[var(--color-thread-mid-green)] font-semibold px-2 py-0.5 rounded animate-pulse">
+src/components/StyleGuidePage.tsx:                  <span className="text-[0.7rem] bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded">
+src/components/StyleGuidePage.tsx:                      <div className="font-sans font-semibold text-[1.3rem] leading-tight text-slate-950 tracking-tight">
+src/components/StyleGuidePage.tsx:                      <span className="text-[0.7rem] text-slate-400 font-mono">font-sans font-semibold (600)</span>
+src/components/StyleGuidePage.tsx:                  <span className="font-semibold text-slate-700">currentChild</span>
+src/components/StyleGuidePage.tsx:                  <span className="font-semibold text-slate-700">childrenList</span>
+src/components/StyleGuidePage.tsx:                  <span className="font-semibold text-slate-700">setFilter()</span>
+src/components/StyleGuidePage.tsx:                  <span className="font-semibold text-slate-700">toggleShare()</span>
+src/components/StyleGuidePage.tsx:                    <p className="text-[0.78rem] font-semibold text-slate-700">Sidebar Rail</p>
+src/components/StyleGuidePage.tsx:                    <p className="text-[0.78rem] font-semibold text-slate-700">Action TopBar</p>
+src/components/StyleGuidePage.tsx:                    <p className="text-[0.78rem] font-semibold text-slate-800">Section Gaps</p>
+src/components/StyleGuidePage.tsx:                    <p className="text-[0.78rem] font-semibold text-slate-800">Element Stacking</p>
+src/components/StyleGuidePage.tsx:                    <p className="text-[0.78rem] font-semibold text-slate-800">Atomic Spacing</p>
+src/components/StyleGuidePage.tsx:                    <h4 className="font-semibold text-[0.9rem] text-slate-900">{s.name}</h4>
+src/components/StyleGuidePage.tsx:                <span className="bg-white/90 backdrop-blur-md border border-neutral-200/50 rounded-full px-5 py-2 text-[0.82rem] font-semibold tracking-wide shadow-sm text-slate-800">
+src/components/StyleGuidePage.tsx:              <strong className="text-[var(--color-thread-heading)] font-semibold block mb-0.5">Component Integration Checklist</strong>
+src/components/StyleGuidePage.tsx:                              <div className="text-[0.74rem] text-slate-400 font-semibold">SLP: Dr. C. Chen</div>
+src/components/StyleGuidePage.tsx:                                <span className="font-semibold text-slate-700">Moderate</span>
+src/components/StyleGuidePage.tsx:                                <span className="font-semibold text-slate-700">High</span>
+src/components/StyleGuidePage.tsx:                            <h3 className="text-[1.05rem] font-semibold tracking-tight text-slate-800 font-sans">
+src/components/StyleGuidePage.tsx:                          <h3 className="text-[1.16rem] font-semibold tracking-tight text-[var(--color-thread-heading)] mb-2 leading-tight font-sans">
+src/components/StyleGuidePage.tsx:                            <h3 className="text-[1.12rem] font-semibold tracking-tight mb-1.5 relative font-sans">
+src/components/StyleGuidePage.tsx:                            <h3 className="text-[1.12rem] font-semibold tracking-tight leading-tight mb-1 text-slate-900 font-serif">
+src/components/StyleGuidePage.tsx:                                className="bg-white text-[var(--color-thread-dark-forest)] font-semibold text-[0.82rem] px-4 py-2 rounded-full hover:bg-slate-50 transition-all font-sans cursor-pointer shadow-xs inline-flex items-center gap-1"
+src/components/StyleGuidePage.tsx:              <strong className="text-[var(--color-thread-heading)] font-semibold block mb-0.5">Card Curvature Guidelines</strong>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">1. Area Status Item (AreaItem)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">2. Roadmap / Priority Timeline (TimelineItem)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">3. Clinical Weighting (ClinicalWeighting)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">4. Evidence Badge & Meter (EvidenceBadge / EvidenceMeter)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">5. Clinical Insight Card (InsightCard)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">6. Resource Locker Item (LockerItem)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">7. Contextual Badges (Badge)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">8. Toggle Switch (Switch)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">9. Standard Progress Bar (ProgressBar)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">10. Page Footer CTA Navigator (PageFooterCTA)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">11. Filter Category Selector (FilterTab)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">12. Interactive File Share Item (FileItem)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">13. Circle Action Controls (IconButton)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">14. Action Navigator Link (QuickLink)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">15. Nested Detail Value Card (ValueCard)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">16. Top Hero Action Card (HeroActionCard)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">17. AI Copilot Input Bar (AICopilotBar)</h3>
+src/components/StyleGuidePage.tsx:                <h3 className="font-sans font-semibold text-[1.12rem] text-slate-900">18. Clinical Checklist Item (ChecklistItem)</h3>
+src/components/EmergingDetailsPage.tsx:          <h3 className="text-[1.25rem] font-semibold text-[var(--color-thread-heading)] mb-3.5 tracking-tight">
+src/components/AddChildModal.tsx:                  <label className="text-[0.8rem] font-semibold text-[var(--color-thread-dark-slate)] mb-2 block tracking-tight">
+src/components/AddChildModal.tsx:                  <label className="text-[0.8rem] font-semibold text-[var(--color-thread-dark-slate)] mb-2 block tracking-tight">
+src/components/Sidebar.tsx:          <span className="font-sans text-[0.55rem] tracking-[0.22em] uppercase text-[var(--color-thread-gray)] font-semibold mt-1 whitespace-nowrap">
+src/components/Sidebar.tsx:                  "bg-[var(--color-thread-light-green)] text-[var(--color-thread-dark-slate)] font-semibold",
+src/components/Sidebar.tsx:                "bg-[var(--color-thread-light-green)] text-[var(--color-thread-dark-slate)] font-semibold",
+src/components/ErrorBoundary.tsx:              className="w-full bg-red-600 text-white font-semibold py-3 rounded-xl hover:bg-red-700 transition-colors"
+src/components/TopBar.tsx:                <span className="font-semibold text-[0.9rem] text-slate-900">
+src/components/TopBar.tsx:                <span className="font-semibold text-[0.9rem] text-slate-900">
+src/components/TopBar.tsx:                <span className="text-[0.6rem] tracking-[0.16em] uppercase text-slate-400 font-semibold">
+src/components/TopBar.tsx:                      "text-[0.92rem] tracking-tight font-semibold",
+src/components/TopBar.tsx:                            ? "font-semibold text-slate-900"
+src/components/TopBar.tsx:                  <h2 className="text-[1.05rem] font-semibold text-[var(--color-thread-dark-slate)] tracking-tight leading-none">
+src/components/TopBar.tsx:                    <h3 className="font-semibold text-[var(--color-thread-dark-slate)] text-[0.95rem] mb-1.5 tracking-tight group-hover:text-[var(--color-thread-mid-green)] transition-colors">
+src/components/TopBar.tsx:                    <h3 className="font-semibold text-[var(--color-thread-dark-slate)] text-[0.95rem] mb-1.5 tracking-tight group-hover:text-[var(--color-thread-mid-green)] transition-colors">
+src/components/TopBar.tsx:                      className="text-[0.84rem] font-semibold text-[var(--color-thread-gray)] hover:text-[var(--color-thread-dark-slate)] transition-colors"
+src/components/TopBar.tsx:                  <span className="font-sans text-[0.55rem] tracking-[0.22em] uppercase text-[var(--color-thread-gray)] font-semibold mt-1">
+src/components/TopBar.tsx:                  <span className="font-semibold text-[0.95rem] text-slate-900">
+src/components/TopBar.tsx:                className="text-xs font-semibold text-[var(--color-thread-mid-green)] bg-white border border-black/5 py-1.5 px-3 rounded-lg shadow-xs cursor-pointer hover:bg-slate-50"
+src/components/AllChildrenPage.tsx:                  <div className="w-[44px] h-[44px] rounded-full bg-[var(--color-thread-mid-green)] text-white flex items-center justify-center font-semibold text-[1.05rem] font-serif shadow-sm">
+src/components/ReviewsPage.tsx:            <div className="inline-flex items-center gap-2 mt-1.5 relative font-semibold text-[0.84rem] opacity-80">
+src/components/RoadmapPage.tsx:          <div className="font-semibold text-[0.84rem] opacity-70">
+src/components/ResourcesPage.tsx:        <span className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-400 font-semibold mb-6 block">
+src/components/ResourcesPage.tsx:              className="mt-3 block mx-auto font-semibold"
+src/components/DocumentsPage.tsx:              <div className="text-[1rem] font-semibold tracking-tight text-slate-900">
+src/components/DocumentsPage.tsx:        <span className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-400 font-semibold mb-4 mt-6 block">
+src/components/DocumentsPage.tsx:              className="mt-3 block mx-auto font-semibold"
+src/components/HomePage.tsx:          <span className="text-[0.66rem] tracking-[0.2em] uppercase text-slate-500 font-semibold mb-2.5 block text-uppercase">
+src/components/HomePage.tsx:          <h2 className="font-semibold text-[1.4rem] tracking-tight">
