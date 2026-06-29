@@ -6,66 +6,71 @@ import {
   Minus,
   Plus,
   Check,
-  Download,
 } from "lucide-react";
-import { cn } from "../lib/utils";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  Tooltip,
-  Area,
-  AreaChart,
-} from "recharts";
-
-import { Child } from "../types";
 import { PageHeader } from "./ui/PageHeader";
 import { HeroQuoteCard } from "./ui/HeroQuoteCard";
-import { PageIcon } from "./ui/PageIcon";
-import { HeroActionCard } from "./ui/HeroActionCard";
 import { SectionTitle } from "./ui/SectionTitle";
 import { SectionLabel } from "./ui/SectionLabel";
-import { SectionDescription } from "./ui/SectionDescription";
 import { FadeInScroll } from "./ui/FadeInScroll";
-import { TimelineStep } from "./ui/TimelineStep";
-import { Button } from "./ui/Button";
 import { AreaItem } from "./ui/AreaItem";
-import { ProgressChartSection } from "./ui/ProgressChartSection";
 import { PageFooterCTA } from "./ui/PageFooterCTA";
-
-const data = [
-  { name: "14 Jun", value: 165 },
-  { name: "Jul", value: 150 },
-  { name: "Aug", value: 128 },
-  { name: "Now", value: 105 },
-  { name: "Future", value: 80 },
-  { name: "12 Sep", value: 52 },
-];
-
-const liamData = [
-  { name: "Mar", value: 180 },
-  { name: "Apr", value: 140 },
-  { name: "May", value: 90 },
-  { name: "Jun", value: 50 },
-  { name: "Now", value: 20 },
-  { name: "End", value: 0 },
-];
+import { FirstSessionCard } from "./ui/FirstSessionCard";
+import { ReviewRhythmSection } from "./ui/ReviewRhythmSection";
 
 import { PageContainer } from "./ui/PageContainer";
 
 import { useCurrentChild } from "../context/ChildContext";
-import watercolorBgImg from "../assets/images/watercolor_bg_1782427011739.jpg";
+import { useDisplayMode } from "../context/DisplayModeContext";
+import { isMaintenancePhase, isPlanNotStarted, isSessionBooked as getIsSessionBooked } from "../lib/childStatus";
+import watercolorBgImg from "../assets/images/optimized/watercolor-bg-900.jpg";
 
 export default function ReviewsPage({
   onPageChange,
+  onOpenSetup,
 }: {
   onPageChange: (page: any) => void;
+  onOpenSetup?: (step?: 1 | 2 | 3 | 4 | 5 | "welcome") => void;
 }) {
   const { currentChild } = useCurrentChild();
-  const isLiam = currentChild.name === "Liam";
-  const activeData = isLiam ? liamData : data;
+  const { isParentClarity } = useDisplayMode();
+  const isLiam = isMaintenancePhase(currentChild);
+  const isNoahStarting = isPlanNotStarted(currentChild);
+  const showParentClarity = isParentClarity && !currentChild.isNew && !isLiam && !isNoahStarting;
+  const reviewDate = isLiam ? "12 Dec" : isNoahStarting ? "8 Oct" : "12 Sep";
+  const reviewTime = "4:00 pm";
+  const isSessionBooked = getIsSessionBooked(currentChild);
+  const showReviewDates = !currentChild.isNew || isSessionBooked;
+  const reviewRhythmItems = [
+    {
+      state: "Done",
+      title: "Assessment baseline",
+      meta: showReviewDates ? "14 June" : "",
+      description: "The starting point: what is happening, what matters most, and the first plan.",
+      icon: <Check className="w-[19px] h-[19px] stroke-[1.8]" />,
+    },
+    {
+      state: "Next review",
+      title: "First full review",
+      meta: showReviewDates ? (isNoahStarting ? "8 October" : "12 September") : "After first session",
+      description: "Revisit priorities, update the plan, and confirm what has improved and what needs attention next.",
+      icon: <Calendar className="w-[19px] h-[19px] stroke-[1.8]" />,
+    },
+    {
+      state: "Happening now",
+      title: "Progress tracking",
+      meta: "Between reviews",
+      description: "We watch what changes week to week and flag patterns, like sleep, before they become urgent.",
+      icon: <Clock className="w-[19px] h-[19px] stroke-[1.8]" />,
+      active: true,
+    },
+    {
+      state: "Ongoing",
+      title: "Keep the picture current",
+      meta: `Each term`,
+      description: `The picture updates as ${currentChild.name} grows, because needs shift and clarity should not expire.`,
+      icon: <ArrowUpRight className="w-[19px] h-[19px] stroke-[1.8]" />,
+    },
+  ];
 
   return (
     <motion.div
@@ -87,7 +92,7 @@ export default function ReviewsPage({
             </span>
             <span className="flex items-center gap-1.5">
               <Calendar className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-              {isLiam ? "Maintenance phase active" : "Next full review 12 September"}
+              {isLiam ? "Maintenance phase active" : isNoahStarting ? "First progress review 8 October" : "Next full review 12 September"}
             </span>
           </div>
         }
@@ -99,170 +104,131 @@ export default function ReviewsPage({
             src={watercolorBgImg}
             alt="Watercolor Accent"
             className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
             referrerPolicy="no-referrer"
           />
         </div>
       )}
 
-      <HeroQuoteCard
-        kicker="The long view"
-        quote={
-          isLiam ? (
-            `Liam has achieved all baseline targets. His profile now reflects a state of sustained developmental mastery.`
-          ) : (
-            `Most assessments are a snapshot. Yours keeps updating — so the picture stays true as ${currentChild.name} grows, not frozen at the day you got the report.`
-          )
-        }
-        className="mb-24"
-        rightNode={
-          <HeroActionCard
-            icon={<Download className="w-[22px] h-[22px] stroke-[1.7]" />}
-            title={isLiam ? "Summary" : "Reminder"}
-            subtitle="Download report"
-          />
-        }
-        action={
-          <div>
-            <div className="mt-6 flex items-center gap-4 w-full max-w-[420px] relative">
-              <div className="flex-1 h-[5px] rounded-full bg-black/5 overflow-hidden">
-                <div
-                  className="bg-[var(--hero-accent)] h-full rounded-full"
-                  style={{ width: isLiam ? "100%" : "65%" }}
-                />
-              </div>
-              <span className="text-[0.78rem] opacity-70 flex-shrink-0">
-                {isLiam ? "100% · complete" : "65% · on track"}
-              </span>
-            </div>
-            <div className="inline-flex items-center gap-2 mt-1.5 relative font-medium text-[0.84rem] opacity-80">
-              {isLiam ? "Maintenance tracking enabled" : "Next full review · 12 September"}
-            </div>
-          </div>
-        }
-      />
+      <div className="grid grid-cols-[2fr_1fr] md:gap-6 max-md:grid-cols-1 max-md:gap-y-6 mb-24">
+        <HeroQuoteCard
+          kicker="The long view"
+          quote={
+            isLiam ? (
+              `Liam has achieved all baseline targets. His profile now reflects a state of sustained developmental mastery.`
+            ) : isNoahStarting ? (
+              `Noah's plan has a clean starting point. The next review will compare the baseline with what happens after the first support routine is actually tried.`
+            ) : showParentClarity ? (
+              `The main story is simple: ${currentChild.name}'s classroom focus is moving in the right direction. Sleep stays on the watchlist because it may explain the days where focus still dips.`
+            ) : (
+              `Most assessments are a snapshot. Yours keeps updating — so the picture stays true as ${currentChild.name} grows, not frozen at the day you got the report.`
+            )
+          }
+          className="h-full"
+        />
 
-
-      {/* Progress Chart Section */}
-      <ProgressChartSection
-        label="Progress over time"
-        title={isLiam ? "Milestones achieved." : "The trend, not a single moment."}
-        chartLabel={isLiam ? "Overall Developmental Consolidation" : "Focus & engagement at school"}
-        chartSubtitle={isLiam ? "Goal reached in June" : "Trending up since the assessment"}
-        data={activeData}
-        description={isLiam 
-          ? "Liam's trajectory mirrors the planned interventions perfectly. He has settled into a maintenance rhythm where new skills are generalized across home and school automatically."
-          : `A steady upward trend since the assessment as the classroom strategies take hold. The predicted path is where we'd expect ${currentChild.name} to be by your first full review on 12 September.`
-        }
-        xAxisLabels={isLiam ? ["Mar", "Apr", "May", "Jun", "Now"] : ["14 Jun", "Jul", "Aug", "Now", "12 Sep"]}
-        activeLabelIndex={3}
-      />
+        <FirstSessionCard
+          label="Next review"
+          date={reviewDate}
+          time={reviewTime}
+          detail=""
+          provider="Dr. Naomi Clark"
+          onReschedule={() => onOpenSetup?.(5)}
+        />
+      </div>
 
       {/* What's Changed Section */}
       <FadeInScroll className="mb-24">
-        <div className="bg-watercolor rounded-br-[36px] p-12">
-          <div className="bg-white rounded-bl-[32px] p-7.5 shadow-premium">
-            <div>
-              <SectionLabel>
-                What's changed
-              </SectionLabel>
-              <SectionTitle>
-                {isLiam ? "Current status summaries." : "How the picture has moved."}
-              </SectionTitle>
-            </div>
-            <div className="border-b border-black/10">
-              {isLiam ? (
-                <>
-                  <AreaItem
-                    title="Self-Correction"
-                    description="Fully independent in most social contexts."
-                    status="Complete"
-                    icon={<Check className="w-3 h-3 stroke-[2.4]" />}
-                  />
-                  <AreaItem
-                    title="Task Endurance"
-                    description="Extended engagement is now a stable characteristic."
-                    status="Complete"
-                    icon={<Check className="w-3 h-3 stroke-[2.4]" />}
-                  />
-                  <AreaItem
-                    title="Social Connection"
-                    description="Emerging as a peer leader in school creative projects."
-                    status="Strength"
-                    icon={<ArrowUpRight className="w-3 h-3 stroke-[2.4]" />}
-                  />
-                </>
-              ) : (
-                <>
-                  <AreaItem
-                    title="Classroom attention"
-                    description="Focus in class is improving as the strategies take hold."
-                    status="Improving"
-                    icon={<ArrowUpRight className="w-3 h-3 stroke-[2.4]" />}
-                  />
-                  <AreaItem
-                    title="Emotional regulation at home"
-                    description="Holding steady — likely to ease further as attention improves."
-                    status="Steady"
-                    icon={<Minus className="w-3 h-3 stroke-[2.4]" />}
-                  />
-                  <AreaItem
-                    title="Sleep"
-                    description="A new signal since the assessment — now on the watchlist."
-                    status="Emerging"
-                    icon={<Plus className="w-3 h-3 stroke-[2.4]" />}
-                  />
-                  <AreaItem
-                    title="Friendships & social connection"
-                    description="Still going well — no change needed."
-                    status="Strength"
-                    icon={<Check className="w-3 h-3 stroke-[2.4]" />}
-                  />
-                </>
-              )}
-            </div>
-          </div>
+        <div>
+          <SectionLabel>
+            What's changed
+          </SectionLabel>
+          <SectionTitle>
+            {isLiam ? "Current status summaries." : isNoahStarting ? "What we are waiting to learn." : "How the picture has moved."}
+          </SectionTitle>
+        </div>
+
+        <div className="border-y border-black/10">
+          {isLiam ? (
+            <>
+              <AreaItem
+                title="Self-Correction"
+                description="Fully independent in most social contexts."
+                status="Complete"
+                icon={<Check className="w-3 h-3 stroke-[2.4]" />}
+              />
+              <AreaItem
+                title="Task Endurance"
+                description="Extended engagement is now a stable characteristic."
+                status="Complete"
+                icon={<Check className="w-3 h-3 stroke-[2.4]" />}
+              />
+              <AreaItem
+                title="Social Connection"
+                description="Emerging as a peer leader in school creative projects."
+                status="Strength"
+                icon={<ArrowUpRight className="w-3 h-3 stroke-[2.4]" />}
+              />
+            </>
+          ) : isNoahStarting ? (
+            <>
+              <AreaItem
+                title="First support routine"
+                description="Ready to begin. No progress is recorded yet because the routine has not been used long enough to show movement."
+                status="0%"
+                icon={<Minus className="w-3 h-3 stroke-[2.4]" />}
+              />
+              <AreaItem
+                title="Baseline"
+                description="The starting picture is clear enough to compare against once home and school observations begin."
+                status="Set"
+                icon={<Check className="w-3 h-3 stroke-[2.4]" />}
+              />
+              <AreaItem
+                title="Early observations"
+                description="The next useful update will be whether the first routine feels repeatable in real life."
+                status="Waiting"
+                icon={<Plus className="w-3 h-3 stroke-[2.4]" />}
+              />
+            </>
+          ) : (
+            <>
+              <AreaItem
+                title="Classroom attention"
+                description={showParentClarity ? "Teacher-friendly classroom strategies are starting to show movement. Keep this as the main action area until the September review." : "Focus in class is improving as the strategies take hold."}
+                status="Improving"
+                icon={<ArrowUpRight className="w-3 h-3 stroke-[2.4]" />}
+                sources={showParentClarity ? ["Teacher feedback", "Parent check-in"] : undefined}
+              />
+              <AreaItem
+                title="Emotional regulation at home"
+                description={showParentClarity ? "Home frustration is still present, but not escalating. We expect this may ease if classroom focus keeps improving." : "Holding steady — likely to ease further as attention improves."}
+                status="Steady"
+                icon={<Minus className="w-3 h-3 stroke-[2.4]" />}
+                sources={showParentClarity ? ["Parent notes"] : undefined}
+              />
+              <AreaItem
+                title="Sleep"
+                description={showParentClarity ? "Not something to act on heavily yet. Keep routines consistent and watch whether tired mornings line up with harder school days." : "A new signal since the assessment — now on the watchlist."}
+                status="Emerging"
+                icon={<Plus className="w-3 h-3 stroke-[2.4]" />}
+                sources={showParentClarity ? ["Parent check-in", "Pattern watch"] : undefined}
+              />
+              <AreaItem
+                title="Friendships & social connection"
+                description={showParentClarity ? "Still a strength. This can safely stay off the parent task list unless something changes." : "Still going well — no change needed."}
+                status="Strength"
+                icon={<Check className="w-3 h-3 stroke-[2.4]" />}
+                sources={showParentClarity ? ["Maya", "Parent notes"] : undefined}
+              />
+            </>
+          )}
         </div>
       </FadeInScroll>
 
       {/* Review Rhythm Section */}
-      <FadeInScroll className="mb-24">
-        <div>
-          <SectionLabel>
-            Your review rhythm
-          </SectionLabel>
-          <SectionTitle>
-            Clarity that keeps up.
-          </SectionTitle>
-        </div>
-
-        <div className="relative mt-1">
-          <div className="absolute left-[11px] top-3.5 bottom-5 w-[2px] bg-black/10" />
-          <TimelineStep
-            done
-            title="Assessment & first picture"
-            meta="14 June · baseline established"
-            description="The starting point — what's happening, what matters most, and the first plan."
-          />
-          <TimelineStep
-            active
-            title="Progress tracking"
-            meta="Now · between reviews"
-            description="We watch how priorities move week to week and flag anything emerging — like sleep — before it becomes urgent."
-          />
-          <TimelineStep
-            todo
-            title="First full review"
-            meta="12 September · You + Threadline"
-            description="Revisit priorities, update the plan, and confirm what's improved and what to focus on next."
-          />
-          <TimelineStep
-            todo
-            title="Ongoing reviews"
-            meta={`Each term · As ${currentChild.name} grows`}
-            description="The picture keeps updating across the years — because needs shift, and clarity shouldn't expire."
-          />
-        </div>
-      </FadeInScroll>
+      <ReviewRhythmSection items={reviewRhythmItems} />
 
       </PageContainer>
 

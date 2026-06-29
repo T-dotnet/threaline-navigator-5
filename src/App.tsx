@@ -3,29 +3,41 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useEffect, useState, type ReactElement } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactElement } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Page } from './types';
 import DashboardLayout from './components/DashboardLayout';
-import HomePage from './components/HomePage';
-import UnderstandingPage from './components/UnderstandingPage';
-import PrioritiesPage from './components/PrioritiesPage';
-import RoadmapPage from './components/RoadmapPage';
-import ReviewsPage from './components/ReviewsPage';
-import ResourcesPage from './components/ResourcesPage';
-import DocumentsPage from './components/DocumentsPage';
-import SettingsPage from './components/SettingsPage';
-import EmergingDetailsPage from './components/EmergingDetailsPage';
-import AllChildrenPage from './components/AllChildrenPage';
-import StyleGuidePage from './components/StyleGuidePage';
-import AddChildFlow from './components/AddChildFlow';
-import NewChildPreviewPage from './components/NewChildPreviewPage';
-import WhatYouNoticedPage from './components/WhatYouNoticedPage';
 import ScrollToTop from './components/ScrollToTop';
 
 import { ChildProvider } from './context/ChildContext';
 import { LockerProvider } from './context/LockerContext';
 import { useCurrentChild } from './context/ChildContext';
+import { DisplayModeProvider } from './context/DisplayModeContext';
+import { NewChildExperienceProvider, useNewChildExperience } from './context/NewChildExperienceContext';
+import { SecondaryUsersProvider } from './context/SecondaryUsersContext';
+
+const AddChildFlow = lazy(() => import('./components/AddChildFlow'));
+const AllChildrenPage = lazy(() => import('./components/AllChildrenPage'));
+const DocumentsPage = lazy(() => import('./components/DocumentsPage'));
+const EmergingDetailsPage = lazy(() => import('./components/EmergingDetailsPage'));
+const HomePage = lazy(() => import('./components/HomePage'));
+const NewChildPreviewPage = lazy(() => import('./components/NewChildPreviewPage'));
+const PrioritiesPage = lazy(() => import('./components/PrioritiesPage'));
+const ResourcesPage = lazy(() => import('./components/ResourcesPage'));
+const ReviewsPage = lazy(() => import('./components/ReviewsPage'));
+const RoadmapPage = lazy(() => import('./components/RoadmapPage'));
+const SettingsPage = lazy(() => import('./components/SettingsPage'));
+const StyleGuidePage = lazy(() => import('./components/StyleGuidePage'));
+const UnderstandingPage = lazy(() => import('./components/UnderstandingPage'));
+const WhatYouNoticedPage = lazy(() => import('./components/WhatYouNoticedPage'));
+
+function RouteLoadingFallback() {
+  return (
+    <div className="min-h-[240px] flex items-center justify-center text-[0.78rem] tracking-[0.14em] uppercase text-slate-400">
+      Loading
+    </div>
+  );
+}
 
 function resetStoredStateIfRequested() {
   if (typeof window === 'undefined') return;
@@ -35,6 +47,8 @@ function resetStoredStateIfRequested() {
   [
     'threadline-children',
     'threadline-current-child',
+    'threadline-demo-data-version',
+    'threadline-new-child-experience',
     'thread-theme',
     'thread-font',
     'thread-hero-style',
@@ -53,7 +67,8 @@ function resetStoredStateIfRequested() {
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentChild } = useCurrentChild();
+  const { currentChild, createNewChild } = useCurrentChild();
+  const { isReviewExperience } = useNewChildExperience();
   
   // Derive currentPage from location
   const getCurrentPage = (): Page => {
@@ -92,6 +107,11 @@ function AppContent() {
     navigate(`/${page === 'all-children' ? '' : page}`);
   };
 
+  const handleAddChildRequest = () => {
+    createNewChild();
+    navigate('/setup');
+  };
+
   const openSetup = (step: 1 | 2 | 3 | 4 | 5 | "welcome" = "welcome") => {
     setSetupInitialStep(step);
     setIsSetupOpen(true);
@@ -105,67 +125,69 @@ function AppContent() {
   return (
     <>
       <ScrollToTop />
-      {isSetupOpen && (
-        <AddChildFlow
-          asModal
-          initialStep={setupInitialStep}
-          onComplete={closeSetup}
-          onCancel={closeSetup}
-        />
-      )}
-      <Routes>
-        <Route path="/setup" element={
+      <Suspense fallback={<RouteLoadingFallback />}>
+        {isSetupOpen && (
           <AddChildFlow
-            onComplete={() => {
-              const params = new URLSearchParams(window.location.search);
-              const fromParam = params.get('from');
-              if (fromParam) {
-                handlePageChange(fromParam as Page);
-              } else {
-                handlePageChange('all-children');
-              }
-            }}
-            onCancel={() => {
-              const params = new URLSearchParams(window.location.search);
-              const fromParam = params.get('from');
-              if (fromParam) {
-                handlePageChange(fromParam as Page);
-              } else {
-                handlePageChange('all-children');
-              }
-            }}
+            asModal
+            initialStep={setupInitialStep}
+            onComplete={closeSetup}
+            onCancel={closeSetup}
           />
-        } />
-        <Route path="*" element={
-          <DashboardLayout
-            currentPage={currentPage}
-            onPageChange={handlePageChange}
-            onAddChildRequest={() => navigate('/setup')}
-          >
-            <Routes>
-              <Route path="/" element={<AllChildrenPage onPageChange={handlePageChange} />} />
-              <Route path="/home" element={withPreAssessmentGuard(<HomePage onPageChange={handlePageChange} onOpenSetup={openSetup} />)} />
-              <Route path="/preview" element={<NewChildPreviewPage onPageChange={handlePageChange} onOpenSetup={openSetup} />} />
-              <Route path="/what-you-noticed" element={currentChild.isNew ? <WhatYouNoticedPage onPageChange={handlePageChange} onOpenSetup={openSetup} /> : <Navigate to="/roadmap" replace />} />
-              <Route path="/understanding" element={<UnderstandingPage onPageChange={handlePageChange} onOpenSetup={openSetup} />} />
-              <Route path="/priorities" element={withPreAssessmentGuard(<PrioritiesPage onPageChange={handlePageChange} />)} />
-              <Route path="/roadmap" element={withPreAssessmentGuard(<RoadmapPage onPageChange={handlePageChange} />)} />
-              <Route path="/reviews" element={withPreAssessmentGuard(<ReviewsPage onPageChange={handlePageChange} />)} />
-              <Route path="/resources" element={<ResourcesPage />} />
-              <Route path="/documents" element={currentChild.isNew ? <Navigate to="/home" replace /> : <DocumentsPage />} />
-              <Route path="/settings" element={
-                <SettingsPage
-                  onPageChange={handlePageChange}
-                  onAddChildRequest={() => navigate('/setup')}
-                />
-              } />
-              <Route path="/emerging-details" element={withPreAssessmentGuard(<EmergingDetailsPage onPageChange={handlePageChange} />)} />
-              <Route path="/style-guide" element={<StyleGuidePage onPageChange={handlePageChange} />} />
-              <Route path="*" element={<AllChildrenPage onPageChange={handlePageChange} />} />
-            </Routes>
-          </DashboardLayout>
-        } />
-      </Routes>
+        )}
+        <Routes>
+          <Route path="/setup" element={
+            <AddChildFlow
+              onComplete={() => {
+                const params = new URLSearchParams(window.location.search);
+                const fromParam = params.get('from');
+                if (fromParam) {
+                  handlePageChange(fromParam as Page);
+                } else {
+                  handlePageChange('all-children');
+                }
+              }}
+              onCancel={() => {
+                const params = new URLSearchParams(window.location.search);
+                const fromParam = params.get('from');
+                if (fromParam) {
+                  handlePageChange(fromParam as Page);
+                } else {
+                  handlePageChange('all-children');
+                }
+              }}
+            />
+          } />
+          <Route path="*" element={
+            <DashboardLayout
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+              onAddChildRequest={handleAddChildRequest}
+            >
+              <Routes>
+                <Route path="/" element={<AllChildrenPage onPageChange={handlePageChange} />} />
+                <Route path="/home" element={withPreAssessmentGuard(<HomePage onPageChange={handlePageChange} onOpenSetup={openSetup} />)} />
+                <Route path="/preview" element={<NewChildPreviewPage onPageChange={handlePageChange} onOpenSetup={openSetup} />} />
+                <Route path="/what-you-noticed" element={currentChild.isNew ? <WhatYouNoticedPage onPageChange={handlePageChange} onOpenSetup={openSetup} /> : <Navigate to="/home" replace />} />
+                <Route path="/understanding" element={<UnderstandingPage onPageChange={handlePageChange} onOpenSetup={openSetup} />} />
+                <Route path="/priorities" element={<PrioritiesPage onPageChange={handlePageChange} />} />
+                <Route path="/roadmap" element={currentChild.isNew ? (isReviewExperience ? <Navigate to="/home" replace /> : <RoadmapPage onPageChange={handlePageChange} />) : <Navigate to="/reviews" replace />} />
+                <Route path="/reviews" element={withPreAssessmentGuard(<ReviewsPage onPageChange={handlePageChange} onOpenSetup={openSetup} />)} />
+                <Route path="/resources" element={<ResourcesPage />} />
+                <Route path="/documents" element={<DocumentsPage />} />
+                <Route path="/settings" element={
+                  <SettingsPage
+                    onPageChange={handlePageChange}
+                    onAddChildRequest={handleAddChildRequest}
+                  />
+                } />
+                <Route path="/emerging-details" element={withPreAssessmentGuard(<EmergingDetailsPage onPageChange={handlePageChange} />)} />
+                <Route path="/style-guide" element={<StyleGuidePage onPageChange={handlePageChange} />} />
+                <Route path="*" element={<AllChildrenPage onPageChange={handlePageChange} />} />
+              </Routes>
+            </DashboardLayout>
+          } />
+        </Routes>
+      </Suspense>
     </>
   );
 }
@@ -177,7 +199,13 @@ export default function App() {
     <BrowserRouter>
       <ChildProvider>
         <LockerProvider>
-          <AppContent />
+          <DisplayModeProvider>
+            <NewChildExperienceProvider>
+              <SecondaryUsersProvider>
+                <AppContent />
+              </SecondaryUsersProvider>
+            </NewChildExperienceProvider>
+          </DisplayModeProvider>
         </LockerProvider>
       </ChildProvider>
     </BrowserRouter>

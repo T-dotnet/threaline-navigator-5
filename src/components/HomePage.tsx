@@ -1,33 +1,34 @@
 import { motion } from "motion/react";
-import { Check, ChevronRight, Calendar, Clock, FileText, Plus, Send, Download, Play, Printer, Eye, LineChart, ListTodo, Milestone, Users } from "lucide-react";
-import { cn } from "../lib/utils";
-import React, { useState, useRef } from "react";
-import { Child } from "../types";
+import { ChevronRight, Calendar, Clock, FileText, Download, Play, Printer, Eye, LineChart, ListTodo, Users, BookOpen } from "lucide-react";
+import { useEffect, useState } from "react";
 import { getChildData } from "../data";
-import { ProgressBar } from "./ui/ProgressBar";
 import { PageHeader } from "./ui/PageHeader";
 import { HeroQuoteCard } from "./ui/HeroQuoteCard";
 import { ActionLink } from "./ui/ActionLink";
 import { FadeInScroll } from "./ui/FadeInScroll";
 import { Button } from "./ui/Button";
 import { TimelineItem } from "./ui/TimelineItem";
-import { QuickLink } from "./ui/QuickLink";
 import { LockerItem } from "./ui/LockerItem";
 import { AICopilotBar } from "./ui/AICopilotBar";
 import { InsightSection } from "./ui/InsightSection";
 
 import { PlanProgressCard } from "./ui/PlanProgressCard";
 import img2912 from "../assets/images/IMG_2912.jpeg";
+import watercolorBgImg from "../assets/images/optimized/watercolor-bg-900.jpg";
 
 import { PageContainer } from "./ui/PageContainer";
 
 import { useCurrentChild } from "../context/ChildContext";
+import { useDisplayMode } from "../context/DisplayModeContext";
+import { useNewChildExperience } from "../context/NewChildExperienceContext";
 import { SetupSummary } from "./ui/SetupSummary";
+import { getJourneyHomeCopy, hasReportContext } from "../lib/journeyCopy";
+import { getChildSessionStatus, getSessionDate, isMaintenancePhase, isPlanNotStarted } from "../lib/childStatus";
 
 const newChildPreviewCards = [
   {
     title: "Understanding",
-    description: "Strengths, support needs, and the evidence behind the first clinical picture.",
+    description: "Strengths, support needs, and the context behind the support picture.",
     icon: Users,
   },
   {
@@ -36,14 +37,37 @@ const newChildPreviewCards = [
     icon: ListTodo,
   },
   {
-    title: "Roadmap",
-    description: "Clear next steps for home, school, and follow-up conversations.",
-    icon: Milestone,
-  },
-  {
     title: "Reviews",
     description: "A rhythm for tracking how the picture changes over time.",
     icon: LineChart,
+  },
+  {
+    title: "Resources",
+    description: "Short preparation tools matched to the intake stage.",
+    icon: BookOpen,
+  },
+];
+
+const reviewNewChildPreviewCards = [
+  {
+    title: "Understanding",
+    description: "What the answers are starting to show, without jumping to conclusions.",
+    icon: Users,
+  },
+  {
+    title: "Priorities",
+    description: "A plain-language guide to how Now, Next, and Later will be decided.",
+    icon: ListTodo,
+  },
+  {
+    title: "Reviews",
+    description: "A place to revisit what you noticed and what to keep watching before the session.",
+    icon: LineChart,
+  },
+  {
+    title: "Resources",
+    description: "Short preparation tools matched to the intake stage.",
+    icon: BookOpen,
   },
 ];
 
@@ -53,25 +77,51 @@ export default function HomePage({
   onOpenSetup,
 }: {
   onPageChange: (page: any) => void;
-  onOpenSetup?: () => void;
+  onOpenSetup?: (step?: 1 | 2 | 3 | 4 | 5 | "welcome") => void;
 }) {
   const { currentChild } = useCurrentChild();
-  const [isActionDone, setIsActionDone] = useState(false);
+  const { isParentClarity } = useDisplayMode();
+  const { isReviewExperience } = useNewChildExperience();
+  const [isZeroProgressMomentOpen, setIsZeroProgressMomentOpen] = useState(false);
   const data = getChildData(currentChild).home;
 
-  const isLiam = currentChild.name === "Liam";
+  const isLiam = isMaintenancePhase(currentChild);
+  const isNoahStarting = isPlanNotStarted(currentChild);
+  const showParentClarity = isParentClarity && !currentChild.isNew && !isLiam && !isNoahStarting;
+  const newChildHomeCopy = getJourneyHomeCopy(
+    currentChild.name,
+    currentChild.intake?.journeyStage,
+    hasReportContext(currentChild.intake?.availableInfo)
+  );
   const synthesisQuote = isLiam 
     ? "Liam has achieved all current developmental milestones for this phase; focus now shifts to long-term enrichment and peer-leadership skills."
+    : isNoahStarting
+      ? "Noah's first quarter plan is ready. Progress is still at 0%, so the focus is simply starting the first support routine and noticing what changes."
     : currentChild.isNew 
-      ? `We're currently gathering the full picture for ${currentChild.name}. Once your questionnaire and first session are complete, a clinical synthesis will appear here.`
+      ? newChildHomeCopy.quote
+      : showParentClarity
+      ? `${currentChild.name}'s main working thread is classroom focus. The plan is helping attention improve first, while we keep an eye on sleep because it can make focus fluctuate.`
       : "Maya is showing marked improvements in auditory processing, though focus remains heavily tethered to circadian stability.";
   
-  const progressValue = isLiam ? 100 : currentChild.isNew ? 0 : 65;
-  const progressStatus = isLiam ? "all goals met — maintenance phase" : currentChild.isNew ? "booked — assessment pending" : "on track — steady progress";
-  const firstSessionDate = currentChild.intake?.sessionDay ? `Thu ${currentChild.intake.sessionDay} June` : "Thu 26 June";
-  const firstSessionTime = currentChild.intake?.sessionTime || "4:00 pm";
-  const nextReview = isLiam ? "12 December" : currentChild.isNew ? firstSessionDate : "12 September";
-  const evidenceTag = isLiam ? "Consolidated" : currentChild.isNew ? "Initial" : "Emerging";
+  const sessionStatus = getChildSessionStatus(currentChild);
+  const isSessionBooked = sessionStatus === "booked";
+  const isSessionCancelled = sessionStatus === "cancelled";
+  const firstSessionDate = getSessionDate(currentChild, "long") ?? "Not booked";
+  const firstSessionTime = isSessionBooked ? currentChild.intake?.sessionTime || "4:00 pm" : isSessionCancelled ? "Cancelled" : "Choose a time";
+  const progressValue = isLiam ? 100 : isNoahStarting ? 0 : currentChild.isNew ? 0 : 65;
+  const progressStatus = isLiam
+    ? "all goals met — maintenance phase"
+    : isNoahStarting
+    ? "not started — first actions ready"
+    : currentChild.isNew
+    ? isSessionBooked
+      ? "booked — assessment pending"
+      : isSessionCancelled
+      ? "session cancelled — book a new time"
+      : "setup in progress — session not booked"
+    : "on track — steady progress";
+  const nextReview = isLiam ? "12 December" : isNoahStarting ? "8 October" : currentChild.isNew ? firstSessionDate : "12 September";
+  const evidenceTag = isLiam ? "Consolidated" : isNoahStarting ? "Baseline" : currentChild.isNew ? "Initial" : "Emerging";
   const sessionDetails = currentChild.isNew
     ? [
         {
@@ -85,12 +135,44 @@ export default function HomePage({
           icon: <Clock className="w-4 h-4 stroke-[1.8]" />,
         },
         {
-          label: "Documents",
-          value: "Initial documents uploaded",
+          label: "Information",
+          value: currentChild.intake?.availableInfo?.length
+            ? "Report context noted"
+            : newChildHomeCopy.prepCards === "gentle"
+            ? "Questions first"
+            : "Context pending",
           icon: <FileText className="w-4 h-4 stroke-[1.8]" />,
         },
       ]
     : undefined;
+  const visibleNewChildPreviewCards = isReviewExperience ? reviewNewChildPreviewCards : newChildPreviewCards;
+  const zeroProgressMomentKey = currentChild.id
+    ? `threadline-zero-progress-moment-${currentChild.id}`
+    : `threadline-zero-progress-moment-${currentChild.name}`;
+
+  useEffect(() => {
+    if (!isNoahStarting) {
+      setIsZeroProgressMomentOpen(false);
+      return;
+    }
+
+    try {
+      if (sessionStorage.getItem(zeroProgressMomentKey)) return;
+    } catch {
+      // If session storage is unavailable, still show the moment once for this render.
+    }
+
+    setIsZeroProgressMomentOpen(true);
+  }, [isNoahStarting, zeroProgressMomentKey]);
+
+  const closeZeroProgressMoment = () => {
+    try {
+      sessionStorage.setItem(zeroProgressMomentKey, "seen");
+    } catch {
+      // Storage can be unavailable in restricted contexts; closing still works.
+    }
+    setIsZeroProgressMomentOpen(false);
+  };
 
   return (
     <motion.div
@@ -98,10 +180,90 @@ export default function HomePage({
       animate={{ opacity: 1, y: 0 }}
       className="pt-16 pb-16"
     >
+      {isZeroProgressMomentOpen && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="zero-progress-moment-title"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 18, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            className="w-full max-w-[680px] overflow-hidden rounded-tr-[42px] rounded-bl-[42px] bg-white shadow-modal border border-black/5"
+          >
+            <div className="relative h-[190px] overflow-hidden">
+              <img
+                src={watercolorBgImg}
+                alt=""
+                className="h-full w-full object-cover"
+                decoding="async"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-white/85 via-white/20 to-transparent" />
+              <div className="absolute bottom-5 left-7 right-7">
+                <span className="text-[0.68rem] tracking-[0.18em] uppercase font-medium text-[var(--color-thread-mid-green)]">
+                  A new chapter is ready
+                </span>
+              </div>
+            </div>
+
+            <div className="px-7 py-7 sm:px-9 sm:py-8">
+              <h2
+                id="zero-progress-moment-title"
+                className="font-serif font-normal text-[2rem] sm:text-[2.45rem] leading-[1.08] tracking-tight text-[var(--color-thread-heading)] max-w-[12ch]"
+              >
+                Congratulations on this next step.
+              </h2>
+              <p className="mt-5 text-[0.95rem] leading-relaxed text-slate-500 max-w-[58ch]">
+                Noah's plan is at 0%, and that is not a problem to fix. It means the next part of the journey is clearly marked: one first focus, one gentle routine to try, and a way to notice what changes.
+              </p>
+              <p className="mt-4 text-[0.95rem] leading-relaxed text-slate-500 max-w-[58ch]">
+                Whether this is your first plan or a fresh plan after earlier reviews, this is the point where clarity turns into a small, doable next action.
+              </p>
+              <p className="mt-4 text-[0.95rem] leading-relaxed text-slate-500 max-w-[58ch]">
+                Invite a partner, teacher, or carer to see Noah's profile. You choose what they can access.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  closeZeroProgressMoment();
+                  onPageChange("settings");
+                }}
+                className="mt-2 text-left text-[0.84rem] font-medium leading-relaxed text-[var(--color-thread-mid-green)] hover:text-[var(--color-thread-heading)] transition-colors"
+              >
+                Manage sharing
+              </button>
+
+              <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Button
+                  type="button"
+                  variant="muted"
+                  onClick={closeZeroProgressMoment}
+                >
+                  Close
+                </Button>
+                <Button
+                  type="button"
+                  variant="mint"
+                  onClick={() => {
+                    closeZeroProgressMoment();
+                    onPageChange("priorities");
+                  }}
+                  rightIcon={<ChevronRight className="w-3.5 h-3.5 stroke-[2]" />}
+                >
+                  See Noah's first priorities
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
       <PageContainer>
         <PageHeader
-        kicker={currentChild.isNew ? "PREVIEW · ASSESSMENT PENDING" : "Tuesday · Good morning"}
-        title="Here's where to put your energy today, Sarah."
+        kicker={currentChild.isNew ? newChildHomeCopy.kicker : "Tuesday · Good morning"}
+        title={currentChild.isNew ? newChildHomeCopy.title : isLiam ? `${currentChild.name} has completed this quarter's plan, Sarah.` : isNoahStarting ? `${currentChild.name}'s plan is ready to begin, Sarah.` : "Here's where to put your energy today, Sarah."}
         titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[18ch]"
         className={currentChild.isNew ? "mb-12" : "mb-28"}
       />
@@ -121,10 +283,10 @@ export default function HomePage({
                   <Button
                     type="button"
                     variant="mint"
-                    onClick={() => onPageChange("emerging-details")}
+                    onClick={() => onPageChange(showParentClarity ? "resources" : "emerging-details")}
                     rightIcon={<ChevronRight className="w-3.5 h-3.5 stroke-[2]" />}
                   >
-                    Learn more
+                    {showParentClarity ? "Share teacher pack" : "Learn more"}
                   </Button>
                 )
               }
@@ -142,6 +304,9 @@ export default function HomePage({
               nextReview={nextReview}
               title={currentChild.isNew ? "First session" : "This quarter's plan"}
               details={sessionDetails}
+              footerLabel={currentChild.isNew ? "Date" : undefined}
+              onReschedule={currentChild.isNew ? () => onOpenSetup?.(5) : () => onOpenSetup?.(5)}
+              rescheduleLabel={currentChild.isNew ? (isSessionBooked ? "Reschedule" : isSessionCancelled ? "Book again" : "Book session") : undefined}
               className="w-full h-full"
             />
           </FadeInScroll>
@@ -159,7 +324,7 @@ export default function HomePage({
             </div>
             <SetupSummary
               childName={currentChild.name}
-              onContinueQuestionnaire={() => onOpenSetup?.()}
+              onContinueQuestionnaire={() => onOpenSetup?.(4)}
               onReviewUnderstanding={() => onPageChange("understanding")}
             />
           </div>
@@ -167,34 +332,34 @@ export default function HomePage({
           <>
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2.5 sm:gap-4 mb-4">
               <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium">
-                Now · Next · Later
+                {isLiam ? "Completed quarter · Next review" : "Now · Next · Later"}
               </span>
               <ActionLink
                 variant="default"
                 as="button"
                 onClick={() => onPageChange("priorities")}
               >
-                View all priorities
+                {isLiam ? "Open review priorities" : "View all priorities"}
               </ActionLink>
             </div>
 
             <div className="mt-1.5 flex flex-col">
               <TimelineItem
-                tag="Now"
+                tag={isLiam ? "New" : "Now"}
                 title={data.timeline.now.title}
                 meta={data.timeline.now.meta}
                 content={data.timeline.now.content}
-                progress={35}
+                progress={isLiam ? 100 : isNoahStarting ? 0 : 35}
                 isFirst
                 active
                 isCollapsible
               />
               <TimelineItem
-                tag="Next"
+                tag={isLiam ? "Then" : "Next"}
                 title={data.timeline.next.title}
                 meta={data.timeline.next.meta}
                 content={data.timeline.next.content}
-                progress={15}
+                progress={isLiam ? 0 : isNoahStarting ? 0 : 15}
                 isCollapsible
               />
               <TimelineItem
@@ -233,7 +398,7 @@ export default function HomePage({
           </div>
 
           <div className="grid grid-cols-4 gap-5 max-lg:grid-cols-2 max-sm:grid-cols-1">
-            {newChildPreviewCards.map((card, index) => {
+            {visibleNewChildPreviewCards.map((card, index) => {
               const Icon = card.icon;
               const corners = ["rounded-tr-[28px]", "rounded-tl-[28px]", "rounded-br-[28px]", "rounded-bl-[28px]"];
               return (
@@ -261,10 +426,14 @@ export default function HomePage({
           title="Sleep"
           description={isLiam
             ? "Liam's sleep hygiene remains optimal. We are maintaining current wind-down routines to support his high-performance learning phases."
+            : isNoahStarting
+            ? "Noah's first plan has just started, so sleep is a baseline signal to watch rather than something to turn into a separate task today."
+            : showParentClarity
+            ? `${currentChild.name}'s sleep is not the main priority today, but it may explain why focus still changes from day to day. Keep the routine steady and we will only move it up if the signal grows.`
             : "Maya is showing signs of increased evening fatigue. We are currently monitoring latency patterns and bedtime routine transitions for consistency."}
           image={img2912}
           actionText="View sleep log"
-          onActionClick={() => onPageChange('priorities')}
+          onActionClick={() => onPageChange("emerging-details")}
         />
       )}
 

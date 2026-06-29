@@ -37,7 +37,9 @@ import {
   Users,
   Layout,
   Maximize,
-  Columns
+  Columns,
+  ShieldCheck,
+  ShieldHalf
 } from "lucide-react";
 import { useState } from "react";
 import { Page } from "../types";
@@ -99,6 +101,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
   const [demoProgress, setDemoProgress] = useState<number>(45);
   const [demoFilter, setDemoFilter] = useState<string>("classroom");
   const [demoFileShared, setDemoFileShared] = useState<boolean>(true);
+  const [demoUserAccess, setDemoUserAccess] = useState<'full' | 'partial'>('full');
 
   // Dynamic Theme States inside StyleGuidePage
   const [theme, setTheme] = useState(() => {
@@ -521,6 +524,81 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
     }
   ];
 
+  const visualDirectionRules = [
+    {
+      title: "Calm, not clinical-cold",
+      detail: "Use soft off-white canvases, asymmetric white cards, and human serif headlines so the app feels supportive for parents while still clinically credible.",
+    },
+    {
+      title: "One clear next step",
+      detail: "Every major card should answer: what is this, why does it matter, and what can the parent safely do next. Avoid stacking multiple primary CTAs.",
+    },
+    {
+      title: "Progressive certainty",
+      detail: "New-child screens must say what is locked, pending, or still being gathered. Assessed-child screens can use stronger synthesis language and progress metrics.",
+    },
+    {
+      title: "Insight before administration",
+      detail: "Scheduling, uploads, and filters should be visually quieter than recommendations, priorities, and review rhythm. Utility supports clarity; it should not dominate.",
+    },
+  ];
+
+  const uxStateRules = [
+    {
+      state: "New child · Intake in progress",
+      surface: "Home, Understanding, Priorities, Reviews",
+      guidance: "Show preview value, locked/empty states, and setup launchers. Do not imply assessment conclusions before questionnaire and session context exist.",
+    },
+    {
+      state: "Assessment pending · Session booked",
+      surface: "Home and First session cards",
+      guidance: "Show the booked session and a reschedule action on the session card footer beside the clinician name. Do not place reschedule inside the child profile selector.",
+    },
+    {
+      state: "Assessed child · Active plan",
+      surface: "Home, Priorities, Roadmap, Documents",
+      guidance: "Lead with synthesis, Now/Next/Later reasoning, and practical plan steps. Keep supporting evidence available through secondary links.",
+    },
+    {
+      state: "Completed quarter · 100%",
+      surface: "Liam profile",
+      guidance: "Shift copy from active intervention to maintenance, enrichment, archive, and future check-ins. Progress can be celebratory but should stay grounded.",
+    },
+  ];
+
+  const componentUseRules = [
+    {
+      component: "HeroQuoteCard",
+      use: "Top synthesis, recommendation rationale, or page-level insight.",
+      avoid: "Do not use for simple upload prompts, filters, or procedural copy.",
+    },
+    {
+      component: "PlanProgressCard / FirstSessionCard",
+      use: "Right-side status card in Home and All Children. Put reschedule with the footer clinician/date context.",
+      avoid: "Do not duplicate appointment actions in the child selector dropdown.",
+    },
+    {
+      component: "FilterTab",
+      use: "Small category controls, including document type and uploader filters such as Uploaded by you / Uploaded by Threadline.",
+      avoid: "Avoid using tabs for primary navigation or multi-step setup flow.",
+    },
+    {
+      component: "FileItem",
+      use: "Document rows with type, date, uploader source, and share state.",
+      avoid: "Do not hide file provenance when filters depend on it.",
+    },
+    {
+      component: "TimelineItem",
+      use: "Now/Next/Later plan lines on active profiles. For a completed quarter (100%), switch tags to New/Then/Later and pass hideMetrics (or progress=100) to drop clinical weighting, plan progress, and See details.",
+      avoid: "Do not show clinical weighting or a 100% plan-progress bar on a closed quarter — it reads as active work still in flight.",
+    },
+    {
+      component: "Secondary user access",
+      use: "Settings only. Invite a partner, teacher, or carer and pick an access level: Full (mirrors the parent view) or Partial. Persist via SecondaryUsersContext so invitees survive navigation.",
+      avoid: "Do not present Partial as finished — keep its TBD marker until its scoped permissions are defined, and don't reuse this for clinician roles.",
+    },
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -532,19 +610,130 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
         {/* Page Header */}
       <div className="mb-16">
         <span className="text-[0.75rem] tracking-[0.12em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-4 block">
-          Internal Design Token & Style Audit
+          Design system · Product guidance
         </span>
         <h1 className="font-serif font-normal text-[2.2rem] sm:text-[3.2rem] md:text-[3.8rem] leading-[1.15] md:leading-[4.3rem] tracking-[-0.075rem] text-[var(--color-thread-heading)]">
           The Design System.
         </h1>
         <p className="text-[1.02rem] text-[var(--color-thread-gray)] mt-4.5 max-w-[65ch] leading-relaxed">
-          Comprehensive design system inventory mapping all typography scales, hex colors, 
-          container configurations, micro-behaviours, and UI components configured for Threadline.
+          A practical visual and UX reference for Threadline. Use this page to align product decisions,
+          AI-generated UI, and implementation details across child states, review flows, documents, and setup.
         </p>
       </div>
 
       {/* Grid of Contents */}
       <div className="space-y-16">
+        <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-6">
+          <div className="bg-white rounded-tr-[36px] p-8 border border-black/5 shadow-sm">
+            <div className="flex items-center gap-3.5 mb-7">
+              <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-[1.5rem] font-serif font-normal text-[var(--color-thread-heading)]">
+                  Visual direction
+                </h2>
+                <p className="text-slate-500 text-[0.88rem] mt-0.5">
+                  The product should feel warm, structured, and quietly expert.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {visualDirectionRules.map((rule) => (
+                <div key={rule.title} className="rounded-2xl bg-[var(--color-thread-off-white)] border border-black/5 p-5">
+                  <h3 className="font-medium text-[0.98rem] text-[var(--color-thread-heading)] tracking-tight">
+                    {rule.title}
+                  </h3>
+                  <p className="mt-2 text-[0.84rem] text-slate-500 leading-relaxed">
+                    {rule.detail}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-[var(--color-thread-heading)] text-white rounded-bl-[32px] p-8 shadow-sm overflow-hidden relative">
+            <div className="absolute -right-16 -bottom-16 h-48 w-48 rounded-full border border-white/10" />
+            <div className="absolute -right-8 -bottom-8 h-32 w-32 rounded-full border border-white/10" />
+            <span className="text-[0.68rem] tracking-[0.14em] uppercase text-emerald-100/80 font-medium">
+              North star
+            </span>
+            <h2 className="mt-4 font-serif text-[2rem] leading-tight tracking-tight">
+              Help parents understand what matters without making them feel behind.
+            </h2>
+            <p className="mt-5 text-[0.9rem] leading-relaxed text-emerald-50/75 max-w-[44ch]">
+              Design choices should reduce cognitive load: fewer competing actions, plain-language explanations,
+              clear provenance, and visible states for what is new, pending, reviewed, or complete.
+            </p>
+          </div>
+        </section>
+
+        <section className="bg-white rounded-bl-[32px] p-8 border border-black/5 shadow-sm">
+          <div className="flex items-center justify-between gap-4 flex-wrap mb-7">
+            <div>
+              <span className="text-[0.68rem] tracking-[0.14em] uppercase text-[var(--color-thread-mid-green)] font-medium">
+                UX state model
+              </span>
+              <h2 className="mt-2 text-[1.5rem] font-serif font-normal text-[var(--color-thread-heading)]">
+                Child profile states drive layout, copy, and actions.
+              </h2>
+            </div>
+            <Badge variant="clinical">Current app rules</Badge>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {uxStateRules.map((rule) => (
+              <div key={rule.state} className="rounded-2xl border border-black/5 bg-slate-50/70 p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="font-medium text-[1rem] text-slate-900 tracking-tight">
+                      {rule.state}
+                    </h3>
+                    <p className="mt-1 text-[0.72rem] uppercase tracking-[0.12em] text-[var(--color-thread-mid-green)] font-medium">
+                      {rule.surface}
+                    </p>
+                  </div>
+                  <Check className="w-4 h-4 text-[var(--color-thread-mid-green)] shrink-0 mt-1" />
+                </div>
+                <p className="mt-3 text-[0.86rem] text-slate-600 leading-relaxed">
+                  {rule.guidance}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="bg-white rounded-tr-[36px] p-8 border border-black/5 shadow-sm">
+          <div className="flex items-center gap-3.5 mb-7">
+            <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
+              <Layers className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-[1.5rem] font-serif font-normal text-[var(--color-thread-heading)]">
+                Component usage rules
+              </h2>
+              <p className="text-slate-500 text-[0.88rem] mt-0.5">
+                Use these guardrails when building new pages or prompting AI to generate Threadline UI.
+              </p>
+            </div>
+          </div>
+          <div className="border-y border-black/10">
+            {componentUseRules.map((rule) => (
+              <div key={rule.component} className="grid grid-cols-1 lg:grid-cols-[220px_1fr_1fr] gap-4 py-5 border-b border-black/5 last:border-b-0">
+                <div className="font-mono text-[0.78rem] text-slate-500">
+                  {rule.component}
+                </div>
+                <div>
+                  <span className="text-[0.65rem] uppercase tracking-[0.12em] text-[var(--color-thread-mid-green)] font-medium">Use</span>
+                  <p className="mt-1 text-[0.86rem] text-slate-700 leading-relaxed">{rule.use}</p>
+                </div>
+                <div>
+                  <span className="text-[0.65rem] uppercase tracking-[0.12em] text-slate-400 font-medium">Avoid</span>
+                  <p className="mt-1 text-[0.86rem] text-slate-500 leading-relaxed">{rule.avoid}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
         
         {/* Colors Palette Section */}
         <section className="bg-white rounded-tr-[36px] p-10 border border-black/5 shadow-sm">
@@ -1752,7 +1941,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                 <span className="font-mono text-xs text-slate-400">src/components/ui/TimelineItem.tsx</span>
               </div>
               <p className="text-slate-500 text-[0.88rem] mb-6">
-                Unified component serving both collapsible accordion lines (on Dashboard/Home) and static prioritized lists (on Priorities). Includes built-in progress bars and supporting dependency links.
+                Unified component serving both collapsible accordion lines (on Dashboard/Home) and static prioritized lists (on Priorities). Includes built-in progress bars and supporting dependency links. For a completed quarter (100%) child such as Liam, tags shift to <strong>New · Then · Later</strong> and <code className="font-mono text-[0.8rem]">hideMetrics</code> (auto-applied when <code className="font-mono text-[0.8rem]">progress=100</code>) drops the clinical weighting, plan-progress, and See details affordances.
               </p>
               <div className="space-y-6">
                 <div className="p-4 bg-slate-50 rounded-xl border border-black/5">
@@ -1782,6 +1971,37 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                     dependency="Linked to improvements in <strong>Classroom attention</strong> strategies."
                     progress={15}
                     isCollapsible={false}
+                  />
+                </div>
+                <div className="p-4 bg-slate-50 rounded-xl border border-black/5">
+                  <span className="text-[0.68rem] font-medium text-slate-400 block mb-3 uppercase">Completed Quarter · 100% (Maintenance — metrics hidden)</span>
+                  <TimelineItem
+                    tag="New"
+                    title="This quarter's plan"
+                    meta="100% complete · Maintenance active"
+                    content="Goals for this quarter are met. Routines that helped stay steady while review evidence is gathered."
+                    facts={{
+                      "Plan progress": "100%",
+                      "Clinical confidence": "High",
+                    }}
+                    dependency="Closes the current plan before a new <strong>New · Then · Later</strong> order is agreed."
+                    progress={100}
+                    active
+                    isCollapsible={false}
+                  />
+                  <TimelineItem
+                    tag="Then"
+                    title="Next review session"
+                    meta="12 December · Clinician-led decision"
+                    content="The clinician reviews what stayed stable and whether enrichment, light maintenance, or a new focus is right."
+                    facts={{
+                      "Decision owner": "Clinician",
+                      "Priority order": "Not set yet",
+                    }}
+                    dependency="The next <strong>New</strong>, <strong>Then</strong>, and <strong>Later</strong> priorities are decided after this review."
+                    progress={0}
+                    isCollapsible={false}
+                    hideMetrics
                   />
                 </div>
               </div>
@@ -1987,14 +2207,22 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                 <span className="font-mono text-xs text-slate-400">src/components/ui/FilterTab.tsx</span>
               </div>
               <p className="text-slate-500 text-[0.88rem] mb-6">
-                Interactive pills used to toggle categories of clinical strategies, timelines, or resources. Updates state with seamless active style animations.
+                Interactive pills used to toggle categories of clinical strategies, timelines, resources, and document provenance. Documents now support source filters such as Uploaded by you and Uploaded by Threadline.
               </p>
               <div className="p-4 bg-slate-50 rounded-xl border border-black/5 flex flex-wrap gap-2 items-center">
-                {["classroom", "home", "clinical", "all"].map((cat) => (
+                {["all", "report", "uploaded-you", "uploaded-threadline"].map((cat) => (
                   <FilterTab 
                     key={cat} 
                     active={demoFilter === cat} 
-                    label={cat.charAt(0).toUpperCase() + cat.slice(1)} 
+                    label={
+                      cat === "all"
+                        ? "All files"
+                        : cat === "uploaded-you"
+                        ? "Uploaded by you"
+                        : cat === "uploaded-threadline"
+                        ? "Uploaded by Threadline"
+                        : "Report"
+                    } 
                     onClick={() => {
                       setDemoFilter(cat);
                       addLog(`FilterTab clicked: Active filter set to '${cat}'`);
@@ -2011,13 +2239,14 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                 <span className="font-mono text-xs text-slate-400">src/components/ui/FileItem.tsx</span>
               </div>
               <p className="text-slate-500 text-[0.88rem] mb-6">
-                File display listing for documentation, sources, or worksheets. Includes clinical status tags, dates, and click-to-toggle shared access states.
+                File display listing for documentation, sources, or worksheets. Includes type, date, uploader source, and click-to-toggle shared access states.
               </p>
               <div className="p-4 bg-slate-50 rounded-xl border border-black/5 max-w-md">
                 <FileItem
                   name="Speech_and_Language_2026.pdf"
                   typeName="Diagnostic Assessment"
                   date="14 Jan 2026"
+                  uploadedBy="threadline"
                   shared={demoFileShared}
                   sharedWith="Clinician Team"
                   icon={FileText}
@@ -2161,10 +2390,84 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                 Simple, high-contrast list item for diagnostic steps, observations, or required actions.
               </p>
               <div className="max-w-md p-6 bg-slate-50 rounded-xl border border-black/5">
-                <ChecklistItem 
+                <ChecklistItem
                   title="Complete Auditory Screening"
                   description="Required to confirm environmental sound localization thresholds."
                 />
+              </div>
+            </div>
+
+            {/* Component 19: Secondary User Access */}
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-sans font-medium text-[1.12rem] text-slate-900">19. Secondary User Access (Settings)</h3>
+                <span className="font-mono text-xs text-slate-400">src/context/SecondaryUsersContext.tsx</span>
+              </div>
+              <p className="text-slate-500 text-[0.88rem] mb-6">
+                Workspace sharing pattern for inviting a partner, teacher, or carer. Each invitee carries a role and an access level — <strong>Full</strong> (mirrors the parent view) or <strong>Partial</strong> (limited scope, still <span className="font-mono text-[0.8rem]">TBD</span>). Invitees persist through <code className="font-mono text-[0.8rem]">SecondaryUsersContext</code> so they survive navigation like child profiles.
+              </p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Access level selector */}
+                <div className="p-5 bg-slate-50 rounded-xl border border-black/5">
+                  <span className="text-[0.66rem] font-medium text-slate-400 block mb-3 uppercase tracking-wider">Access Level Selector</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <button
+                      type="button"
+                      onClick={() => setDemoUserAccess('full')}
+                      className={cn(
+                        "flex items-start gap-3 p-4 rounded-2xl border text-left transition-all",
+                        demoUserAccess === 'full'
+                          ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-light-green)]/30 ring-2 ring-[var(--color-thread-mid-green)]/10"
+                          : "border-black/5 hover:border-black/15 bg-white"
+                      )}
+                    >
+                      <ShieldCheck className="w-5 h-5 text-[var(--color-thread-mid-green)] shrink-0 mt-0.5" />
+                      <span className="flex flex-col">
+                        <span className="font-medium text-[0.95rem] text-slate-900">Full access</span>
+                        <span className="text-[0.74rem] text-slate-500 mt-0.5">Sees and manages everything</span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDemoUserAccess('partial')}
+                      className={cn(
+                        "flex items-start gap-3 p-4 rounded-2xl border text-left transition-all",
+                        demoUserAccess === 'partial'
+                          ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-light-green)]/30 ring-2 ring-[var(--color-thread-mid-green)]/10"
+                          : "border-black/5 hover:border-black/15 bg-white"
+                      )}
+                    >
+                      <ShieldHalf className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" />
+                      <span className="flex flex-col">
+                        <span className="font-medium text-[0.95rem] text-slate-900 flex items-center gap-2">
+                          Partial
+                          <span className="text-[0.6rem] tracking-[0.1em] uppercase font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full">TBD</span>
+                        </span>
+                        <span className="text-[0.74rem] text-slate-500 mt-0.5">Limited scope — soon</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Invited user row */}
+                <div className="p-5 bg-slate-50 rounded-xl border border-black/5">
+                  <span className="text-[0.66rem] font-medium text-slate-400 block mb-3 uppercase tracking-wider">Invited User Row</span>
+                  <div className="bg-white p-5 rounded-tr-[32px] shadow-premium-light flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-[42px] h-[42px] rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] flex items-center justify-center font-medium text-[0.95rem] font-serif flex-shrink-0">
+                        JW
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-[1rem] text-slate-900 tracking-tight">James Whitlock</h4>
+                        <p className="text-[0.8rem] text-slate-500 mt-0.5">Partner · james@example.com</p>
+                      </div>
+                    </div>
+                    <div className="flex bg-slate-100 rounded-xl p-1 border border-black/5">
+                      <span className={cn("px-3 py-1.5 text-[0.74rem] font-medium rounded-lg", demoUserAccess === 'full' ? "bg-white text-slate-900 shadow-sm" : "text-slate-400")}>Full</span>
+                      <span className={cn("px-3 py-1.5 text-[0.74rem] font-medium rounded-lg", demoUserAccess === 'partial' ? "bg-white text-slate-900 shadow-sm" : "text-slate-400")}>Partial</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

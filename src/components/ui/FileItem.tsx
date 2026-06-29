@@ -6,6 +6,7 @@ export function FileItem({
   name,
   typeName,
   date,
+  uploadedBy,
   shared,
   sharedWith,
   icon: Icon,
@@ -32,6 +33,9 @@ export function FileItem({
           </span>
           <span>
             {date}
+          </span>
+          <span>
+            Uploaded by {uploadedBy === "threadline" ? "Threadline" : "you"}
           </span>
         </div>
         <div

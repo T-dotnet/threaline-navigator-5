@@ -11,4 +11,5 @@ coverage/
 .runtime/
 .vercel-cache/
 .vercel-home/
+.pnpm-store/
 correct-threadline-nav-work/

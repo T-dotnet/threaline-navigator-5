@@ -24,6 +24,8 @@ import { LockerItem } from "./ui/LockerItem";
 import { HeroQuoteCard } from "./ui/HeroQuoteCard";
 import { PageContainer } from "./ui/PageContainer";
 import { useCurrentChild } from "../context/ChildContext";
+import { useDisplayMode } from "../context/DisplayModeContext";
+import { isMaintenancePhase, isPlanNotStarted } from "../lib/childStatus";
 
 import img2912 from "../assets/images/IMG_2912.jpeg";
 import img2947 from "../assets/images/IMG_2947.jpeg";
@@ -117,11 +119,14 @@ const INTAKE_GUIDES = [
 
 export default function ResourcesPage() {
   const { currentChild } = useCurrentChild();
+  const { isParentClarity } = useDisplayMode();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
-  const isLiam = currentChild.name === "Liam";
+  const isLiam = isMaintenancePhase(currentChild);
+  const isNoahStarting = isPlanNotStarted(currentChild);
   const isNew = Boolean(currentChild.isNew);
+  const showParentClarity = isParentClarity && !isNew && !isLiam && !isNoahStarting;
 
   useEffect(() => {
     setFilter("all");
@@ -180,7 +185,7 @@ export default function ResourcesPage() {
         <div className="relative rounded-br-[36px] p-12 bg-watercolor">
           <HeroQuoteCard
             kicker="Featured guide"
-            quote={isNew ? "Preparing for the first session." : isLiam ? "Fostering long-term developmental velocity." : "Starting the upcoming school term with confidence."}
+            quote={isNew ? "Preparing for the first session." : isLiam ? "Fostering long-term developmental velocity." : isNoahStarting ? "Starting the first support plan." : showParentClarity ? "Start with the school support pack." : "Starting the upcoming school term with confidence."}
             showQuotes={false}
             className="mb-0 shadow-premium"
             description={
@@ -188,6 +193,10 @@ export default function ResourcesPage() {
                 `A simple way to gather notes, examples, and questions before ${currentChild.name}'s first assessment.`
               ) : isLiam ? (
                 `Advanced strategies for ${currentChild.name} to generalise his social integration wins into diverse, unstructured environments.`
+              ) : isNoahStarting ? (
+                `Simple starter resources for ${currentChild.name}'s first support routine, focused on getting to the first useful progress signal.`
+              ) : showParentClarity ? (
+                `The most useful resource right now is the teacher-facing pack: a plain summary of what helps ${currentChild.name} focus, plus small classroom changes to try first.`
               ) : (
                 `Strategies to manage ADHD-linked morning fatigue and prepare sensory transitions before ${currentChild.name} steps into the new classroom.`
               )
@@ -198,7 +207,7 @@ export default function ResourcesPage() {
                 className="relative"
                 rightIcon={<ChevronRight className="w-3.5 h-3.5 stroke-[2]" />}
               >
-                Read article
+                {showParentClarity ? "Preview teacher pack" : "Read article"}
               </Button>
             }
           />

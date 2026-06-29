@@ -3,8 +3,8 @@ import {
   Home,
   Info,
   ListTodo,
-  Milestone,
   LineChart,
+  Map,
   BookOpen,
   Lock,
   Settings,
@@ -16,6 +16,7 @@ import { Page } from "../types";
 import { cn } from "../lib/utils";
 import { motion } from "motion/react";
 import { useCurrentChild } from "../context/ChildContext";
+import { useNewChildExperience } from "../context/NewChildExperienceContext";
 
 interface SidebarProps {
   currentPage: Page;
@@ -23,31 +24,42 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ currentPage, onPageChange }: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { currentChild } = useCurrentChild();
+  const { isReviewExperience } = useNewChildExperience();
 
   const assessedNavItems = [
     { id: "home", label: "Home", icon: Home },
     { id: "understanding", label: "Understanding", icon: Info },
     { id: "priorities", label: "Priorities", icon: ListTodo },
-    { id: "roadmap", label: "Roadmap", icon: Milestone },
     { id: "reviews", label: "Reviews", icon: LineChart },
     { id: "resources", label: "Resources", icon: BookOpen },
     { id: "documents", label: "Documents", icon: Lock },
   ] as const;
-  const newChildNavItems = [
+  const currentNewChildNavItems = [
     { id: "home", label: "Home", icon: Home },
     { id: "what-you-noticed", label: "What you noticed", icon: Search },
     { id: "understanding", label: "Understanding", icon: Info },
+    { id: "priorities", label: "Priorities", icon: ListTodo },
+    { id: "roadmap", label: "Roadmap", icon: Map },
     { id: "resources", label: "Resources", icon: BookOpen },
   ] as const;
+  const reviewNewChildNavItems = [
+    { id: "home", label: "Home", icon: Home },
+    { id: "understanding", label: "Understanding", icon: Info },
+    { id: "priorities", label: "Priorities", icon: ListTodo },
+    { id: "what-you-noticed", label: "Reviews", icon: LineChart },
+    { id: "resources", label: "Resources", icon: BookOpen },
+    { id: "documents", label: "Documents", icon: Lock },
+  ] as const;
+  const newChildNavItems = isReviewExperience ? reviewNewChildNavItems : currentNewChildNavItems;
   const navItems = currentChild.isNew ? newChildNavItems : assessedNavItems;
 
   const isAllChildrenPage = currentPage === "all-children";
 
   return (
     <motion.aside
-      animate={{ width: (isCollapsed || isAllChildrenPage) ? 80 : 240 }}
+      animate={{ width: ((isCollapsed) || isAllChildrenPage) ? 80 : 240 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className="flex-shrink-0 bg-[var(--color-thread-off-white)] border-r border-black/5 flex flex-col p-6 max-md:hidden relative"
     >
@@ -87,7 +99,7 @@ export default function Sidebar({ currentPage, onPageChange }: SidebarProps) {
         <div
           className={cn(
             "flex flex-col leading-none transition-opacity duration-200 grow min-w-0 overflow-hidden",
-            (isCollapsed || isAllChildrenPage)
+            ((isCollapsed) || isAllChildrenPage)
               ? "opacity-0 invisible w-0"
               : "opacity-100 visible w-auto",
           )}

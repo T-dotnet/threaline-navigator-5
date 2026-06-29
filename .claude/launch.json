@@ -4,9 +4,9 @@
   "configurations": [
     {
       "name": "Vite Dev Server",
-      "runtimeExecutable": "/Users/danielenicoletti/Documents/Threadline Navigator/.runtime/bin/node",
-      "runtimeArgs": ["/Users/danielenicoletti/Documents/Threadline Navigator/node_modules/.bin/vite", "--host=0.0.0.0"],
-      "port": 5173,
+      "runtimeExecutable": "/usr/local/bin/node",
+      "runtimeArgs": ["/Users/danielenicoletti/Documents/Threadline Navigator_roo/node_modules/.bin/vite", "--port=3000", "--host=0.0.0.0"],
+      "port": 3000,
       "autoPort": true
     },
     {

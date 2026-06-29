@@ -1,9 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Check, ChevronRight, X, ArrowLeft, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { QUESTIONS } from '../../questionnaire';
-import watercolorBg from '../../assets/images/watercolor_bg_1782427011739.jpg';
+import watercolorBg from '../../assets/images/optimized/watercolor-bg-900.jpg';
 
 interface QuestionnaireModalProps {
   isOpen: boolean;
@@ -45,9 +45,13 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
     } else if (type === 'multiple-choice') {
       setAnswers(prev => {
         const current = prev[qId] || [];
+        if (option === 'Nothing yet') {
+          return { ...prev, [qId]: current.includes(option) ? [] : ['Nothing yet'] };
+        }
+        const currentWithoutNone = current.filter((o: string) => o !== 'Nothing yet');
         const updated = current.includes(option)
-          ? current.filter((o: string) => o !== option)
-          : [...current, option];
+          ? currentWithoutNone.filter((o: string) => o !== option)
+          : [...currentWithoutNone, option];
         return { ...prev, [qId]: updated };
       });
     }
@@ -56,6 +60,24 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
   const handleTextChange = useCallback((qId: string, value: string) => {
     setAnswers(prev => ({ ...prev, [qId]: value }));
   }, []);
+
+  const getConversationLead = (sectionName: string, questionIndex: number) => {
+    if (questionIndex === 0) {
+      if (sectionName === "What's going well") return 'Let’s start with what already helps.';
+      if (sectionName === "What you're seeing") return 'Now let’s look at what feels harder right now.';
+      if (sectionName === 'At school') return 'Next, a little about learning and school life.';
+      if (sectionName === 'Development & history') return 'Finally, a few background details that may help later.';
+    }
+    if (questionIndex === 1) return 'That helps. Here’s the next piece.';
+    if (questionIndex === 2) return 'A little more context, then we’re nearly there.';
+    return 'One last thing for this part.';
+  };
+
+  const getAnswerCue = (type: 'choice' | 'multiple-choice' | 'text') => {
+    if (type === 'multiple-choice') return 'Choose any that fit. If none feel right, you can just move on.';
+    if (type === 'choice') return 'Choose the closest fit. It does not need to be perfect.';
+    return 'Use your own words. A few words is enough.';
+  };
 
   const handlePrevQuestion = useCallback(() => {
     if (isReviewing) {
@@ -74,16 +96,37 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
     }
   }, [activeQuestionIndex, currentQuestions.length]);
 
-  const handleSaveAndClose = useCallback(() => {
+  const currentQuestionRef = useRef<HTMLDivElement | null>(null);
+  const prevListRef = useRef<HTMLDivElement | null>(null);
+  const bodyScrollRef = useRef<HTMLDivElement | null>(null);
+
+  const handleSaveAndExit = useCallback(() => {
     onSave(answers);
     onClose();
   }, [answers, onSave, onClose]);
+
+  const handleSaveAndAdvance = useCallback(() => {
+    onSave(answers);
+  }, [answers, onSave]);
+
+  useEffect(() => {
+    if (!isOpen || isReviewing) return;
+    requestAnimationFrame(() => {
+      currentQuestionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      if (bodyScrollRef.current) {
+        bodyScrollRef.current.scrollTop = bodyScrollRef.current.scrollHeight;
+      }
+      if (prevListRef.current) {
+        prevListRef.current.scrollTop = prevListRef.current.scrollHeight;
+      }
+    });
+  }, [activeQuestionIndex, isOpen, isReviewing]);
 
   useEffect(() => {
     if (!isOpen || !section) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       const isTyping = document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA';
-      if (e.key === 'Escape') { handleSaveAndClose(); return; }
+      if (e.key === 'Escape') { handleSaveAndExit(); return; }
       if (e.key === 'ArrowUp') { e.preventDefault(); handlePrevQuestion(); }
       else if (e.key === 'ArrowDown') { e.preventDefault(); handleNextQuestion(); }
       else if (e.key === 'Enter') {
@@ -104,7 +147,7 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, section, activeQuestionIndex, handlePrevQuestion, handleNextQuestion, handleSelectOption, handleSaveAndClose, currentQuestions]);
+}, [isOpen, section, activeQuestionIndex, handlePrevQuestion, handleNextQuestion, handleSelectOption, handleSaveAndExit, currentQuestions]);
 
   if (!isOpen || !section) return null;
 
@@ -129,22 +172,42 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
             {/* Header */}
             <div className="flex items-center justify-between p-6 pb-5 border-b border-black/5">
               <button
-                onClick={handleSaveAndClose}
+                onClick={handleSaveAndExit}
                 className="text-xs font-bold uppercase tracking-wider text-[var(--color-thread-mid-green)] hover:text-[var(--color-thread-heading)] flex items-center gap-1.5 cursor-pointer transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" /> Save & Exit Section
               </button>
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
-                {section}
+                One question at a time
               </span>
             </div>
 
             {/* Body */}
-            <div className="flex-1 py-8 px-6 sm:px-10 flex flex-col justify-center overflow-y-auto">
+            <div ref={bodyScrollRef} className="flex-1 py-8 px-6 sm:px-10 flex flex-col justify-start overflow-y-auto space-y-6">
+              <div ref={prevListRef} className="space-y-4 overflow-y-auto max-h-[220px]">
+                {currentQuestions.slice(0, activeQuestionIndex).map((q, idx) => {
+                  const answer = answers[q.id];
+                  const displayAnswer = Array.isArray(answer)
+                    ? answer.join(', ')
+                    : answer || <span className="text-rose-500 italic font-normal">Not answered</span>;
+                  return (
+                    <div key={q.id} className="rounded-[28px] border border-black/5 bg-slate-50 p-5">
+                      <div className="text-[0.72rem] uppercase tracking-[0.18em] text-slate-400 mb-2">Question {idx + 1}</div>
+                      <div className="font-medium text-[1rem] text-[var(--color-thread-heading)] leading-snug mb-3">
+                        {q.text.replace(/\$\{childName\}/g, childName || 'your child')}
+                      </div>
+                      <div className="rounded-3xl bg-white border border-black/10 p-4 text-[0.95rem] text-slate-700">
+                        {displayAnswer}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
               <AnimatePresence mode="wait">
                 {!isReviewing ? (
                   <motion.div
-                    key={activeQuestionIndex}
+                    ref={currentQuestionRef}
+                    key={`question-${activeQuestionIndex}`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
@@ -159,15 +222,23 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
 
                       return (
                         <div className="space-y-6">
-                          <div className="space-y-2">
-                            <div className="flex items-start gap-3">
-                              <span className="text-sm font-bold text-[var(--color-thread-mid-green)] mt-1.5">{String(activeQuestionIndex + 1).padStart(2, '0')} →</span>
-                              <h2 className="font-serif font-normal text-2xl md:text-3xl text-[var(--color-thread-heading)] leading-snug">{qText}</h2>
+                          <div className="space-y-3">
+                            <div className="inline-flex rounded-tr-[18px] rounded-bl-[18px] bg-[var(--color-thread-light-green)]/70 px-4 py-2 text-[0.86rem] font-medium text-[var(--color-thread-heading)]">
+                              {getConversationLead(section || '', activeQuestionIndex)}
                             </div>
-                            {qSub && <p className="text-slate-400 text-[0.92rem] ml-8">{qSub}</p>}
+                            <div className="flex items-start gap-3">
+                              <span className="mt-2 h-7 min-w-7 rounded-full bg-[var(--color-thread-off-white)] text-[0.72rem] font-semibold tracking-[0.08em] text-[var(--color-thread-mid-green)] flex items-center justify-center">{activeQuestionIndex + 1}</span>
+                              <div>
+                                <h2 className="font-serif font-normal text-2xl md:text-3xl text-[var(--color-thread-heading)] leading-snug">{qText}</h2>
+                                <p className="text-[0.84rem] text-slate-500 leading-relaxed mt-2">
+                                  {getAnswerCue(q.type)}
+                                </p>
+                              </div>
+                            </div>
+                            {qSub && <p className="text-slate-400 text-[0.92rem] ml-10">{qSub}</p>}
                           </div>
 
-                          <div className="ml-8">
+                          <div className="ml-0 sm:ml-10">
                             {q.type === 'choice' && q.options && (
                               <div className="space-y-2.5 max-w-lg">
                                 {q.options.map((opt, oIdx) => {
@@ -242,9 +313,9 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                                     onClick={handleNextQuestion}
                                     className="bg-[var(--color-thread-mid-green)] text-white px-6 py-2.5 rounded-xl font-semibold shadow-none hover:bg-[var(--color-thread-heading)] transition-all flex items-center gap-2 cursor-pointer text-sm"
                                   >
-                                    OK <Check className="w-4 h-4" />
+                                    That feels right <Check className="w-4 h-4" />
                                   </button>
-                                  <span className="text-[10px] font-mono text-slate-400">press Enter ↵</span>
+                                  <span className="text-[0.74rem] text-slate-400">then we’ll move on</span>
                                 </div>
                               </div>
                             )}
@@ -263,9 +334,9 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                                     onClick={handleNextQuestion}
                                     className="bg-[var(--color-thread-mid-green)] text-white px-6 py-2.5 rounded-xl font-semibold shadow-none hover:bg-[var(--color-thread-heading)] transition-all flex items-center gap-2 cursor-pointer text-sm"
                                   >
-                                    OK <Check className="w-4 h-4" />
+                                    That feels right <Check className="w-4 h-4" />
                                   </button>
-                                  <span className="text-[10px] font-mono text-slate-400">press Enter ↵ or Ctrl+Enter</span>
+                                  <span className="text-[0.74rem] text-slate-400">then we’ll move on</span>
                                 </div>
                               </div>
                             )}
@@ -284,8 +355,8 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                     className="space-y-6"
                   >
                     <div>
-                      <h3 className="font-serif font-normal text-2xl text-[var(--color-thread-heading)] mb-1.5">Review your answers</h3>
-                      <p className="text-slate-500 text-sm">Click on any question to change your answer before saving.</p>
+                      <h3 className="font-serif font-normal text-2xl text-[var(--color-thread-heading)] mb-1.5">Quick check before we save this part</h3>
+                      <p className="text-slate-500 text-sm">If something does not feel quite right, tap it and choose again.</p>
                     </div>
 
                     <div className="space-y-3 max-w-xl border-t border-b border-black/5 py-4 my-2 max-h-[300px] overflow-y-auto pr-1">
@@ -313,16 +384,16 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
 
                     <div className="flex gap-3">
                       <button
-                        onClick={handleSaveAndClose}
+                        onClick={handleSaveAndAdvance}
                         className="bg-[var(--color-thread-mid-green)] text-white px-6 py-2.5 rounded-xl font-semibold shadow-none hover:bg-[var(--color-thread-heading)] transition-all flex items-center gap-2 cursor-pointer text-sm"
                       >
-                        Confirm & Save Section
+                        Save this part
                       </button>
                       <button
                         onClick={() => { setIsReviewing(false); setActiveQuestionIndex(0); }}
                         className="bg-white border border-black/10 hover:border-black/20 text-slate-600 px-5 py-2.5 rounded-xl font-semibold shadow-none transition-all text-sm cursor-pointer"
                       >
-                        Back to start
+                        Look again
                       </button>
                     </div>
                   </motion.div>
@@ -346,7 +417,7 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-400 hidden sm:inline-block font-medium animate-pulse">Use Arrow Keys ↑↓ to navigate</span>
+                <span className="text-[0.74rem] text-slate-400 hidden sm:inline-block font-medium">Move back or forward</span>
                 <div className="flex border border-black/10 rounded-xl overflow-hidden bg-white">
                   <button
                     onClick={handlePrevQuestion}

@@ -8,10 +8,13 @@ export interface Child {
   isNew?: boolean;
   intake?: {
     relation?: string;
+    journeyStage?: string;
+    availableInfo?: string[];
     notices?: string[];
     notes?: string;
     sessionDay?: string;
     sessionTime?: string;
+    sessionCancelled?: boolean;
     questionnaireAnswers?: Record<string, unknown>;
     completedQuestionnaireSections?: string[];
   };
@@ -47,6 +50,7 @@ export interface DocFile {
   name: string;
   type: string;
   date: string;
+  uploadedBy?: 'you' | 'threadline';
   shared: boolean;
   sharedWith?: string;
 }
@@ -74,6 +78,8 @@ export interface GuideCardProps {
   image?: string;
   cornerClass?: string;
   actionText?: string;
+  secondaryActionText?: string;
+  onSecondaryAction?: () => void;
   onClick?: () => void;
   disableHover?: boolean;
   className?: string;
@@ -89,6 +95,7 @@ export interface InsightSectionProps {
   className?: string;
   reverse?: boolean;
   equalHeight?: boolean;
+  hierarchy?: 'default' | 'supporting';
 }
 
 export interface ProgressChartSectionProps {
@@ -100,5 +107,6 @@ export interface ProgressChartSectionProps {
   description: string;
   xAxisLabels: string[];
   activeLabelIndex?: number;
+  statusPill?: string;
   className?: string;
 }

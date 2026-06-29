@@ -14,7 +14,10 @@ export function InsightSection({
   className,
   reverse = false,
   equalHeight = false,
+  hierarchy = "default",
 }: InsightSectionProps) {
+  const isSupporting = hierarchy === "supporting";
+
   return (
     <div className={cn(
       "grid grid-cols-[1fr_2fr] md:gap-6 max-md:grid-cols-1 max-md:gap-y-12",
@@ -28,16 +31,26 @@ export function InsightSection({
         )}
       >
         <div className={cn(
-          "bg-white rounded-br-[32px] p-7.5 flex flex-col h-full",
-          equalHeight && "min-h-[400px]"
+          "bg-white rounded-br-[32px] flex flex-col h-full",
+          isSupporting ? "p-6" : "p-7.5",
+          equalHeight && (isSupporting ? "min-h-[320px]" : "min-h-[400px]")
         )}>
-          <span className="text-[0.66rem] tracking-[0.14em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-6">
+          <span className={cn(
+            "uppercase text-[var(--color-thread-mid-green)] font-medium",
+            isSupporting ? "text-[0.62rem] tracking-[0.13em] mb-4" : "text-[0.66rem] tracking-[0.14em] mb-6"
+          )}>
             {kicker}
           </span>
-          <h3 className="text-[1.8rem] font-medium tracking-tight leading-tight mb-4 text-slate-900">
+          <h3 className={cn(
+            "font-medium tracking-tight leading-tight text-slate-900",
+            isSupporting ? "text-[1.35rem] mb-3" : "text-[1.8rem] mb-4"
+          )}>
             {title}
           </h3>
-          <p className="text-[1.05rem] text-slate-500 leading-relaxed mb-8 flex-1">
+          <p className={cn(
+            "text-slate-500 leading-relaxed flex-1",
+            isSupporting ? "text-[0.96rem] mb-6" : "text-[1.05rem] mb-8"
+          )}>
             {description}
           </p>
           {actionText && (
@@ -58,13 +71,16 @@ export function InsightSection({
         )}
       >
         <div className={cn(
-          "rounded-tl-[36px] overflow-hidden h-[400px]",
-          equalHeight && "md:h-full md:min-h-[400px]"
+          "rounded-tl-[36px] overflow-hidden",
+          isSupporting ? "h-[320px]" : "h-[400px]",
+          equalHeight && (isSupporting ? "md:h-full md:min-h-[320px]" : "md:h-full md:min-h-[400px]")
         )}>
           <img 
             src={image} 
             alt={title} 
             className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
             referrerPolicy="no-referrer"
           />
         </div>

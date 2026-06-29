@@ -12,10 +12,17 @@ export function GuideCard({
   image,
   cornerClass = "rounded-tr-[32px]",
   actionText = "Read guide",
+  secondaryActionText,
+  onSecondaryAction,
   onClick,
   disableHover = false,
   className,
 }: GuideCardProps) {
+  const handleSecondaryAction = (event: React.MouseEvent<any>) => {
+    event.stopPropagation();
+    onSecondaryAction?.();
+  };
+
   return (
     <motion.div
       onClick={onClick}
@@ -41,6 +48,8 @@ export function GuideCard({
             src={image}
             alt={title}
             className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
             referrerPolicy="no-referrer"
           />
         </div>
@@ -58,7 +67,7 @@ export function GuideCard({
         <p className="text-[0.92rem] text-[var(--color-thread-gray)] leading-relaxed flex-1 font-sans">
           {description}
         </p>
-        <div className="flex items-center justify-between pt-4 mt-6">
+        <div className="flex items-center justify-between gap-4 pt-4 mt-6">
           <ActionLink
             variant="slate"
             as="span"
@@ -66,6 +75,17 @@ export function GuideCard({
           >
             {actionText}
           </ActionLink>
+          {secondaryActionText && (
+            <ActionLink
+              variant="slate"
+              as="button"
+              onClick={handleSecondaryAction}
+              icon={null}
+              className="ml-auto text-[0.8rem] text-slate-400 hover:text-[var(--color-thread-mid-green)]"
+            >
+              {secondaryActionText}
+            </ActionLink>
+          )}
         </div>
       </div>
     </motion.div>

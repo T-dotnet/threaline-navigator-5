@@ -32,6 +32,7 @@ import { PageFooterCTA } from "./ui/PageFooterCTA";
 import { PageContainer } from "./ui/PageContainer";
 
 import { useCurrentChild } from "../context/ChildContext";
+import { isMaintenancePhase } from "../lib/childStatus";
 
 export default function EmergingDetailsPage({
   onPageChange,
@@ -39,7 +40,7 @@ export default function EmergingDetailsPage({
   onPageChange: (page: any) => void;
 }) {
   const { currentChild } = useCurrentChild();
-  const isLiam = currentChild.name === "Liam";
+  const isLiam = isMaintenancePhase(currentChild);
   const focusTopic = isLiam ? "Social Leadership" : "Sleep";
   const focusDescription = isLiam 
     ? `We believe advanced social mentoring is the highest leverage area for ${currentChild.name} right now, leveraging his clinical mastery into peer leadership.`
@@ -92,7 +93,7 @@ export default function EmergingDetailsPage({
       <FadeInScroll className="mb-24">
         <div>
           <SectionLabel>
-            What we're seeing
+            What you're seeing
           </SectionLabel>
           <SectionTitle>
             Areas {focusTopic.toLowerCase()} will affect.
@@ -206,7 +207,6 @@ export default function EmergingDetailsPage({
     </motion.div>
   );
 }
-
 
 
 

@@ -17,6 +17,8 @@ interface PlanProgressCardProps {
   title?: string;
   footerLabel?: string;
   details?: PlanProgressDetail[];
+  onReschedule?: () => void;
+  rescheduleLabel?: string;
 }
 
 export function PlanProgressCard({
@@ -27,6 +29,8 @@ export function PlanProgressCard({
   title = "This Quarter's Plan Progress",
   footerLabel = "Next review",
   details,
+  onReschedule,
+  rescheduleLabel = "Reschedule",
 }: PlanProgressCardProps) {
   const parts = statusText.split(" — ");
   const mainStatus = parts[0];
@@ -79,12 +83,21 @@ export function PlanProgressCard({
               <span className="flex h-4 w-4 shrink-0 items-center justify-center">
                 {detail.icon || <Calendar className="w-4 h-4 stroke-[1.8]" />}
               </span>
-              <span>
+              <span className="flex-1">
                 {detail.label}:{" "}
                 <strong className="opacity-100 font-medium ml-1">
                   {detail.value}
                 </strong>
               </span>
+              {onReschedule && detail.label === footerLabel && (
+                <button
+                  type="button"
+                  onClick={onReschedule}
+                  className="shrink-0 font-medium underline underline-offset-2 decoration-current/40 transition hover:decoration-current"
+                >
+                  {rescheduleLabel}
+                </button>
+              )}
             </div>
           ))}
         </div>

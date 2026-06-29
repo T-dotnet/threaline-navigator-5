@@ -2,7 +2,9 @@ import React from 'react';
 import { Check, ArrowRight, FileText, Calendar, Clock } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCurrentChild } from '../../context/ChildContext';
-import { QUESTIONNAIRE_SECTIONS, getCompletedQuestionnaireSections } from '../../questionnaire';
+import { QUESTIONNAIRE_SECTIONS, getCompletedQuestionnaireSections, normalizeQuestionnaireSectionName } from '../../questionnaire';
+import { getJourneyReflectionCopy } from '../../lib/journeyCopy';
+import { getChildSessionStatus, getSessionDate } from '../../lib/childStatus';
 
 interface SetupSummaryProps {
   childName: string;
@@ -14,9 +16,17 @@ interface SetupSummaryProps {
 export function SetupSummary({ childName, onContinueQuestionnaire, onReviewUnderstanding, className }: SetupSummaryProps) {
   const { currentChild } = useCurrentChild();
   const answers = currentChild.intake?.questionnaireAnswers || {};
-  const completedSections = currentChild.intake?.completedQuestionnaireSections || getCompletedQuestionnaireSections(answers);
+  const completedSections = Array.from(
+    new Set((currentChild.intake?.completedQuestionnaireSections || getCompletedQuestionnaireSections(answers)).map(normalizeQuestionnaireSectionName)),
+  );
   const remainingSections = Math.max(0, QUESTIONNAIRE_SECTIONS.length - completedSections.length);
   const isQuestionnaireComplete = remainingSections === 0;
+  const journeyCopy = getJourneyReflectionCopy(currentChild.intake?.journeyStage);
+  const sessionStatus = getChildSessionStatus(currentChild);
+  const isSessionBooked = sessionStatus === 'booked';
+  const isSessionCancelled = sessionStatus === 'cancelled';
+  const sessionDate = getSessionDate(currentChild, 'long') ?? (isSessionCancelled ? 'Session cancelled' : 'Not booked yet');
+  const sessionTime = isSessionBooked ? currentChild.intake?.sessionTime || '4:00 pm' : isSessionCancelled ? 'Book a new time when ready' : 'Choose a time for the first session';
 
   return (
     <div className={cn("bg-white rounded-3xl border border-black/5 shadow-premium overflow-hidden", className)}>
@@ -31,36 +41,36 @@ export function SetupSummary({ childName, onContinueQuestionnaire, onReviewUnder
             </div>
 
             <div className="space-y-4">
-              {/* Step 1: Your child */}
+              {/* Step 1: Journey */}
               <div className="flex items-center gap-4">
                 <div className="w-8 h-8 rounded-full bg-[var(--color-thread-mid-green)] flex items-center justify-center text-white">
                   <Check className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="text-[0.65rem] font-bold tracking-[0.1em] uppercase text-slate-400">Step 1</div>
-                  <div className="font-medium text-slate-900 text-sm">{childName}'s profile created</div>
+                  <div className="font-medium text-slate-900 text-sm">Journey stage selected</div>
                 </div>
               </div>
 
-              {/* Step 2: What you notice */}
+              {/* Step 2: Your child */}
               <div className="flex items-center gap-4">
                 <div className="w-8 h-8 rounded-full bg-[var(--color-thread-mid-green)] flex items-center justify-center text-white">
                   <Check className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="text-[0.65rem] font-bold tracking-[0.1em] uppercase text-slate-400">Step 2</div>
-                  <div className="font-medium text-slate-900 text-sm">Concerns & notes recorded</div>
+                  <div className="font-medium text-slate-900 text-sm">{childName}'s profile created</div>
                 </div>
               </div>
 
-              {/* Step 3: Session */}
+              {/* Step 3: What feels hardest */}
               <div className="flex items-center gap-4">
                 <div className="w-8 h-8 rounded-full bg-[var(--color-thread-mid-green)] flex items-center justify-center text-white">
                   <Check className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="text-[0.65rem] font-bold tracking-[0.1em] uppercase text-slate-400">Step 3</div>
-                  <div className="font-medium text-slate-900 text-sm">Telehealth session booked</div>
+                  <div className="font-medium text-slate-900 text-sm">Hardest areas recorded</div>
                 </div>
               </div>
 
@@ -98,14 +108,23 @@ export function SetupSummary({ childName, onContinueQuestionnaire, onReviewUnder
                 </button>
               </div>
 
-              {/* Step 5: Documents */}
+              {/* Step 5: Session */}
               <div className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full bg-[var(--color-thread-mid-green)] flex items-center justify-center text-white">
-                  <Check className="w-4 h-4" />
+                <div className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center",
+                  isSessionBooked
+                    ? "bg-[var(--color-thread-mid-green)] text-white"
+                    : isSessionCancelled
+                    ? "bg-rose-50 text-rose-600 border border-rose-200"
+                    : "bg-amber-50 text-amber-600 border border-amber-200"
+                )}>
+                  {isSessionBooked ? <Check className="w-4 h-4" /> : <span className="text-xs font-bold">!</span>}
                 </div>
                 <div>
                   <div className="text-[0.65rem] font-bold tracking-[0.1em] uppercase text-slate-400">Step 5</div>
-                  <div className="font-medium text-slate-900 text-sm">Initial documents uploaded</div>
+                  <div className="font-medium text-slate-900 text-sm">
+                    {isSessionBooked ? "Telehealth session booked" : isSessionCancelled ? "Session cancelled" : "Session not booked"}
+                  </div>
                 </div>
               </div>
             </div>
@@ -120,25 +139,25 @@ export function SetupSummary({ childName, onContinueQuestionnaire, onReviewUnder
                 </div>
                 <div>
                   <div className="text-[0.65rem] font-bold tracking-[0.1em] uppercase text-slate-400">Session</div>
-                  <div className="font-serif text-lg text-[var(--color-thread-heading)]">Thu 26 June</div>
+                  <div className="font-serif text-lg text-[var(--color-thread-heading)]">{sessionDate}</div>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm text-slate-600">
                   <Clock className="w-4 h-4 text-slate-400" />
-                  <span>4:00 pm (AEST)</span>
+                  <span>{sessionTime}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-slate-600">
                   <FileText className="w-4 h-4 text-slate-400" />
-                  <span>Telehealth link sent to email</span>
+                  <span>{isSessionBooked ? "Telehealth link sent to email" : "No telehealth link active"}</span>
                 </div>
               </div>
             </div>
 
             <div className="p-2">
               <p className="text-[0.7rem] text-slate-400 leading-relaxed italic">
-                A clinician will review your questionnaire and documents 24 hours before your session.
+                {journeyCopy.nextStep}
               </p>
             </div>
           </div>

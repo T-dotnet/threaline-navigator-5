@@ -6,6 +6,7 @@ export interface DocFile {
   typeName: string;
   name: string;
   date: string;
+  uploadedBy: "you" | "threadline";
   shared: boolean;
   sharedWith?: string;
   icon: LucideIcon;
@@ -17,6 +18,7 @@ const INITIAL_FILES: DocFile[] = [
     typeName: "Report",
     name: "Actionable Clarity Report",
     date: "8 Jun 2026",
+    uploadedBy: "threadline",
     shared: false,
     icon: FileText,
   },
@@ -25,6 +27,7 @@ const INITIAL_FILES: DocFile[] = [
     typeName: "School Pack",
     name: "School Clarity Pack",
     date: "8 Jun 2026",
+    uploadedBy: "threadline",
     shared: true,
     sharedWith: "Homeroom Teacher",
     icon: Folder,
@@ -34,6 +37,7 @@ const INITIAL_FILES: DocFile[] = [
     typeName: "School",
     name: "Teacher Meeting Preparation Notes",
     date: "10 Jun 2026",
+    uploadedBy: "you",
     shared: false,
     icon: Camera,
   },
@@ -42,6 +46,7 @@ const INITIAL_FILES: DocFile[] = [
     typeName: "Clinical",
     name: "Parent Observations Log — Sleep Prep",
     date: "12 Jun 2026",
+    uploadedBy: "you",
     shared: true,
     sharedWith: "Dr. Sarah Vance",
     icon: Activity,
@@ -51,6 +56,7 @@ const INITIAL_FILES: DocFile[] = [
     typeName: "Report",
     name: "Progress Review — Early Baseline",
     date: "15 Jun 2026",
+    uploadedBy: "threadline",
     shared: false,
     icon: FileText,
   },
@@ -105,7 +111,11 @@ export function LockerProvider({ children }: { children: ReactNode }) {
   const filteredFiles = useMemo(() => {
     return files.filter((f) => {
       const matchSearch = f.name.toLowerCase().includes(search.toLowerCase());
-      const matchFilter = filter === "all" || f.typeId === filter;
+      const matchFilter =
+        filter === "all" ||
+        f.typeId === filter ||
+        (filter === "uploaded-you" && f.uploadedBy === "you") ||
+        (filter === "uploaded-threadline" && f.uploadedBy === "threadline");
       return matchSearch && matchFilter;
     });
   }, [files, search, filter]);

@@ -1,200 +1,17 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, ChevronRight, User, Calendar, Clock, UploadCloud, FileText, Activity, Users, Settings, ArrowRight, ArrowLeft, Upload, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Check, ChevronRight, User, Clock, FileText, ArrowRight, ArrowLeft, ArrowUp, ArrowDown } from 'lucide-react';
 import { useCurrentChild } from '../context/ChildContext';
-import { useLocker } from '../context/LockerContext';
 import { cn } from '../lib/utils';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Label } from './ui/Label';
 import { HeroQuoteCard } from './ui/HeroQuoteCard';
 import { TimelineStep } from './ui/TimelineStep';
-import { PageIcon } from './ui/PageIcon';
-import { getCompletedQuestionnaireSections } from '../questionnaire';
-import watercolorBg from '../assets/images/watercolor_bg_1782427011739.jpg';
-import clinicianPhoto from '../assets/images/dr-naomi-clark.png';
-
-interface Question {
-  id: string;
-  text: string;
-  subtext?: string;
-  type: 'choice' | 'multiple-choice' | 'text';
-  options?: string[];
-  placeholder?: string;
-}
-
-const QUESTIONS: Record<string, Question[]> = {
-  'Home & family': [
-    {
-      id: 'family_live_with',
-      text: 'Who does ${childName} live with at home?',
-      subtext: 'Select all that apply.',
-      type: 'multiple-choice',
-      options: ['Both parents', 'Mother', 'Father', 'Step-parent', 'Grandparents', 'Siblings', 'Other relatives'],
-    },
-    {
-      id: 'family_relationship',
-      text: 'How would you describe their relationship with their primary caregivers?',
-      subtext: 'Choose the option that fits best.',
-      type: 'choice',
-      options: [
-        'Very close and supportive',
-        'Mostly positive with occasional conflict',
-        'Can be challenging or strained',
-        'Varies significantly day-to-day'
-      ],
-    },
-    {
-      id: 'family_transitions',
-      text: 'Have there been any major family transitions or stressors recently?',
-      subtext: 'Select any that apply.',
-      type: 'multiple-choice',
-      options: [
-        'None',
-        'Moving home or school',
-        'New sibling',
-        'Separation or divorce',
-        'Loss or illness in the family',
-        'Change in parent employment'
-      ],
-    },
-    {
-      id: 'family_interests',
-      text: "What are ${childName}'s favorite activities or special interests?",
-      subtext: 'Tell us what brings them joy or keeps them highly engaged.',
-      type: 'text',
-      placeholder: 'e.g., Building Lego, drawing dinosaurs, playing outside, reading books...'
-    }
-  ],
-  'Daily routines': [
-    {
-      id: 'routines_bedtime',
-      text: 'How often is bedtime a struggle?',
-      type: 'choice',
-      options: ['Never', 'Sometimes', 'Often', 'Always']
-    },
-    {
-      id: 'routines_sleep',
-      text: 'How many hours of sleep does ${childName} usually get per night?',
-      type: 'choice',
-      options: ['Less than 6 hours', '6 to 8 hours', '8 to 10 hours', '10+ hours']
-    },
-    {
-      id: 'routines_morning',
-      text: 'How does ${childName} handle morning routines and getting ready?',
-      type: 'choice',
-      options: [
-        'Very independent and cooperative',
-        'Needs occasional reminders or prompting',
-        'Frequently resists or gets distracted',
-        'A significant daily challenge for the family'
-      ]
-    },
-    {
-      id: 'routines_eating',
-      text: 'How would you describe their eating habits and mealtimes?',
-      type: 'choice',
-      options: [
-        'Enjoys a wide variety of foods',
-        'Somewhat selective or picky',
-        'Extremely selective / sensitive to textures',
-        'Often refuses meals or struggles to sit'
-      ]
-    }
-  ],
-  'At school': [
-    {
-      id: 'school_type',
-      text: 'What is ${childName}\'s current school or learning environment?',
-      type: 'choice',
-      options: [
-        'Preschool / Kindergarten',
-        'Primary school (Prep to Year 6)',
-        'High school (Year 7 to 12)',
-        'Homeschooled',
-        'Not yet in structured education'
-      ]
-    },
-    {
-      id: 'school_feeling',
-      text: 'How does ${childName} feel about going to school?',
-      type: 'choice',
-      options: [
-        'Excited and looks forward to it',
-        'Content but neutral',
-        'Anxious or reluctant at times',
-        'Strongly resists or refuses to go'
-      ]
-    },
-    {
-      id: 'school_social',
-      text: 'How does ${childName} interact with peers or friends?',
-      type: 'choice',
-      options: [
-        'Has close friends and socializes easily',
-        'Enjoys playing but has occasional conflicts',
-        'Prefers solo play or struggles to make friends',
-        'Often feels left out or overwhelmed socially'
-      ]
-    },
-    {
-      id: 'school_support',
-      text: 'Does ${childName} receive any additional learning support or modifications?',
-      type: 'choice',
-      options: [
-        'No additional support needed',
-        'Informal adjustments by the teacher',
-        'Individual Education Plan (IEP / ILP)',
-        'Full-time support aide or special education'
-      ]
-    }
-  ],
-  'Development & history': [
-    {
-      id: 'dev_sensory',
-      text: 'Have you noticed any specific sensory sensitivities?',
-      subtext: 'Select all that apply.',
-      type: 'multiple-choice',
-      options: [
-        'Loud noises or sudden sounds',
-        'Bright or flickering lights',
-        'Certain clothing tags or fabric textures',
-        'Picky eating / food textures',
-        'Smells or physical touch',
-        'None of the above'
-      ]
-    },
-    {
-      id: 'dev_communication',
-      text: 'How would you describe ${childName}\'s communication style?',
-      type: 'choice',
-      options: [
-        'Highly verbal and expressive',
-        'Communicates well but speaks less in public',
-        'Uses short sentences or gets frustrated expressing ideas',
-        'Uses non-verbal methods or alternative communication'
-      ]
-    },
-    {
-      id: 'dev_regulation',
-      text: 'Does ${childName} find it easy to self-regulate when upset or overwhelmed?',
-      type: 'choice',
-      options: [
-        'Calms down quickly with some support',
-        'Takes time but eventually self-soothes',
-        'Frequently has intense or long meltdowns',
-        'Struggles significantly to regulate emotions'
-      ]
-    },
-    {
-      id: 'dev_strengths',
-      text: 'What are the primary strengths you see in ${childName}?',
-      subtext: 'We love to hear about what they do best.',
-      type: 'text',
-      placeholder: 'e.g., Kind and empathetic, highly creative, great memory, excellent puzzle solver...'
-    }
-  ]
-};
+import { Question, QUESTIONS, QUESTIONNAIRE_SECTIONS, getCompletedQuestionnaireSections } from '../questionnaire';
+import { getJourneyReflectionCopy, getJourneySetupCopy } from '../lib/journeyCopy';
+import watercolorBg from '../assets/images/optimized/watercolor-bg-900.jpg';
+import clinicianPhoto from '../assets/images/optimized/dr-naomi-clark-720.jpg';
 
 interface AddChildFlowProps {
   onComplete: () => void;
@@ -206,6 +23,14 @@ interface AddChildFlowProps {
 type StepType = 'welcome' | 1 | 2 | 3 | 4 | 5 | 'done';
 
 export default function AddChildFlow({ onComplete, onCancel, asModal, initialStep }: AddChildFlowProps) {
+  const isDirectSessionEntry = initialStep === 5 || (() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('step') === '5' && params.get('directSession') === '1';
+    } catch {
+      return false;
+    }
+  })();
   const [step, setStep] = useState<StepType>(() => {
     if (initialStep) return initialStep;
     try {
@@ -226,8 +51,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
     try {
       const params = new URLSearchParams(window.location.search);
       const sectionParam = params.get('section');
-      const validSections = ['Home & family', 'Daily routines', 'At school', 'Development & history'];
-      if (sectionParam && validSections.includes(sectionParam)) {
+      if (sectionParam && QUESTIONNAIRE_SECTIONS.includes(sectionParam)) {
         return sectionParam;
       }
     } catch (e) {
@@ -263,130 +87,29 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
   const currentYear = new Date().getFullYear();
   const yearsArray = Array.from({ length: 18 }, (_, i) => String(currentYear - i));
 
-  // Detect user's timezone on load or default to Sydney/Melbourne (AEST)
-  const detectTimezone = () => {
-    try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (tz.includes('Sydney') || tz.includes('Melbourne') || tz.includes('Brisbane') || tz.includes('Hobart') || tz.includes('Canberra')) {
-        return 'AEST';
-      } else if (tz.includes('Adelaide') || tz.includes('Darwin')) {
-        return 'ACST';
-      } else if (tz.includes('Perth')) {
-        return 'AWST';
-      }
-      // If outside Australia, check offset
-      const offset = -new Date().getTimezoneOffset() / 60;
-      if (offset === 10 || offset === 11) return 'AEST';
-      if (offset === 9.5 || offset === 10.5) return 'ACST';
-      if (offset === 8) return 'AWST';
-      return 'AEST'; // default to AEST
-    } catch (e) {
-      return 'AEST';
+  const [isAppointmentCancelled, setIsAppointmentCancelled] = useState(
+    Boolean(currentChild.intake?.sessionCancelled && !currentChild.intake?.sessionDay && !currentChild.intake?.sessionTime)
+  );
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+  const [isReadyToBook, setIsReadyToBook] = useState<boolean | null>(isDirectSessionEntry ? true : null);
+
+  useEffect(() => {
+    if (step === 5) {
+      setIsReadyToBook(isDirectSessionEntry ? true : null);
     }
-  };
-
-  const [selectedTz, setSelectedTz] = useState(detectTimezone());
-  const [isAppointmentCancelled, setIsAppointmentCancelled] = useState(false);
-
-  const getConvertedTime = (baseTimeStr: string, targetTz: string) => {
-    if (targetTz === 'AEST') return baseTimeStr;
-    
-    // Parse base time (assuming AEST)
-    const [time, modifier] = baseTimeStr.split(' ');
-    let [hours, minutes] = time.split(':').map(Number);
-    if (modifier === 'pm' && hours < 12) hours += 12;
-    if (modifier === 'am' && hours === 12) hours = 0;
-    
-    // Subtract offset difference relative to AEST (AEST is UTC+10)
-    let diff = 0; // in hours
-    if (targetTz === 'AWST') diff = -2; // Perth is UTC+8
-    if (targetTz === 'ACST') diff = -0.5; // Adelaide is UTC+9.5
-    
-    let totalMinutes = hours * 60 + minutes + (diff * 60);
-    if (totalMinutes < 0) totalMinutes += 24 * 60; // wrap around
-    
-    const targetHours = Math.floor(totalMinutes / 60) % 24;
-    const targetMinutes = Math.round(totalMinutes % 60);
-    
-    const finalHours = targetHours % 12 === 0 ? 12 : targetHours % 12;
-    const finalMinutes = String(targetMinutes).padStart(2, '0');
-    const finalModifier = targetHours >= 12 ? 'pm' : 'am';
-    
-    return `${finalHours}:${finalMinutes} ${finalModifier}`;
-  };
+  }, [isDirectSessionEntry, step]);
 
   const getDobParts = () => {
-    if (!formData.dob) return { day: '', month: '', year: '' };
-    const parts = formData.dob.split(' / ');
-    return {
-      day: parts[0] || '',
-      month: parts[1] || '',
-      year: parts[2] || ''
-    };
+    return { year: formData.dob || '' };
   };
 
-  const handleDobChange = (part: 'day' | 'month' | 'year', value: string) => {
-    const { day, month, year } = getDobParts();
-    const newParts = { day, month, year, [part]: value };
-    
-    if (newParts.day || newParts.month || newParts.year) {
-      setFormData({
-        ...formData,
-        dob: `${newParts.day} / ${newParts.month} / ${newParts.year}`
-      });
+  const handleDobChange = (value: string) => {
+    if (value) {
+      setFormData({ ...formData, dob: value });
     } else {
       setFormData({ ...formData, dob: '' });
     }
   };
-
-  const [uploadedFiles, setUploadedFiles] = useState<{ name: string; size: string }[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { addFile } = useLocker();
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  }, []);
-
-  const handleFiles = useCallback((filesList: FileList) => {
-    const newFiles: { name: string; size: string }[] = [];
-    for (let i = 0; i < filesList.length; i++) {
-      const file = filesList[i];
-      const sizeStr = file.size > 1024 * 1024 
-        ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` 
-        : `${(file.size / 1024).toFixed(0)} KB`;
-      newFiles.push({ name: file.name, size: sizeStr });
-    }
-    setUploadedFiles(prev => [...prev, ...newFiles]);
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFiles(e.dataTransfer.files);
-    }
-  }, [handleFiles]);
-
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleFiles(e.target.files);
-    }
-  }, [handleFiles]);
-
-  const triggerFileInput = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
-
-  const removeFile = useCallback((index: number) => {
-    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
-  }, []);
 
   const handleSelectOption = useCallback((qId: string, option: string, type: 'choice' | 'multiple-choice' | 'text') => {
     if (type === 'choice') {
@@ -406,17 +129,50 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
     } else if (type === 'multiple-choice') {
       setAnswers(prev => {
         const current = prev[qId] || [];
+        if (option === 'Nothing yet') {
+          return { ...prev, [qId]: current.includes(option) ? [] : ['Nothing yet'] };
+        }
+        const currentWithoutNone = current.filter((o: string) => o !== 'Nothing yet');
         const updated = current.includes(option)
-          ? current.filter((o: string) => o !== option)
-          : [...current, option];
+          ? currentWithoutNone.filter((o: string) => o !== option)
+          : [...currentWithoutNone, option];
         return { ...prev, [qId]: updated };
       });
     }
   }, [qSection]);
 
+  const currentQuestionRef = useRef<HTMLDivElement | null>(null);
+  const prevListRef = useRef<HTMLDivElement | null>(null);
+
   const handleTextChange = useCallback((qId: string, value: string) => {
     setAnswers(prev => ({ ...prev, [qId]: value }));
   }, []);
+
+  useEffect(() => {
+    if (!qSection || isReviewing) return;
+    currentQuestionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (prevListRef.current) {
+      prevListRef.current.scrollTo({ top: prevListRef.current.scrollHeight, behavior: 'smooth' });
+    }
+  }, [activeQuestionIndex, qSection, isReviewing]);
+
+  const getConversationLead = (sectionName: string, questionIndex: number) => {
+    if (questionIndex === 0) {
+      if (sectionName === "What's going well") return 'Let’s start with what already helps.';
+      if (sectionName === "What you're seeing") return 'Now let’s look at what feels harder right now.';
+      if (sectionName === 'At school') return 'Next, a little about learning and school life.';
+      if (sectionName === 'Development & history') return 'Finally, a few background details that may help later.';
+    }
+    if (questionIndex === 1) return 'That helps. Here’s the next piece.';
+    if (questionIndex === 2) return 'A little more context, then we’re nearly there.';
+    return 'One last thing for this part.';
+  };
+
+  const getAnswerCue = (type: Question['type']) => {
+    if (type === 'multiple-choice') return 'Choose any that fit. If none feel right, you can just move on.';
+    if (type === 'choice') return 'Choose the closest fit. It does not need to be perfect.';
+    return 'Use your own words. A few words is enough.';
+  };
 
   const handlePrevQuestion = useCallback(() => {
     if (isReviewing) {
@@ -495,21 +251,32 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
     firstName: currentChild.isNew ? currentChild.name : '',
     dob: '',
     relation: currentChild.isNew ? currentChild.intake?.relation || 'Parent' : 'Parent',
+    journeyStage: currentChild.isNew ? currentChild.intake?.journeyStage || '' : '',
+    availableInfo: currentChild.isNew ? currentChild.intake?.availableInfo || [] as string[] : [] as string[],
     notices: currentChild.isNew ? currentChild.intake?.notices || [] as string[] : [] as string[],
     notes: currentChild.isNew ? currentChild.intake?.notes || '' : '',
     sessionDay: currentChild.isNew ? currentChild.intake?.sessionDay || '' : '',
     sessionTime: currentChild.isNew ? currentChild.intake?.sessionTime || '' : '',
   }));
 
-  const buildIntake = (nextAnswers = answers) => ({
-    relation: formData.relation,
-    notices: formData.notices,
-    notes: formData.notes,
-    sessionDay: formData.sessionDay,
-    sessionTime: formData.sessionTime,
-    questionnaireAnswers: nextAnswers,
-    completedQuestionnaireSections: getCompletedQuestionnaireSections(nextAnswers),
-  });
+  const buildIntake = (nextAnswers = answers) => {
+    const questionnaireAvailableInfo = Array.isArray(nextAnswers.dev_available_information)
+      ? nextAnswers.dev_available_information
+      : formData.availableInfo;
+
+    return {
+      relation: formData.relation,
+      journeyStage: formData.journeyStage,
+      availableInfo: questionnaireAvailableInfo,
+      notices: formData.notices,
+      notes: formData.notes,
+      sessionDay: formData.sessionDay,
+      sessionTime: formData.sessionTime,
+      sessionCancelled: formData.sessionDay && formData.sessionTime ? false : Boolean(currentChild.intake?.sessionCancelled),
+      questionnaireAnswers: nextAnswers,
+      completedQuestionnaireSections: getCompletedQuestionnaireSections(nextAnswers),
+    };
+  };
 
   const saveCurrentChildIntake = (nextAnswers = answers) => {
     if (!currentChild.isNew) return;
@@ -522,6 +289,36 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
     });
   };
 
+  const handleDirectSessionConfirm = () => {
+    setIsCancelConfirmOpen(false);
+    saveCurrentChildIntake();
+    onComplete();
+  };
+
+  const handleCancelAppointment = () => {
+    setIsCancelConfirmOpen(false);
+    if (!currentChild.isNew) {
+      setFormData((prev) => ({ ...prev, sessionDay: '', sessionTime: '' }));
+      setIsAppointmentCancelled(true);
+      return;
+    }
+    const clearedIntake = {
+      ...buildIntake(),
+      sessionDay: '',
+      sessionTime: '',
+      sessionCancelled: true,
+    };
+    const name = formData.firstName.trim() || currentChild.name || 'New child';
+    updateChild({
+      ...currentChild,
+      name,
+      initial: name.charAt(0).toUpperCase(),
+      intake: clearedIntake,
+    });
+    setFormData((prev) => ({ ...prev, sessionDay: '', sessionTime: '' }));
+    setIsAppointmentCancelled(true);
+  };
+
   const handleNext = () => {
     if (step === 'welcome') setStep(1);
     else if (step === 1) setStep(2);
@@ -532,18 +329,6 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
       setStep(5);
     }
     else if (step === 5) {
-      // Add files to Locker
-      uploadedFiles.forEach(f => {
-        addFile({
-          typeId: "report",
-          typeName: "Report",
-          name: f.name,
-          date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-          shared: false,
-          icon: FileText
-        });
-      });
-
       const name = formData.firstName.trim() || (currentChild.isNew ? currentChild.name : 'New child');
       const child = {
         ...(currentChild.isNew ? currentChild : {}),
@@ -571,7 +356,8 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
       onCancel();
       return;
     }
-    if (step === 1) setStep('welcome');
+    if (step === 'done') setStep(5);
+    else if (step === 1) setStep('welcome');
     else if (step === 2) setStep(1);
     else if (step === 3) setStep(2);
     else if (step === 4) setStep(3);
@@ -579,14 +365,19 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
   };
 
   const steps = [
-    { num: 1, title: 'Your child', desc: 'Name & date of birth' },
-    { num: 2, title: 'What you notice', desc: 'Concerns & notes' },
-    { num: 3, title: 'Your session', desc: 'Book a video call' },
+    { num: 1, title: 'Journey', desc: 'Where you are now' },
+    { num: 2, title: 'Your child', desc: 'Name & date of birth' },
+    { num: 3, title: 'Hardest right now', desc: 'Top areas' },
     { num: 4, title: 'Questionnaire', desc: 'Everyday life' },
-    { num: 5, title: 'Documents', desc: 'Optional uploads' },
+    { num: 5, title: 'Your session', desc: 'Book a video call' },
   ];
 
   const relations = ['Parent', 'Guardian', 'Carer'];
+  const journeyStageOptions = [
+    'Noticing concerns',
+    'Waiting for assessment',
+    'Diagnosed, need next steps',
+  ];
   const noticeOptions = [
     'Attention & focus', 'Behaviour & emotions', 'Sleep', 'Learning', 
     'Movement & coordination', 'Speech & communication', 'Friendships'
@@ -601,8 +392,32 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
   const times = ['9:00 am', '10:30 am', '1:00 pm', '4:00 pm'];
   const completedQuestionnaireSections = getCompletedQuestionnaireSections(answers);
   const remainingQuestionnaireSections = Math.max(0, Object.keys(QUESTIONS).length - completedQuestionnaireSections.length);
-  const isDirectSessionModal = asModal && initialStep === 3;
-  const hideStepperForDirectModalStep = isDirectSessionModal || (asModal && initialStep === 5);
+  const isDirectObservationModal = asModal && initialStep === 3;
+  const isDirectSessionModal = step === 5 && isDirectSessionEntry;
+  const hideStepperForDirectModalStep = isDirectObservationModal || isDirectSessionModal;
+  const hasCurrentAppointment = Boolean(currentChild.intake?.sessionDay && currentChild.intake?.sessionTime);
+  const currentAppointmentDay = currentChild.intake?.sessionDay || '26';
+  const currentAppointmentTime = currentChild.intake?.sessionTime || '4:00 pm';
+  const currentAppointmentDate = `Thu ${currentAppointmentDay} Jun`;
+  const handleDirectObservationConfirm = () => {
+    saveCurrentChildIntake();
+    onCancel();
+  };
+  const questionnaireAvailableInfo = Array.isArray(answers.dev_available_information) ? answers.dev_available_information : [];
+  const reflectedAvailableInfo = questionnaireAvailableInfo.length > 0 ? questionnaireAvailableInfo : formData.availableInfo;
+  const selectedInfoSummary = reflectedAvailableInfo.length > 0 ? reflectedAvailableInfo.join(', ') : 'Nothing selected yet';
+  const journeyReflectionCopy = getJourneyReflectionCopy(formData.journeyStage);
+  const journeySetupCopy = getJourneySetupCopy(formData.journeyStage);
+  const formatMirrorList = (items: string[]) => {
+    if (items.length === 0) return 'not sure yet';
+    const normalized = items.map((item) => item.toLowerCase());
+    if (normalized.length === 1) return normalized[0];
+    if (normalized.length === 2) return `${normalized[0]} and ${normalized[1]}`;
+    return `${normalized.slice(0, -1).join(', ')}, and ${normalized[normalized.length - 1]}`;
+  };
+  const mirroredJourneyStage = journeyReflectionCopy.stage;
+  const mirroredHardestAreas = formData.notices.length > 0 ? formatMirrorList(formData.notices) : 'not clear yet';
+  const mirroredAvailableInfo = reflectedAvailableInfo.length > 0 ? selectedInfoSummary.toLowerCase() : 'nothing yet';
   const sectionKickerClass = "text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-3 block";
   const stepHeadingClass = "font-serif font-normal text-[2rem] sm:text-[2.35rem] leading-[1.12] tracking-tight text-[var(--color-thread-heading)] mb-3 max-w-[14ch]";
   const stepLeadClass = "text-[0.98rem] text-[var(--color-thread-gray)] leading-relaxed max-w-[55ch]";
@@ -745,7 +560,45 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                   {step === 1 && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                       <div>
-                        <span className={sectionKickerClass}>Step 1 of 5 · Your child</span>
+                        <span className={sectionKickerClass}>Step 1 of 5 · Your journey</span>
+                        <h1 className={stepHeadingClass}>Where are you in your journey?</h1>
+                        <p className={stepLeadClass}>Choose the option that fits best right now. This helps Navigator set the right tone for your family from the start.</p>
+                      </div>
+
+                      <div className="space-y-2.5 max-w-xl">
+                        {journeyStageOptions.map((stage, index) => {
+                          const isSelected = formData.journeyStage === stage;
+                          return (
+                            <button
+                              key={stage}
+                              type="button"
+                              onClick={() => setFormData({ ...formData, journeyStage: stage })}
+                              className={questionOptionClass(isSelected)}
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className={cn(
+                                  "w-6 h-6 rounded-full border text-[0.66rem] font-medium flex items-center justify-center transition-colors",
+                                  isSelected
+                                    ? "bg-[var(--color-thread-mid-green)] border-[var(--color-thread-mid-green)] text-white"
+                                    : "bg-white border-black/10 text-slate-400 group-hover:border-black/20 group-hover:text-slate-600"
+                                )}>
+                                  {index + 1}
+                                </span>
+                                <span className="text-[0.95rem] leading-snug">{stage}</span>
+                              </div>
+                              {isSelected && <Check className="w-4 h-4 text-[var(--color-thread-mid-green)]" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Step 2 */}
+                  {step === 2 && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                      <div>
+                        <span className={sectionKickerClass}>Step 2 of 5 · Your child</span>
                         <h1 className={stepHeadingClass}>Add your child</h1>
                         <p className={stepLeadClass}>Start with the basics — who we're supporting and how you're related to them.</p>
                       </div>
@@ -761,60 +614,21 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                           />
                         </div>
                         <div>
-                          <Label className="mb-2 block">Date of birth</Label>
-                          <div className="flex gap-3 max-w-md">
-                            <div className="flex-[1]">
-                              <span className={smallFieldLabelClass}>Day</span>
-                              <div className="relative">
-                                <select
-                                  value={getDobParts().day}
-                                  onChange={(e) => handleDobChange('day', e.target.value)}
-                                  className={selectClass}
-                                >
-                                  <option value="">DD</option>
-                                  {daysArray.map(d => (
-                                    <option key={d} value={d}>{d}</option>
-                                  ))}
-                                </select>
-                                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex-[2]">
-                              <span className={smallFieldLabelClass}>Month</span>
-                              <div className="relative">
-                                <select
-                                  value={getDobParts().month}
-                                  onChange={(e) => handleDobChange('month', e.target.value)}
-                                  className={selectClass}
-                                >
-                                  <option value="">Month</option>
-                                  {monthsArray.map(m => (
-                                    <option key={m.value} value={m.value}>{m.label}</option>
-                                  ))}
-                                </select>
-                                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex-[1.5]">
-                              <span className={smallFieldLabelClass}>Year</span>
-                              <div className="relative">
-                                <select
-                                  value={getDobParts().year}
-                                  onChange={(e) => handleDobChange('year', e.target.value)}
-                                  className={selectClass}
-                                >
-                                  <option value="">YYYY</option>
-                                  {yearsArray.map(y => (
-                                    <option key={y} value={y}>{y}</option>
-                                  ))}
-                                </select>
-                                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                                </div>
+                          <Label className="mb-2 block">Year of birth</Label>
+                          <div className="max-w-md">
+                            <div className="relative">
+                              <select
+                                value={getDobParts().year}
+                                onChange={(e) => handleDobChange(e.target.value)}
+                                className={selectClass}
+                              >
+                                <option value="">YYYY</option>
+                                {yearsArray.map(y => (
+                                  <option key={y} value={y}>{y}</option>
+                                ))}
+                              </select>
+                              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                               </div>
                             </div>
                           </div>
@@ -839,32 +653,35 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                     </motion.div>
                   )}
 
-                  {/* Step 2 */}
-                  {step === 2 && (
+                  {/* Step 3 */}
+                  {step === 3 && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                       <div>
-                        <span className={sectionKickerClass}>Step 2 of 5 · What you notice</span>
-                        <h1 className={stepHeadingClass}>What you're noticing</h1>
-                        <p className={stepLeadClass}>There are no wrong answers — the areas you flag and anything you add in your own words help your clinician prepare for {formData.firstName || 'your child'}'s session.</p>
+                        <span className={sectionKickerClass}>Step 3 of 5 · Hardest right now</span>
+                        <h1 className={stepHeadingClass}>Which of these feels hardest right now?</h1>
+                        <p className={stepLeadClass}>Choose up to three areas. There are no wrong answers — this helps your clinician start with what feels most important for {formData.firstName || 'your child'} today.</p>
                       </div>
 
                       <div className="space-y-8">
                         <div>
-                          <Label className="mb-3">What are you noticing? <span className="text-slate-400 font-normal ml-2">choose any that fit</span></Label>
+                          <Label className="mb-3">Which of these feels hardest right now? <span className="text-slate-400 font-normal ml-2">select up to three</span></Label>
                           <div className="flex flex-wrap gap-2.5">
                             {noticeOptions.map(opt => {
                               const isSelected = formData.notices.includes(opt);
+                              const isAtLimit = formData.notices.length >= 3 && !isSelected;
                               return (
                                 <button
                                   key={opt}
                                   onClick={() => {
+                                    if (isAtLimit) return;
                                     const newNotices = isSelected 
                                       ? formData.notices.filter(n => n !== opt)
                                       : [...formData.notices, opt];
                                     setFormData({...formData, notices: newNotices});
                                   }}
                                   className={cn(
-                                    choiceClass(isSelected)
+                                    choiceClass(isSelected),
+                                    isAtLimit && "opacity-45 cursor-not-allowed hover:border-black/10 hover:text-[var(--color-thread-gray)]"
                                   )}
                                 >
                                   {opt}
@@ -875,132 +692,228 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                           </div>
                         </div>
 
-                        <div>
-                          <Label className="mb-3">Anything in your own words? <span className="text-slate-400 font-normal ml-2">optional</span></Label>
-                          <textarea 
-                            className="w-full min-h-[120px] p-4 rounded-tr-[24px] border border-black/10 bg-[var(--color-thread-off-white)]/50 text-[0.95rem] text-[var(--color-thread-dark-slate)] placeholder:text-[var(--color-thread-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/20 focus:border-[var(--color-thread-mid-green)]/30 transition-all resize-y shadow-none"
-                            placeholder="Write as much or as little as you like..."
-                            value={formData.notes}
-                            onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                          />
-                        </div>
                       </div>
                     </motion.div>
                   )}
 
-                  {/* Step 3 */}
-                  {step === 3 && (
+                  {/* Step 5 */}
+                  {step === 5 && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                       <div>
-                        <span className={sectionKickerClass}>Step 3 of 5 · Your session</span>
-                        <h1 className={stepHeadingClass}>Book your session</h1>
-                        <p className={stepLeadClass}>One structured video call with a clinician. Pick a time that works — you can reschedule later if you need to.</p>
+                        {!isDirectSessionModal && (
+                          <span className={sectionKickerClass}>Step 5 of 5 · Your session</span>
+                        )}
+                        <h1 className={stepHeadingClass}>{isDirectSessionModal ? "Reschedule your session" : "Book your session"}</h1>
+                        <p className={stepLeadClass}>
+                          {isDirectSessionModal
+                            ? "Choose a new time for the first clinician session. Your intake details stay saved."
+                            : "A clinician session helps us use your information in the right way. Are you ready to choose a time now?"}
+                        </p>
                       </div>
 
-                      <div className="bg-[var(--color-thread-off-white)]/70 p-5 rounded-tr-[24px] shadow-none flex items-start gap-4">
-                        <img
-                          src={clinicianPhoto}
-                          alt="Dr. Naomi Clark"
-                          className="w-16 h-16 rounded-full object-cover flex-shrink-0 border border-black/5 shadow-sm"
-                          referrerPolicy="no-referrer"
-                        />
-                        <div>
-                          <h4 className="font-medium text-[var(--color-thread-heading)]">Dr. Naomi Clark</h4>
-                          <p className="text-xs text-slate-400 mb-2">Consultant Child Psychologist · PhD, MAPS</p>
-                          <p className="text-xs text-slate-500 leading-relaxed max-w-md">Dr Clark specializes in developmental profiles and child-centered environments. She leads the review of {formData.firstName || 'your child'}'s profile and works with your family.</p>
+                      {isDirectSessionModal && isAppointmentCancelled && (
+                        <div className="rounded-tr-[24px] bg-[var(--color-thread-light-green)]/60 p-4 text-sm text-[var(--color-thread-heading)]">
+                          Appointment cancelled. You can choose a new time below, or close this window.
                         </div>
-                      </div>
+                      )}
 
-                      <div className="space-y-6">
-                        <div>
-                          <Label className="mb-3">Choose a day</Label>
-                          <div className="flex flex-wrap gap-2.5">
-                            {days.map(d => (
-                              <button
-                                key={d.num}
-                                onClick={() => setFormData({...formData, sessionDay: d.num, sessionTime: ''})}
-                                className={cn(
-                                  "w-[4.5rem] py-3 rounded-tr-[20px] flex flex-col items-center justify-center border transition-all shadow-none cursor-pointer",
-                                  formData.sessionDay === d.num
-                                    ? "bg-[var(--color-thread-light-green)] border-transparent text-[var(--color-thread-heading)] font-semibold scale-[1.02]"
-                                    : "bg-white border-black/10 text-slate-600 hover:border-black/20 hover:bg-[var(--color-thread-off-white)]/60"
-                                )}
-                              >
-                                <span className={cn("text-[0.66rem] uppercase tracking-wider mb-1 transition-colors", formData.sessionDay === d.num ? "text-[var(--color-thread-mid-green)] font-semibold" : "text-slate-400")}>{d.dow}</span>
-                                <span className={cn("text-xl font-serif transition-colors", formData.sessionDay === d.num ? "text-[var(--color-thread-heading)] font-semibold" : "text-slate-800")}>{d.num}</span>
-                                <span className={cn("text-[0.66rem] transition-colors", formData.sessionDay === d.num ? "text-[var(--color-thread-mid-green)] font-semibold" : "text-slate-400")}>{d.mon}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {formData.sessionDay && (
-                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-3">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                              <Label className="mb-0">Choose a time</Label>
-                              <div className="flex items-center gap-2">
-                                <span className={smallFieldLabelClass}>Your timezone</span>
-                                <div className="relative">
-                                  <select
-                                    value={selectedTz}
-                                    onChange={(e) => setSelectedTz(e.target.value)}
-                                    className="text-[0.78rem] font-medium py-1.5 pl-2.5 pr-8 bg-white border border-black/10 rounded-full text-slate-600 focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/20 focus:border-[var(--color-thread-mid-green)]/30 transition-all appearance-none cursor-pointer"
-                                  >
-                                    <option value="AEST">AEST / AEDT</option>
-                                    <option value="ACST">ACST / ACDT</option>
-                                    <option value="AWST">AWST</option>
-                                  </select>
-                                  <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                                  </div>
-                                </div>
+                      {isDirectSessionModal && !isAppointmentCancelled && hasCurrentAppointment && (
+                        <div className="border-b border-black/10 pb-6">
+                          <span className="text-[0.66rem] uppercase tracking-[0.14em] text-[var(--color-thread-mid-green)] font-medium">
+                            Current appointment
+                          </span>
+                          <div className="mt-2 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+                            <div>
+                              <div className="font-serif text-[1.6rem] leading-tight tracking-tight text-[var(--color-thread-heading)]">
+                                {currentAppointmentDate}
+                              </div>
+                              <div className="mt-1 text-sm text-slate-500">
+                                {currentAppointmentTime} · Telehealth with Dr. Naomi Clark
                               </div>
                             </div>
-                            <div className="flex flex-wrap gap-2.5">
-                              {times.map(t => {
-                                const converted = getConvertedTime(t, selectedTz);
-                                return (
+                            <span className="text-[0.78rem] text-slate-400">
+                              Choose a new slot below to replace this time.
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {isReadyToBook === null ? (
+                        <div className="space-y-6 bg-[var(--color-thread-off-white)]/70 p-8 rounded-[24px]">
+                          <div className="space-y-4">
+                            <p className="text-[1rem] text-[var(--color-thread-dark-slate)]">If you’d like, we can book your session now. Otherwise, we’ll save your progress and send an email reminder so you can book it later.</p>
+                            <p className="text-sm text-slate-500">You can still finish the setup now and return to booking anytime.</p>
+                          </div>
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <Button
+                              variant="mint"
+                              onClick={() => setIsReadyToBook(true)}
+                              className="px-6 py-3"
+                            >
+                              Yes, book now
+                            </Button>
+                            <Button
+                              variant="muted"
+                              onClick={() => setIsReadyToBook(false)}
+                              className="px-6 py-3"
+                            >
+                              Not ready yet
+                            </Button>
+                          </div>
+                        </div>
+                      ) : isReadyToBook === true ? (
+                        <>
+                          {!isDirectSessionModal && (
+                            <div className="bg-[var(--color-thread-off-white)]/70 p-5 rounded-tr-[24px] shadow-none flex items-start gap-4">
+                              <img
+                                src={clinicianPhoto}
+                                alt="Dr. Naomi Clark"
+                                className="w-16 h-16 rounded-full object-cover flex-shrink-0 border border-black/5 shadow-sm"
+                                loading="lazy"
+                                decoding="async"
+                                referrerPolicy="no-referrer"
+                              />
+                              <div>
+                                <h4 className="font-medium text-[var(--color-thread-heading)]">Dr. Naomi Clark</h4>
+                                <p className="text-xs text-slate-400 mb-2">Consultant Child Psychologist · PhD, MAPS</p>
+                                <p className="text-xs text-slate-500 leading-relaxed max-w-md">Dr Clark specializes in developmental profiles and child-centered environments. She leads the review of {formData.firstName || 'your child'}'s profile and works with your family.</p>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="space-y-6">
+                            <div>
+                              <Label className="mb-3">Choose a day</Label>
+                              <div className="flex flex-wrap gap-2.5">
+                                {days.map(d => (
                                   <button
-                                    key={t}
-                                    onClick={() => setFormData({...formData, sessionTime: t})}
+                                    key={d.num}
+                                  onClick={() => {
+                                    setIsAppointmentCancelled(false);
+                                    setIsCancelConfirmOpen(false);
+                                    setFormData({...formData, sessionDay: d.num, sessionTime: ''});
+                                  }}
                                     className={cn(
-                                      "px-5 py-2.5 rounded-tr-[20px] text-sm font-medium transition-all border shadow-none cursor-pointer flex flex-col items-center justify-center gap-0.5 min-w-[5.5rem]",
-                                      formData.sessionTime === t
-                                        ? "bg-[var(--color-thread-light-green)] border-transparent text-[var(--color-thread-heading)] font-semibold"
+                                      "w-[4.5rem] py-3 rounded-tr-[20px] flex flex-col items-center justify-center border transition-all shadow-none cursor-pointer",
+                                      formData.sessionDay === d.num
+                                        ? "bg-[var(--color-thread-light-green)] border-transparent text-[var(--color-thread-heading)] font-semibold scale-[1.02]"
                                         : "bg-white border-black/10 text-slate-600 hover:border-black/20 hover:bg-[var(--color-thread-off-white)]/60"
                                     )}
                                   >
-                                    <span className="font-semibold text-[0.92rem]">{converted}</span>
-                                    {converted !== t && (
-                                      <span className="text-[9px] text-slate-400 font-normal">({t} AEST)</span>
-                                    )}
+                                    <span className={cn("text-[0.66rem] uppercase tracking-wider mb-1 transition-colors", formData.sessionDay === d.num ? "text-[var(--color-thread-mid-green)] font-semibold" : "text-slate-400")}>{d.dow}</span>
+                                    <span className={cn("text-xl font-serif transition-colors", formData.sessionDay === d.num ? "text-[var(--color-thread-heading)] font-semibold" : "text-slate-800")}>{d.num}</span>
+                                    <span className={cn("text-[0.66rem] transition-colors", formData.sessionDay === d.num ? "text-[var(--color-thread-mid-green)] font-semibold" : "text-slate-400")}>{d.mon}</span>
                                   </button>
-                                );
-                              })}
+                                ))}
+                              </div>
                             </div>
-                          </motion.div>
-                        )}
-                      </div>
 
-                      <div className="bg-[var(--color-thread-off-white)]/70 p-5 rounded-br-[24px] text-slate-600 text-sm flex gap-3.5">
-                        <Clock className="w-5 h-5 text-[var(--color-thread-mid-green)] flex-shrink-0 mt-0.5" />
-                        <div>A <span className="font-semibold">45-minute telehealth session</span> — a structured interview, some gentle observation, and a few short tasks for {formData.firstName || 'your child'}. Join from home.</div>
-                      </div>
+                            {formData.sessionDay && (
+                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-3">
+                                <div>
+                                  <Label className="mb-3">Choose a time</Label>
+                                </div>
+                                <div className="flex flex-wrap gap-2.5">
+                                  {times.map(t => (
+                                      <button
+                                        key={t}
+                                        onClick={() => setFormData({...formData, sessionTime: t})}
+                                        className={cn(
+                                          "px-5 py-2.5 rounded-tr-[20px] text-sm font-medium transition-all border shadow-none cursor-pointer flex flex-col items-center justify-center gap-0.5 min-w-[5.5rem]",
+                                          formData.sessionTime === t
+                                            ? "bg-[var(--color-thread-light-green)] border-transparent text-[var(--color-thread-heading)] font-semibold"
+                                            : "bg-white border-black/10 text-slate-600 hover:border-black/20 hover:bg-[var(--color-thread-off-white)]/60"
+                                        )}
+                                      >
+                                        <span className="font-semibold text-[0.92rem]">{t}</span>
+                                      </button>
+                                  ))}
+                                </div>
+                              </motion.div>
+                            )}
+                          </div>
 
-                      {isDirectSessionModal && (
-                        <div className="border-t border-black/5 pt-5 flex flex-col sm:flex-row sm:items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setIsAppointmentCancelled(true)}
-                            className="w-full sm:w-auto px-5 py-2.5 rounded-full border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 text-sm font-semibold transition-all cursor-pointer"
-                          >
-                            Cancel appointment
-                          </button>
-                          {isAppointmentCancelled && (
-                            <div className="text-xs font-medium text-[var(--color-thread-mid-green)] bg-[var(--color-thread-light-green)] px-3.5 py-2 rounded-full">
-                              Appointment cancelled. You can choose a new time when ready.
+                          <div className="bg-[var(--color-thread-off-white)]/70 p-5 rounded-br-[24px] text-slate-600 text-sm flex gap-3.5">
+                            <Clock className="w-5 h-5 text-[var(--color-thread-mid-green)] flex-shrink-0 mt-0.5" />
+                            <div>A <span className="font-semibold">45-minute telehealth session</span> — a structured interview, some gentle observation, and a few short tasks for {formData.firstName || 'your child'}. Join from home.</div>
+                          </div>
+
+                          {isDirectSessionModal && isCancelConfirmOpen && !isAppointmentCancelled && (
+                            <div className="rounded-tr-[24px] border border-rose-200 bg-rose-50 p-5">
+                              <h4 className="font-medium text-rose-800">Cancel this appointment?</h4>
+                              <p className="mt-2 text-sm leading-relaxed text-rose-700/80">
+                                This will cancel {currentAppointmentDate} at {currentAppointmentTime}. You can book a new time later.
+                              </p>
+                              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+                                <Button
+                                  variant="muted"
+                                  onClick={() => setIsCancelConfirmOpen(false)}
+                                  className="px-5 py-2.5"
+                                >
+                                  Keep appointment
+                                </Button>
+                                <button
+                                  type="button"
+                                  onClick={handleCancelAppointment}
+                                  className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-rose-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-800"
+                                >
+                                  Yes, cancel appointment
+                                </button>
+                              </div>
                             </div>
                           )}
+
+                          <div className="pt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <Button
+                              variant="mint"
+                              onClick={() => {
+                                saveCurrentChildIntake();
+                                if (isDirectSessionModal) {
+                                  handleDirectSessionConfirm();
+                                  return;
+                                }
+                                handleNext();
+                              }}
+                              className="px-6 py-3"
+                            >
+                              {isDirectSessionModal ? "Confirm appointment" : "Continue to confirm"}
+                            </Button>
+                            {isDirectSessionModal ? (
+                              <>
+                                <Button
+                                  variant="muted"
+                                  onClick={handleBack}
+                                  className="px-6 py-3"
+                                >
+                                  <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                                </Button>
+                                {hasCurrentAppointment && !isAppointmentCancelled && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setIsCancelConfirmOpen(true)}
+                                    className="sm:ml-auto inline-flex min-h-[44px] items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800"
+                                  >
+                                    Cancel appointment
+                                  </button>
+                                )}
+                              </>
+                            ) : (
+                              <Button
+                                variant="muted"
+                                onClick={() => setIsReadyToBook(false)}
+                                className="px-6 py-3"
+                              >
+                                I’ll book later
+                              </Button>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="space-y-6 bg-[var(--color-thread-off-white)]/70 p-8 rounded-[24px]">
+                          <div className="space-y-4">
+                            <p className="text-[1rem] text-[var(--color-thread-dark-slate)]">No problem — we’ll save your progress and send an email reminder so you can book the session later when it suits you.</p>
+                            <p className="text-sm text-slate-500">Your intake is saved and the clinician can still review what you have shared.</p>
+                          </div>
                         </div>
                       )}
                     </motion.div>
@@ -1012,15 +925,15 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                       {true && (
                         <div>
                           <span className={sectionKickerClass}>Step 4 of 5 · Questionnaire</span>
-                          <h1 className={stepHeadingClass}>Everyday life & environment</h1>
-                          <p className={stepLeadClass}>A comprehensive view of {formData.firstName || 'your child'}'s world — from routines to school life. A clinician reviews every answer before your session.</p>
+                          <h1 className={stepHeadingClass}>{journeySetupCopy.title}</h1>
+                          <p className={stepLeadClass}>{journeySetupCopy.description}</p>
                         </div>
                       )}
 
                       {(
                         <div className="space-y-3">
                           {(() => {
-                            const completedSectionsCount = ['Home & family', 'Daily routines', 'At school', 'Development & history'].filter(
+                            const completedSectionsCount = QUESTIONNAIRE_SECTIONS.filter(
                               sec => getSectionStatus(sec) === 'Completed'
                             ).length;
                             const totalQuestionsCount = Object.values(QUESTIONS).flat().length;
@@ -1073,7 +986,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                             );
                           })()}
 
-                          {['Home & family', 'Daily routines', 'At school', 'Development & history'].map((sec, i) => {
+                          {QUESTIONNAIRE_SECTIONS.map((sec, i) => {
                             const status = getSectionStatus(sec);
                             const isDone = status === 'Completed';
                             const qCount = (QUESTIONS[sec] || []).length;
@@ -1111,8 +1024,8 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                     <div className={cn("font-sans font-medium text-[1.12rem] tracking-tight leading-[1.3]", isLocked ? "text-slate-400" : "text-[var(--color-thread-dark-slate)]")}>{sec}</div>
                                     <div className="text-[0.78rem] text-[var(--color-thread-gray)] mt-1.5 leading-relaxed">
                                       {isLocked
-                                        ? `Complete "${['Home & family', 'Daily routines', 'At school', 'Development & history'][i - 1]}" to unlock`
-                                        : `Tell us about ${formData.firstName || 'your child'}'s everyday life · ${qCount} questions`}
+                                        ? `Complete "${QUESTIONNAIRE_SECTIONS[i - 1]}" to unlock`
+                                        : `${qCount} questions`}
                                     </div>
                                   </div>
                                 {!isLocked && (
@@ -1171,16 +1084,39 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                               <div className="min-h-[32px] w-[140px]" />
                             )}
                             <span className="text-[0.75rem] font-medium text-slate-400 uppercase tracking-[0.1em]">
-                              {qSection}
+                              One question at a time
                             </span>
                           </div>
 
                           {/* Main Body */}
-                          <div className="flex-1 py-8 px-6 sm:px-10 flex flex-col justify-start overflow-y-auto">
+                          <div className="flex-1 py-8 px-6 sm:px-10 flex flex-col justify-start overflow-y-auto space-y-6">
+                            <div ref={prevListRef} className="space-y-4 overflow-y-auto">
+                              {(() => {
+                                const currentQuestions = QUESTIONS[qSection || ''] || [];
+                                return currentQuestions.slice(0, activeQuestionIndex).map((q, idx) => {
+                                  const ansVal = answers[q.id];
+                                  const displayAns = Array.isArray(ansVal)
+                                    ? ansVal.join(', ')
+                                    : ansVal || <span className="text-rose-500 italic font-normal">Not answered</span>;
+                                  return (
+                                    <div key={q.id} className="rounded-[28px] border border-black/5 bg-slate-50 p-5">
+                                      <div className="text-[0.72rem] uppercase tracking-[0.18em] text-slate-400 mb-2">Question {idx + 1}</div>
+                                      <div className="font-medium text-[1rem] text-[var(--color-thread-heading)] leading-snug mb-3">
+                                        {q.text.replace(/\$\{childName\}/g, formData.firstName || 'your child')}
+                                      </div>
+                                      <div className="rounded-3xl bg-white border border-black/10 p-4 text-[0.95rem] text-slate-700">
+                                        {displayAns}
+                                      </div>
+                                    </div>
+                                  );
+                                });
+                              })()}
+                            </div>
                             <AnimatePresence mode="wait">
                               {!isReviewing ? (
                                 <motion.div
-                                  key={activeQuestionIndex}
+                                  ref={currentQuestionRef}
+                                  key={`question-${activeQuestionIndex}`}
                                   initial={{ opacity: 0, y: 20 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0, y: -20 }}
@@ -1197,19 +1133,27 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                     
                                     return (
                                       <div className="space-y-6">
-                                        <div className="space-y-2">
+                                        <div className="space-y-3">
+                                          <div className="inline-flex rounded-tr-[18px] rounded-bl-[18px] bg-[var(--color-thread-light-green)]/70 px-4 py-2 text-[0.86rem] font-medium text-[var(--color-thread-heading)]">
+                                            {getConversationLead(qSection || '', activeQuestionIndex)}
+                                          </div>
                                           <div className="flex items-start gap-3">
-                                            <span className="text-[0.75rem] font-medium tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] mt-2">{String(activeQuestionIndex + 1).padStart(2, '0')}</span>
-                                            <h2 className="font-serif font-normal text-2xl md:text-3xl text-[var(--color-thread-heading)] leading-snug">
-                                              {qText}
-                                            </h2>
+                                            <span className="mt-2 h-7 min-w-7 rounded-full bg-[var(--color-thread-off-white)] text-[0.72rem] font-semibold tracking-[0.08em] text-[var(--color-thread-mid-green)] flex items-center justify-center">{activeQuestionIndex + 1}</span>
+                                            <div>
+                                              <h2 className="font-serif font-normal text-2xl md:text-3xl text-[var(--color-thread-heading)] leading-snug">
+                                                {qText}
+                                              </h2>
+                                              <p className="text-[0.84rem] text-[var(--color-thread-gray)] leading-relaxed mt-2">
+                                                {getAnswerCue(q.type)}
+                                              </p>
+                                            </div>
                                           </div>
                                           {qSub && (
-                                            <p className="text-[var(--color-thread-gray)] text-[0.92rem] leading-relaxed ml-8">{qSub}</p>
+                                            <p className="text-[var(--color-thread-gray)] text-[0.92rem] leading-relaxed ml-10">{qSub}</p>
                                           )}
                                         </div>
 
-                                        <div className="ml-8">
+                                        <div className="ml-0 sm:ml-10">
                                           {/* CHOICE TYPE */}
                                           {q.type === 'choice' && q.options && (
                                             <div className="space-y-2.5 max-w-lg">
@@ -1280,7 +1224,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                                 );
                                               })}
 
-                                              {/* Navigation OK button */}
+                                              {/* Continue button */}
                                               <div className="pt-4 flex items-center gap-3">
                                                 <Button
                                                   onClick={handleNextQuestion}
@@ -1288,9 +1232,9 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                                   className="px-5 py-2.5 min-h-[40px] shadow-none"
                                                   rightIcon={<Check className="w-4 h-4" />}
                                                 >
-                                                  OK
+                                                  That feels right
                                                 </Button>
-                                                <span className="text-[0.74rem] text-slate-400">press Enter</span>
+                                                <span className="text-[0.74rem] text-slate-400">then we’ll move on</span>
                                               </div>
                                             </div>
                                           )}
@@ -1305,7 +1249,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                                 rows={3}
                                                 className="w-full bg-[var(--color-thread-off-white)]/50 border border-black/10 rounded-tr-[24px] p-4 text-[var(--color-thread-dark-slate)] placeholder:text-[var(--color-thread-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--color-thread-mid-green)]/20 focus:border-[var(--color-thread-mid-green)]/30 transition-all font-sans text-[0.95rem] resize-none"
                                               />
-                                              {/* Navigation OK button */}
+                                              {/* Continue button */}
                                               <div className="flex items-center gap-3">
                                                 <Button
                                                   onClick={handleNextQuestion}
@@ -1313,7 +1257,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                                   className="px-5 py-2.5 min-h-[40px] shadow-none"
                                                   rightIcon={<Check className="w-4 h-4" />}
                                                 >
-                                                  OK
+                                                  That feels right
                                                 </Button>
                                                 <span className="text-[0.74rem] text-slate-400">press Enter or Ctrl+Enter</span>
                                               </div>
@@ -1334,8 +1278,8 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                   className="space-y-6"
                                 >
                                   <div>
-                                    <h3 className="font-serif font-normal text-2xl text-[var(--color-thread-heading)] mb-1.5">Review your answers</h3>
-                                    <p className="text-[var(--color-thread-gray)] text-[0.92rem] leading-relaxed">Click on any question to change your answer before saving.</p>
+                                    <h3 className="font-serif font-normal text-2xl text-[var(--color-thread-heading)] mb-1.5">Quick check before we save this part</h3>
+                                    <p className="text-[var(--color-thread-gray)] text-[0.92rem] leading-relaxed">If something does not feel quite right, tap it and choose again.</p>
                                   </div>
 
                                   <div className="space-y-3 max-w-xl border-t border-b border-black/5 py-4 my-2 max-h-[300px] overflow-y-auto pr-1">
@@ -1367,15 +1311,27 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                   <div className="flex gap-3">
                                     <Button
                                       onClick={() => {
+                                        // Save current answers
                                         saveCurrentChildIntake();
-                                        setQSection(null);
-                                        setIsReviewing(false);
-                                        setIsModalOpen(false);
+                                        const completed = getCompletedQuestionnaireSections(answers);
+                                        // Find next incomplete section
+                                        const next = QUESTIONNAIRE_SECTIONS.find((s) => !completed.includes(s)) || null;
+                                        if (next) {
+                                          setQSection(next);
+                                          setActiveQuestionIndex(0);
+                                          setIsReviewing(false);
+                                          setIsModalOpen(true);
+                                        } else {
+                                          // No more sections — close modal
+                                          setQSection(null);
+                                          setIsReviewing(false);
+                                          setIsModalOpen(false);
+                                        }
                                       }}
                                       variant="mint"
                                       className="px-5 py-2.5 min-h-[40px] shadow-none"
                                     >
-                                      Confirm & Save Section
+                                      Save this part
                                     </Button>
                                     <Button
                                       onClick={() => {
@@ -1385,7 +1341,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                                       variant="muted"
                                       className="px-5 py-2.5 min-h-[40px] shadow-none"
                                     >
-                                      Back to start
+                                      Look again
                                     </Button>
                                   </div>
                                 </motion.div>
@@ -1415,7 +1371,7 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
 
                             {/* Up/Down buttons and navigation guides */}
                             <div className="flex items-center gap-2">
-                              <span className="text-[0.74rem] text-slate-400 hidden sm:inline-block font-medium">Use arrow keys to navigate</span>
+                              <span className="text-[0.74rem] text-slate-400 hidden sm:inline-block font-medium">Move back or forward</span>
                               <div className="flex border border-black/10 rounded-full overflow-hidden bg-white">
                                 <button
                                   onClick={handlePrevQuestion}
@@ -1446,114 +1402,37 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                   )}
                   </AnimatePresence>
 
-                  {/* Step 5 */}
-                  {step === 5 && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-                      <div>
-                        <span className={sectionKickerClass}>Step 5 of 5 · Helpful documents</span>
-                        <h1 className={stepHeadingClass}>Add any helpful documents</h1>
-                        <p className={stepLeadClass}>Anything that helps your clinician understand {formData.firstName || 'your child'} — all optional, and you can add more after your session.</p>
-                      </div>
-
-                      <div className="space-y-6">
-                        <div>
-                          <div className="flex justify-between items-baseline mb-3">
-                            <Label className="mb-0">Reports & Notes</Label>
-                            <span className="text-[0.78rem] text-slate-400">optional</span>
-                          </div>
-                          
-                          <div 
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                            onClick={triggerFileInput}
-                            className={cn(
-                              "rounded-tr-[32px] p-10 text-center cursor-pointer transition-all group relative",
-                              isDragging 
-                                ? "bg-[var(--color-thread-light-green)]/60"
-                                : "bg-[var(--color-thread-light-green)]/30 hover:bg-[var(--color-thread-light-green)]/50"
-                            )}
-                          >
-                            <input 
-                              type="file" 
-                              ref={fileInputRef} 
-                              onChange={handleFileSelect} 
-                              className="hidden" 
-                              multiple 
-                              accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
-                            />
-                            <PageIcon variant="white" icon={<Upload className="w-[22px] h-[22px] stroke-[1.7]" />} className="mx-auto" />
-                            <div className="text-[1.12rem] font-medium tracking-tight leading-[1.3] text-[var(--color-thread-dark-slate)]">
-                              Drag and drop a file here, or click to upload manually
-                            </div>
-                            <div className="text-[0.82rem] text-slate-500 mt-2">
-                              PDF, DOC, DOCX, XLS or PNG. Max size 25MB.
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* List of uploaded files */}
-                        {uploadedFiles.length > 0 && (
-                          <div className="space-y-2">
-                            <span className={smallFieldLabelClass}>Uploaded files ({uploadedFiles.length})</span>
-                            <div className="flex flex-col gap-2">
-                              {uploadedFiles.map((file, idx) => (
-                                <div 
-                                  key={idx} 
-                                  className="flex items-center justify-between p-3.5 bg-white border border-black/5 rounded-tr-[18px] hover:shadow-xs transition-shadow"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-lg bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] flex items-center justify-center">
-                                      <FileText className="w-5 h-5 stroke-[1.7]" />
-                                    </div>
-                                    <div className="text-left">
-                                      <div className="text-sm font-medium text-slate-800 line-clamp-1">{file.name}</div>
-                                      <div className="text-xs text-slate-400 font-mono">{file.size}</div>
-                                    </div>
-                                  </div>
-                                  <button 
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      removeFile(idx);
-                                    }}
-                                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all cursor-pointer"
-                                    title="Remove file"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-
                 </div>
 
                 {/* Unified In-Card navigation footer inside the card container */}
-                {true && (
+                {!isDirectSessionModal && (
                   <div className="flex items-center justify-between pt-8 border-t border-black/5 mt-12 w-full">
-                    <button 
-                      onClick={handleBack} 
-                      className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      <ArrowLeft className="w-4 h-4" /> Back
-                    </button>
-                    <div className="flex items-center gap-5">
-                      {step === 5 && (
+                    {isDirectObservationModal && step === 3 ? (
+                      <>
+                        <Button onClick={onCancel} variant="muted" className="px-6 shadow-none">
+                          Cancel
+                        </Button>
+                        <div className="flex items-center gap-5">
+                          <Button onClick={handleDirectObservationConfirm} variant="mint" className="px-6 shadow-none">
+                            Confirm <Check className="w-4 h-4 ml-2" />
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
                         <button 
-                          onClick={handleNext} 
-                          className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+                          onClick={handleBack} 
+                          className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1.5 transition-colors cursor-pointer"
                         >
-                          Skip for now
+                          <ArrowLeft className="w-4 h-4" /> Back
                         </button>
-                      )}
-                      <Button onClick={handleNext} variant={step === 5 ? "forest" : "mint"} className="px-6 shadow-none">
-                        {step === 5 ? 'Finish setup' : 'Continue'} <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </div>
+                        <div className="flex items-center gap-5">
+                          <Button onClick={handleNext} variant={step === 5 ? "forest" : "mint"} className="px-6 shadow-none">
+                            {step === 5 ? 'Finish setup' : 'Continue'} <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </main>
@@ -1567,102 +1446,49 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
               <div className="w-full md:w-3/5 p-8 sm:p-12 md:p-14 flex flex-col justify-between gap-10">
                 <div className="space-y-8">
                   <div>
-                    <span className={sectionKickerClass}>Setup complete</span>
-                    <h1 className={stepHeadingClass}>You're all set.</h1>
-                    <p className={stepLeadClass}>{formData.firstName || 'Your child'}'s space is ready and your session is booked. Here's what we have, and what happens next.</p>
+                    <span className={sectionKickerClass}>Reflection</span>
+                    <h1 className={stepHeadingClass}>Thank you. We've got enough to get started.</h1>
+                    <p className={stepLeadClass}>Here's what we've understood so far, based only on what you shared.</p>
                   </div>
                   
-                  <div className="bg-[var(--color-thread-off-white)]/70 p-5 rounded-tr-[24px] border border-black/5 flex flex-col gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-full bg-[var(--color-thread-mid-green)] flex items-center justify-center text-white">
-                        <Check className="w-4 h-4" />
+                  <div className="bg-[var(--color-thread-off-white)]/70 p-6 rounded-tr-[24px] flex flex-col gap-5">
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <Check className="w-4 h-4 text-[var(--color-thread-mid-green)] flex-shrink-0 mt-1" />
+                        <p className="text-[0.96rem] text-[var(--color-thread-dark-slate)] leading-relaxed">
+                          {mirroredJourneyStage}
+                        </p>
                       </div>
-                      <div>
-                        <div className="text-[0.6rem] font-medium tracking-[0.12em] uppercase text-slate-400 mb-0.5">Your child</div>
-                        <div className="font-medium text-slate-900">{formData.firstName || 'Child'} · {formData.dob ? 'Added' : '9 years old'}</div>
+                      <div className="flex items-start gap-3">
+                        <Check className="w-4 h-4 text-[var(--color-thread-mid-green)] flex-shrink-0 mt-1" />
+                        <p className="text-[0.96rem] text-[var(--color-thread-dark-slate)] leading-relaxed">
+                          The things you'd most like help with are {mirroredHardestAreas}.
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <Check className="w-4 h-4 text-[var(--color-thread-mid-green)] flex-shrink-0 mt-1" />
+                        <p className="text-[0.96rem] text-[var(--color-thread-dark-slate)] leading-relaxed">
+                          You've told us the information available is: {mirroredAvailableInfo}.
+                        </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 border-t border-black/5 pt-4">
-                      <div className="w-8 h-8 rounded-full bg-[var(--color-thread-mid-green)] flex items-center justify-center text-white">
-                        <Check className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <div className="text-[0.6rem] font-medium tracking-[0.12em] uppercase text-slate-400 mb-0.5">Session booked</div>
-                        <div className="font-medium text-slate-900">{formData.sessionDay ? `Thu ${formData.sessionDay} Jun, ${formData.sessionTime || '4:00 pm'}` : 'Thu 26 Jun, 4:00 pm'} · Dr. Naomi Clark</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between gap-4 border-t border-black/5 pt-4">
-                      <div className="flex items-center gap-4">
-                        <div className={cn(
-                          "w-8 h-8 rounded-full flex items-center justify-center",
-                          remainingQuestionnaireSections === 0
-                            ? "bg-[var(--color-thread-mid-green)] text-white"
-                            : "border-2 border-amber-500 text-amber-500"
-                        )}>
-                          {remainingQuestionnaireSections === 0 ? (
-                            <Check className="w-4 h-4" />
-                          ) : (
-                            <span className="text-xs font-bold">!</span>
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-[0.6rem] font-medium tracking-[0.12em] uppercase text-slate-400 mb-0.5">Questionnaire</div>
-                          <div className="font-medium text-slate-900">
-                            {remainingQuestionnaireSections === 0
-                              ? 'All sections complete'
-                              : `${remainingQuestionnaireSections} of ${Object.keys(QUESTIONS).length} sections left`}
-                          </div>
-                        </div>
-                      </div>
-                      {remainingQuestionnaireSections === 0 ? (
-                        <span className="text-[0.6rem] tracking-[0.1em] uppercase font-medium px-2.75 py-1.5 rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]">
-                          Completed
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => setStep(4)}
-                          className="text-xs font-semibold text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100/70 px-3 py-1.5 rounded-full transition-all flex items-center gap-1 cursor-pointer"
-                        >
-                          Finish <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between gap-4 border-t border-black/5 pt-4">
-                      <div className="flex items-center gap-4">
-                        <div className={cn(
-                          "w-8 h-8 rounded-full flex items-center justify-center",
-                          uploadedFiles.length > 0
-                            ? "bg-[var(--color-thread-mid-green)] text-white"
-                            : "bg-white border border-black/10 text-slate-400"
-                        )}>
-                          {uploadedFiles.length > 0 ? (
-                            <Check className="w-4 h-4" />
-                          ) : (
-                            <Upload className="w-4 h-4" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-[0.6rem] font-medium tracking-[0.12em] uppercase text-slate-400 mb-0.5">Documents</div>
-                          <div className="font-medium text-slate-900">
-                            {uploadedFiles.length > 0
-                              ? `${uploadedFiles.length} ${uploadedFiles.length === 1 ? 'file' : 'files'} uploaded`
-                              : 'No documents added yet'}
-                          </div>
-                        </div>
-                      </div>
-                      <span className={cn(
-                        "text-[0.6rem] tracking-[0.1em] uppercase font-medium px-2.75 py-1.5 rounded-full",
-                        uploadedFiles.length > 0
-                          ? "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]"
-                          : "bg-[var(--color-thread-off-white)] text-[var(--color-thread-gray)] border border-black/10"
-                      )}>
-                        {uploadedFiles.length > 0 ? "Added" : "Optional"}
-                      </span>
+
+                    <div className="border-t border-black/5 pt-5">
+                      <div className="text-[0.6rem] tracking-[0.12em] uppercase text-slate-400 font-medium mb-2">How Navigator can help</div>
+                      <p className="text-[0.92rem] text-[var(--color-thread-gray)] leading-relaxed">
+                        {journeyReflectionCopy.navigatorHelp}
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-black/5 w-full">
+                <div className="pt-6 border-t border-black/5 w-full flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <button
+                    onClick={handleBack}
+                    className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center justify-center sm:justify-start gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </button>
                   <Button onClick={onComplete} variant="mint" className="px-8 shadow-none w-full sm:w-auto">
                     Go to your family home <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -1678,11 +1504,11 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
                       title="Before your session"
                       meta="Questionnaire"
                       metaTag="Step 1"
-                      description="Finish the questionnaire so Dr. Clark has the full picture."
+                      description={journeyReflectionCopy.nextStep}
                       active
                     />
                     <TimelineStep
-                      title={`Your session — ${formData.sessionDay ? `Thu ${formData.sessionDay} Jun` : 'Thu 26 Jun'}`}
+                      title={`Your session — ${formData.sessionDay ? `Thu ${formData.sessionDay} Jun` : isAppointmentCancelled ? 'Session cancelled' : 'Session not booked'}`}
                       meta="Telehealth"
                       metaTag="Step 2"
                       description="Meet Dr. Clark on a video call from home."
@@ -1700,10 +1526,10 @@ export default function AddChildFlow({ onComplete, onCancel, asModal, initialSte
 
                 <div className="bg-white p-5 rounded-tr-[24px] border border-black/5 shadow-none">
                   <h4 className="font-medium text-[var(--color-thread-heading)] text-sm mb-1">Setting up another child?</h4>
-                  <p className="text-xs text-slate-500 leading-relaxed mb-4">Each child has their own session, assessment and documents.</p>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-4">Each child has their own session, context, and next steps.</p>
                   <Button variant="muted" className="w-full text-xs py-2" onClick={() => {
                     setFormData({
-                      firstName: '', dob: '', relation: 'Parent', notices: [], notes: '', sessionDay: '', sessionTime: ''
+                      firstName: '', dob: '', relation: 'Parent', journeyStage: '', availableInfo: [], notices: [], notes: '', sessionDay: '', sessionTime: ''
                     });
                     setStep(1);
                   }}>

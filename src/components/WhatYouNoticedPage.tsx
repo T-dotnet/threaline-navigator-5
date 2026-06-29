@@ -1,11 +1,14 @@
 import { motion } from "motion/react";
 import {
+  ArrowUpRight,
   ArrowRight,
+  Calendar,
+  Check,
   ClipboardList,
   Clock,
   Home,
   Layers,
-  PencilLine,
+  LineChart,
   Search,
 } from "lucide-react";
 import { Page } from "../types";
@@ -22,7 +25,9 @@ import { AreaItem } from "./ui/AreaItem";
 import { StrategyCard } from "./ui/StrategyCard";
 import { PageFooterCTA } from "./ui/PageFooterCTA";
 import { Button } from "./ui/Button";
-import watercolorBgImg from "../assets/images/watercolor_bg_1782427011739.jpg";
+import { useNewChildExperience } from "../context/NewChildExperienceContext";
+import { ReviewRhythmSection } from "./ui/ReviewRhythmSection";
+import { isSessionBooked as getIsSessionBooked } from "../lib/childStatus";
 
 interface WhatYouNoticedPageProps {
   onPageChange: (page: Page) => void;
@@ -39,6 +44,10 @@ const noticeDescriptions: Record<string, string> = {
   Friendships: "Hold onto examples of connection, conflict, play, withdrawal, or moments where social rules feel unclear.",
 };
 
+function getSupportDescription(answer: string) {
+  return noticeDescriptions[answer] || `Because you marked "${answer}" as hard right now, keep a few real examples close by so it can be explored during the first session.`;
+}
+
 function formatList(items: string[]) {
   if (items.length === 0) return "";
   if (items.length === 1) return items[0].toLowerCase();
@@ -48,12 +57,46 @@ function formatList(items: string[]) {
 
 export default function WhatYouNoticedPage({ onPageChange, onOpenSetup }: WhatYouNoticedPageProps) {
   const { currentChild } = useCurrentChild();
-  const notices = currentChild.intake?.notices || [];
+  const { isReviewExperience } = useNewChildExperience();
+  const hardestAnswers = currentChild.intake?.notices || [];
   const notes = currentChild.intake?.notes?.trim() || "";
-  const hasNotices = notices.length > 0;
-  const noticedSummary = hasNotices
-    ? `You flagged ${formatList(notices)} for ${currentChild.name}. These are early parent observations, kept visible so the first session can start from what you are already seeing.`
-    : `This page will hold the areas you flag during setup, so ${currentChild.name}'s first session can start from what you are already seeing.`;
+  const hasHardestAnswers = hardestAnswers.length > 0;
+  const noticedSummary = hasHardestAnswers
+    ? `You marked ${formatList(hardestAnswers)} as hardest right now for ${currentChild.name}. These answers stay visible so the first session can start from what feels most important.`
+    : `This page will update once you answer Hardest right now in setup. Until then, there is nothing to interpret for ${currentChild.name}.`;
+  const isSessionBooked = getIsSessionBooked(currentChild);
+  const showReviewDates = !currentChild.isNew || isSessionBooked;
+  const reviewRhythmItems = [
+    {
+      state: "Done",
+      title: "Assessment baseline",
+      meta: showReviewDates ? "14 June" : "",
+      description: "The starting point: what is happening, what matters most, and the first plan.",
+      icon: <Check className="w-[19px] h-[19px] stroke-[1.8]" />,
+      active: true,
+    },
+    {
+      state: "Next review",
+      title: "First full review",
+      meta: showReviewDates ? "12 September" : "After first session",
+      description: "Revisit priorities, update the plan, and confirm what has improved and what needs attention next.",
+      icon: <Calendar className="w-[19px] h-[19px] stroke-[1.8]" />,
+    },
+    {
+      state: "Happening now",
+      title: "Progress tracking",
+      meta: "Between reviews",
+      description: "We watch what changes week to week and flag patterns, like sleep, before they become urgent.",
+      icon: <Clock className="w-[19px] h-[19px] stroke-[1.8]" />,
+    },
+    {
+      state: "Ongoing",
+      title: "Keep the picture current",
+      meta: `Each term`,
+      description: `The picture updates as ${currentChild.name} grows, because needs shift and clarity should not expire.`,
+      icon: <ArrowUpRight className="w-[19px] h-[19px] stroke-[1.8]" />,
+    },
+  ];
 
   return (
     <motion.div
@@ -63,8 +106,8 @@ export default function WhatYouNoticedPage({ onPageChange, onOpenSetup }: WhatYo
     >
       <PageContainer>
         <PageHeader
-          kicker="Intake · What you noticed"
-          title={`${currentChild.name}'s early signals, kept in one place.`}
+          kicker={isReviewExperience ? "Intake · Reviews" : "Intake · What you noticed"}
+          title={isReviewExperience ? `${currentChild.name}'s reviews, kept in one place.` : `${currentChild.name}'s early signals, kept in one place.`}
           titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[17ch]"
           className="mb-12"
           description={
@@ -75,38 +118,29 @@ export default function WhatYouNoticedPage({ onPageChange, onOpenSetup }: WhatYo
               </span>
               <span className="flex items-center gap-1.5">
                 <Layers className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-                Based on setup step 2
+                Based on setup step 3
               </span>
             </div>
           }
         />
 
-        <div className="w-full h-[200px] rounded-t-[24px] sm:rounded-t-[32px] overflow-hidden relative border border-black/5">
-          <img
-            src={watercolorBgImg}
-            alt="Watercolor Accent"
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-        </div>
-
         <HeroQuoteCard
-          kicker="Share what you've noticed"
+          kicker={isReviewExperience ? "Reviews" : "Share what you've noticed"}
           quote={noticedSummary}
           showQuotes={false}
           className="mb-24"
           rightNode={
             <HeroActionCard
-              icon={<Search className="w-[22px] h-[22px] stroke-[1.7]" />}
-              title={notices.length}
-              subtitle="Parent observations"
+              icon={isReviewExperience ? <LineChart className="w-[22px] h-[22px] stroke-[1.7]" /> : <Search className="w-[22px] h-[22px] stroke-[1.7]" />}
+              title={hardestAnswers.length}
+              subtitle="Hardest areas"
             />
           }
           action={
             <div className="font-medium text-[0.84rem] opacity-70">
               Source{" "}
               <strong className="opacity-100 ml-1">
-                Setup step 2
+                Setup step 3
               </strong> · not a clinical conclusion yet
             </div>
           }
@@ -122,49 +156,39 @@ export default function WhatYouNoticedPage({ onPageChange, onOpenSetup }: WhatYo
             </SectionTitle>
           </div>
           <SectionDescription className="mb-6">
-            These notes help the clinician prepare for the first conversation. They do not label the pattern; they simply keep your observations clear and easy to revisit.
+            These are based on the answers from Hardest right now. They do not label the pattern; they simply show what may be worth exploring first.
           </SectionDescription>
 
           <div className="border-b border-black/10">
-            {hasNotices ? (
-              notices.map((notice) => (
+            {hasHardestAnswers ? (
+              hardestAnswers.map((answer) => (
                 <AreaItem
-                  key={notice}
-                  title={notice}
-                  description={noticeDescriptions[notice] || "Keep a few real examples close by so this can be explored during the first session."}
-                  status="Emerging"
+                  key={answer}
+                  title={answer}
+                  description={getSupportDescription(answer)}
+                  actionText="Discover more"
+                  actionPlacement="header"
+                  onAction={() => onPageChange("understanding")}
                 />
               ))
             ) : (
               <AreaItem
-                title="No areas selected yet"
+                title="Nothing from Hardest right now yet"
                 description={
                   <div>
                     <p className="text-[0.96rem] text-[var(--color-thread-gray)] leading-relaxed max-w-[62ch] font-sans mb-4">
-                      Use setup step 2 to flag what you are noticing for {currentChild.name}. This page will update from those selections.
+                      Answer Hardest right now in setup to show supports worth exploring here. For now, nothing has been recorded for {currentChild.name}.
                     </p>
                     <Button
                       type="button"
                       variant="mint"
-                      onClick={() => onOpenSetup?.(2)}
+                      onClick={() => onOpenSetup?.(3)}
                       rightIcon={<ArrowRight className="w-3.5 h-3.5 stroke-[2]" />}
                     >
-                      Add observations
+                      Start Hardest right now
                     </Button>
                   </div>
                 }
-              />
-            )}
-            {notes && (
-              <AreaItem
-                title="Your own words"
-                description={
-                  <p className="text-[0.96rem] text-[var(--color-thread-gray)] leading-relaxed max-w-[62ch] font-sans">
-                    {notes}
-                  </p>
-                }
-                status="In place"
-                icon={<PencilLine className="w-3 h-3" />}
               />
             )}
           </div>
@@ -186,9 +210,9 @@ export default function WhatYouNoticedPage({ onPageChange, onOpenSetup }: WhatYo
                 title="Before the session"
                 icon={<ClipboardList className="w-[18px] h-[18px] stroke-[1.8]" />}
                 items={[
-                  hasNotices
-                    ? `Keep one concrete example for ${notices[0].toLowerCase()} if it shows up this week.`
-                    : "Keep one concrete example of anything that stands out this week.",
+                  hasHardestAnswers
+                    ? `Keep one concrete example for ${hardestAnswers[0].toLowerCase()} if it shows up this week.`
+                    : "Start with the Hardest right now step so this page can reflect the right support areas.",
                   "Note what happened before, what helped, and what changed afterward.",
                   "Bring school notes, reports, or examples if they show the pattern clearly.",
                 ]}
@@ -209,10 +233,14 @@ export default function WhatYouNoticedPage({ onPageChange, onOpenSetup }: WhatYo
             </div>
           </div>
         </FadeInScroll>
+
+        {isReviewExperience && (
+          <ReviewRhythmSection items={reviewRhythmItems} />
+        )}
       </PageContainer>
 
       <PageFooterCTA
-        title="Want to add or change what you noticed?"
+        title={isReviewExperience ? "Ready to review another part of the intake?" : "Want to add or change what you noticed?"}
         buttonText="Review setup"
         buttonIcon={<ArrowRight className="w-4 h-4 stroke-[2]" />}
         onClick={() => {

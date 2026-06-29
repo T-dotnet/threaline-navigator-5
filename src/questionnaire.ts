@@ -8,111 +8,88 @@ export interface Question {
 }
 
 export const QUESTIONS: Record<string, Question[]> = {
-  'Home & family': [
+  "What's going well": [
     {
-      id: 'family_live_with',
-      text: 'Who does ${childName} live with at home?',
-      subtext: 'Select all that apply.',
-      type: 'multiple-choice',
-      options: ['Both parents', 'Mother', 'Father', 'Step-parent', 'Grandparents', 'Siblings', 'Other relatives'],
-    },
-    {
-      id: 'family_relationship',
-      text: 'How would you describe their relationship with their primary caregivers?',
+      id: 'attention_focus',
+      text: 'Where does ${childName} seem most confident or settled right now?',
       subtext: 'Choose the option that fits best.',
       type: 'choice',
       options: [
-        'Very close and supportive',
-        'Mostly positive with occasional conflict',
-        'Can be challenging or strained',
-        'Varies significantly day-to-day'
+        'At home routines',
+        'Creative or play activities',
+        'Talking or sharing ideas',
+        'With familiar adults or friends'
       ],
     },
     {
-      id: 'family_transitions',
-      text: 'Have there been any major family transitions or stressors recently?',
-      subtext: 'Select any that apply.',
-      type: 'multiple-choice',
+      id: 'behaviour_emotions',
+      text: 'What usually helps ${childName} feel calm, connected, or ready to try?',
+      subtext: 'Choose the option that fits best.',
+      type: 'choice',
       options: [
-        'None',
-        'Moving home or school',
-        'New sibling',
-        'Separation or divorce',
-        'Loss or illness in the family',
-        'Change in parent employment'
+        'Clear routines and warning before changes',
+        'Quiet reassurance and time',
+        'Movement or sensory breaks',
+        'Choice, play, or special interests'
       ],
     },
     {
-      id: 'family_interests',
-      text: "What are ${childName}'s favorite activities or special interests?",
-      subtext: 'Tell us what brings them joy or keeps them highly engaged.',
-      type: 'text',
-      placeholder: 'e.g., Building Lego, drawing dinosaurs, playing outside, reading books...'
+      id: 'sleep',
+      text: 'When does the day tend to go best?',
+      type: 'choice',
+      options: ['Mornings', 'After school', 'Evenings', 'It changes day to day']
     }
   ],
-  'Daily routines': [
+  "What you're seeing": [
     {
-      id: 'routines_bedtime',
-      text: 'How often is bedtime a struggle?',
-      type: 'choice',
-      options: ['Never', 'Sometimes', 'Often', 'Always']
-    },
-    {
-      id: 'routines_sleep',
-      text: 'How many hours of sleep does ${childName} usually get per night?',
-      type: 'choice',
-      options: ['Less than 6 hours', '6 to 8 hours', '8 to 10 hours', '10+ hours']
-    },
-    {
-      id: 'routines_morning',
-      text: 'How does ${childName} handle morning routines and getting ready?',
+      id: 'learning',
+      text: 'What feels hardest for ${childName} right now?',
       type: 'choice',
       options: [
-        'Very independent and cooperative',
-        'Needs occasional reminders or prompting',
-        'Frequently resists or gets distracted',
-        'A significant daily challenge for the family'
+        'Starting or finishing tasks',
+        'Managing big feelings',
+        'Joining in at school or with peers',
+        'Moving through daily routines'
       ]
     },
     {
-      id: 'routines_eating',
-      text: 'How would you describe their eating habits and mealtimes?',
+      id: 'movement_coordination',
+      text: 'Where do you notice the most effort or support needed?',
       type: 'choice',
       options: [
-        'Enjoys a wide variety of foods',
-        'Somewhat selective or picky',
-        'Extremely selective / sensitive to textures',
-        'Often refuses meals or struggles to sit'
+        'Attention and concentration',
+        'Transitions or changes',
+        'Communication or being understood',
+        'Movement, coordination, or body confidence'
+      ]
+    },
+    {
+      id: 'speech_communication',
+      text: 'How does ${childName} usually show that something is too much?',
+      type: 'choice',
+      options: [
+        'Withdraws or becomes quiet',
+        'Gets upset or frustrated',
+        'Avoids the task or situation',
+        'Needs an adult close by to reset'
       ]
     }
   ],
   'At school': [
     {
-      id: 'school_type',
-      text: 'What is ${childName}\'s current school or learning environment?',
+      id: 'school_participation',
+      text: 'How does ${childName} usually participate in school activities and learning?',
       type: 'choice',
       options: [
-        'Preschool / Kindergarten',
-        'Primary school (Prep to Year 6)',
-        'High school (Year 7 to 12)',
-        'Homeschooled',
-        'Not yet in structured education'
+        'Engages well and joins in readily',
+        'Participates with some support',
+        'Often avoids or withdraws from activities',
+        'Finds school participation a major challenge'
       ]
     },
     {
-      id: 'school_feeling',
-      text: 'How does ${childName} feel about going to school?',
-      type: 'choice',
-      options: [
-        'Excited and looks forward to it',
-        'Content but neutral',
-        'Anxious or reluctant at times',
-        'Strongly resists or refuses to go'
-      ]
-    },
-    {
-      id: 'school_social',
-      text: 'How does ${childName} interact with peers or friends?',
+      id: 'friendships',
+      text: 'How does ${childName} usually interact with friends or peers?',
       type: 'choice',
       options: [
         'Has close friends and socializes easily',
@@ -120,67 +97,38 @@ export const QUESTIONS: Record<string, Question[]> = {
         'Prefers solo play or struggles to make friends',
         'Often feels left out or overwhelmed socially'
       ]
-    },
-    {
-      id: 'school_support',
-      text: 'Does ${childName} receive any additional learning support or modifications?',
-      type: 'choice',
-      options: [
-        'No additional support needed',
-        'Informal adjustments by the teacher',
-        'Individual Education Plan (IEP / ILP)',
-        'Full-time support aide or special education'
-      ]
     }
   ],
   'Development & history': [
     {
-      id: 'dev_sensory',
-      text: 'Have you noticed any specific sensory sensitivities?',
-      subtext: 'Select all that apply.',
+      id: 'dev_available_information',
+      text: 'Do you already have any reports or information?',
+      subtext: "Select all that apply. Don't worry if you don't. Many families are just getting started.",
       type: 'multiple-choice',
       options: [
-        'Loud noises or sudden sounds',
-        'Bright or flickering lights',
-        'Certain clothing tags or fabric textures',
-        'Picky eating / food textures',
-        'Smells or physical touch',
-        'None of the above'
+        'Nothing yet',
+        'School reports',
+        'Teacher observations',
+        'GP or paediatrician reports',
+        'Psychology reports',
+        'Speech reports',
+        'OT reports',
+        'Previous assessments',
+        'Other'
       ]
-    },
-    {
-      id: 'dev_communication',
-      text: 'How would you describe ${childName}\'s communication style?',
-      type: 'choice',
-      options: [
-        'Highly verbal and expressive',
-        'Communicates well but speaks less in public',
-        'Uses short sentences or gets frustrated expressing ideas',
-        'Uses non-verbal methods or alternative communication'
-      ]
-    },
-    {
-      id: 'dev_regulation',
-      text: 'Does ${childName} find it easy to self-regulate when upset or overwhelmed?',
-      type: 'choice',
-      options: [
-        'Calms down quickly with some support',
-        'Takes time but eventually self-soothes',
-        'Frequently has intense or long meltdowns',
-        'Struggles significantly to regulate emotions'
-      ]
-    },
-    {
-      id: 'dev_strengths',
-      text: 'What are the primary strengths you see in ${childName}?',
-      subtext: 'We love to hear about what they do best.',
-      type: 'text',
-      placeholder: 'e.g., Kind and empathetic, highly creative, great memory, excellent puzzle solver...'
     }
   ]
 };
 
 export const QUESTIONNAIRE_SECTIONS = Object.keys(QUESTIONS);
+
+const LEGACY_QUESTIONNAIRE_SECTION_NAMES: Record<string, string> = {
+  "What we're seeing": "What you're seeing",
+};
+
+export function normalizeQuestionnaireSectionName(sectionName: string): string {
+  return LEGACY_QUESTIONNAIRE_SECTION_NAMES[sectionName] || sectionName;
+}
 
 export function isAnswered(answer: unknown): boolean {
   if (answer === undefined || answer === null) return false;
@@ -190,7 +138,8 @@ export function isAnswered(answer: unknown): boolean {
 }
 
 export function getAnsweredCount(sectionName: string, answers: Record<string, unknown>): number {
-  return (QUESTIONS[sectionName] || []).filter((question) => isAnswered(answers[question.id])).length;
+  const normalizedSectionName = normalizeQuestionnaireSectionName(sectionName);
+  return (QUESTIONS[normalizedSectionName] || []).filter((question) => isAnswered(answers[question.id])).length;
 }
 
 export function getCompletedQuestionnaireSections(answers: Record<string, unknown>): string[] {

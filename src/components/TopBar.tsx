@@ -1,11 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   ChevronDown,
   Bell,
   Plus,
   Settings,
   LogOut,
-  Sliders,
   Users,
   Palette,
   Menu,
@@ -13,8 +12,8 @@ import {
   Home,
   Info,
   ListTodo,
-  Milestone,
   LineChart,
+  Map,
   BookOpen,
   Lock,
   Search,
@@ -22,12 +21,14 @@ import {
 import { Child } from "../types";
 import { Avatar } from "./ui/Avatar";
 import { IconButton } from "./ui/IconButton";
+import { Switch } from "./ui/Switch";
 import { cn } from "../lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { isNewChildAllowedPage } from "../navigation";
+import { getChildSessionStatus, getChildSubheading } from "../lib/childStatus";
 
 import { useCurrentChild } from "../context/ChildContext";
-import { useCallback } from "react";
+import { useNewChildExperience } from "../context/NewChildExperienceContext";
 
 interface TopBarProps {
   currentPage?: any;
@@ -35,16 +36,23 @@ interface TopBarProps {
   onPageChange: (page: any) => void;
 }
 
+type UpdateStatus = "new" | "unread" | "read";
+type UpdateFilter = "all" | UpdateStatus;
+
 export default function TopBar({
   currentPage,
   onAddChildRequest,
   onPageChange,
 }: TopBarProps) {
   const { currentChild, childrenList, setChild } = useCurrentChild();
+  const { isReviewExperience, setNewChildExperience } = useNewChildExperience();
+  const isAllChildrenView = currentPage === "all-children";
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [updateFilter, setUpdateFilter] = useState<UpdateFilter>("all");
+  const [readUpdateIds, setReadUpdateIds] = useState<Record<string, boolean>>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
   const alertsRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -65,6 +73,103 @@ export default function TopBar({
     onPageChange("all-children");
     setIsDropdownOpen(false);
   }, [onPageChange]);
+
+  const allChildrenUpdates = childrenList.map((child, index) => {
+    const updateId = child.id || `${child.name}-${index}`;
+    const sessionStatus = getChildSessionStatus(child);
+    const sessionBooked = sessionStatus === "booked";
+    const sessionCancelled = sessionStatus === "cancelled";
+    const status: UpdateStatus = readUpdateIds[updateId]
+      ? "read"
+      : child.isNew && !sessionBooked
+      ? "new"
+      : "unread";
+    const title = child.isNew ? "Intake update" : "Live progress";
+    const summary = child.isNew
+      ? sessionBooked
+        ? "First session booked. Keep reports and setup details ready for review."
+        : sessionCancelled
+        ? "The first session was cancelled. Book a new time when you are ready."
+        : "Intake is still in progress. Finish the questionnaire and book the first session."
+      : `Latest view available in ${child.name}'s dashboard. Open it to review current progress and next steps.`;
+    const linkLabel = child.isNew ? `Open ${child.name} intake` : `Open ${child.name}`;
+
+    return {
+      child,
+      linkLabel,
+      status,
+      summary,
+      title,
+      updateId,
+    };
+  });
+  const visibleAllChildrenUpdates = allChildrenUpdates.filter((update) => updateFilter === "all" || update.status === updateFilter);
+  const updateCounts = allChildrenUpdates.reduce(
+    (counts, update) => ({
+      ...counts,
+      all: counts.all + 1,
+      [update.status]: counts[update.status] + 1,
+    }),
+    { all: 0, new: 0, unread: 0, read: 0 }
+  );
+  const updateFilterOptions: Array<{ label: string; value: UpdateFilter }> = [
+    { label: "All", value: "all" },
+    { label: "Unread", value: "unread" },
+    { label: "New", value: "new" },
+    { label: "Read", value: "read" },
+  ];
+  const updateStatusLabels: Record<UpdateStatus, string> = {
+    new: "New",
+    unread: "Unread",
+    read: "Read",
+  };
+  const updateStatusClasses: Record<UpdateStatus, string> = {
+    new: "bg-amber-50 text-amber-700",
+    unread: "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]",
+    read: "bg-slate-100 text-slate-500",
+  };
+  const currentNewChildMobileNavItems = [
+    { id: "home", label: "Home", icon: Home },
+    { id: "what-you-noticed", label: "What you noticed", icon: Search },
+    { id: "understanding", label: "Understanding", icon: Info },
+    { id: "priorities", label: "Priorities", icon: ListTodo },
+    { id: "roadmap", label: "Roadmap", icon: Map },
+    { id: "resources", label: "Resources", icon: BookOpen },
+    { id: "settings", label: "App Settings", icon: Settings },
+    { id: "style-guide", label: "Style Guide & Tokens", icon: Palette },
+  ] as const;
+  const reviewNewChildMobileNavItems = [
+    { id: "home", label: "Home", icon: Home },
+    { id: "understanding", label: "Understanding", icon: Info },
+    { id: "priorities", label: "Priorities", icon: ListTodo },
+    { id: "what-you-noticed", label: "Reviews", icon: LineChart },
+    { id: "resources", label: "Resources", icon: BookOpen },
+    { id: "documents", label: "Documents", icon: Lock },
+    { id: "settings", label: "App Settings", icon: Settings },
+    { id: "style-guide", label: "Style Guide & Tokens", icon: Palette },
+  ] as const;
+  const newChildMobileNavItems = isReviewExperience ? reviewNewChildMobileNavItems : currentNewChildMobileNavItems;
+
+  const handleOpenUpdate = useCallback((child: Child, updateId: string) => {
+    setReadUpdateIds((prev) => ({ ...prev, [updateId]: true }));
+    handleChildSwitch(child);
+    setIsAlertsOpen(false);
+  }, [handleChildSwitch]);
+
+  const handleMarkUpdateRead = useCallback((updateId: string) => {
+    setReadUpdateIds((prev) => ({ ...prev, [updateId]: true }));
+  }, []);
+
+  const handleMarkAllRead = useCallback(() => {
+    setReadUpdateIds((prev) => {
+      const next = { ...prev };
+      allChildrenUpdates.forEach((update) => {
+        next[update.updateId] = true;
+      });
+      return next;
+    });
+    setUpdateFilter("read");
+  }, [allChildrenUpdates]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -126,7 +231,7 @@ export default function TopBar({
                   {currentChild.name}
                 </span>
                 <span className="text-[0.72rem] text-slate-500 mt-0.5">
-                  {currentChild.isNew ? "Assessment pending" : `Age ${currentChild.age}`}
+                  {getChildSubheading(currentChild)}
                 </span>
               </div>
             </>
@@ -189,39 +294,46 @@ export default function TopBar({
                   </div>
                 </button>
 
-                {childrenList.map((child, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleChildSwitch(child)}
-                    className={cn(
-                      "flex items-center gap-3.5 px-4 py-3.5 w-full text-left transition-colors min-h-[44px]",
-                      (currentChild.name === child.name && currentPage !== "all-children")
-                        ? "bg-slate-50"
-                        : "hover:bg-slate-50",
-                    )}
-                  >
-                    <Avatar
-                      size="md"
-                      className="bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] font-serif"
-                      fallback={child.initial}
-                    />
-                    <div className="flex flex-col leading-none">
-                      <span
-                        className={cn(
-                          "text-[0.92rem] tracking-tight",
-                          (currentChild.name === child.name && currentPage !== "all-children")
-                            ? "font-medium text-slate-900"
-                            : "font-medium text-slate-700",
-                        )}
+                {childrenList.map((child, idx) => {
+                  const isSelected = currentChild.name === child.name && currentPage !== "all-children";
+
+                  return (
+                    <div
+                      key={child.id || `${child.name}-${idx}`}
+                      className={cn(
+                        "flex items-center gap-3.5 px-4 py-3.5 w-full transition-colors min-h-[44px]",
+                        isSelected ? "bg-slate-50" : "hover:bg-slate-50",
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleChildSwitch(child)}
+                        className="flex min-w-0 flex-1 items-center gap-3.5 text-left"
                       >
-                        {child.name}
-                      </span>
-                      <span className="text-[0.7rem] text-slate-500 mt-0.5">
-                        {child.isNew ? "Intake in progress" : `Age ${child.age}`}
-                      </span>
+                        <Avatar
+                          size="md"
+                          className="bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] font-serif"
+                          fallback={child.initial}
+                        />
+                        <div className="flex min-w-0 flex-col leading-none">
+                          <span
+                            className={cn(
+                              "truncate text-[0.92rem] tracking-tight",
+                              isSelected
+                                ? "font-medium text-slate-900"
+                                : "font-medium text-slate-700",
+                            )}
+                          >
+                            {child.name}
+                          </span>
+                          <span className="text-[0.7rem] text-slate-500 mt-0.5">
+                            {getChildSubheading(child)}
+                          </span>
+                        </div>
+                      </button>
                     </div>
-                  </button>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="border-t border-black/5 mt-2 pt-2 px-2">
@@ -264,16 +376,103 @@ export default function TopBar({
                 className="fixed sm:absolute top-20 sm:top-14 left-4 right-4 sm:left-auto sm:right-0 w-auto sm:w-[380px] bg-white rounded-[24px] border border-black/5 shadow-modal py-6 z-50 font-sans"
               >
                 <div className="px-6 mb-5">
-                  <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-1.5 block">
-                    Live updates for {currentChild.name}
-                  </span>
+                  {!isAllChildrenView && (
+                    <span className="text-[0.75rem] tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-1.5 block">
+                      Live updates for {currentChild.name}
+                    </span>
+                  )}
                   <h2 className="text-[1.05rem] font-medium text-[var(--color-thread-dark-slate)] tracking-tight leading-none">
-                    {currentChild.isNew ? "Setup Reminders" : "Development Alerts"}
+                    {currentChild.isNew && !isAllChildrenView ? "Setup Reminders" : "Updates"}
                   </h2>
+                  {isAllChildrenView && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {updateFilterOptions.map((option) => {
+                        const isActive = updateFilter === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setUpdateFilter(option.value)}
+                            className={cn(
+                              "rounded-full px-3 py-1.5 text-[0.74rem] font-medium transition-colors",
+                              isActive
+                                ? "bg-[var(--color-thread-mid-green)] text-white"
+                                : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                            )}
+                          >
+                            {option.label} {updateCounts[option.value]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-3.5 px-6 mb-6 max-h-[340px] overflow-y-auto">
-                  {currentChild.isNew ? (
+                  {isAllChildrenView ? (
+                    <>
+                      {visibleAllChildrenUpdates.length > 0 ? visibleAllChildrenUpdates.map((update) => {
+                        const { child, linkLabel, status, summary, title, updateId } = update;
+
+                        return (
+                          <div key={updateId} className="bg-white rounded-[16px] px-5 py-4 relative shadow-sm hover:shadow-md transition-all group">
+                            <div className={cn(
+                              "absolute left-0 top-0 bottom-0 w-1 rounded-l-[16px]",
+                              child.isNew ? "bg-amber-400" : "bg-[var(--color-thread-mid-green)]"
+                            )} />
+                            <div className="flex flex-col gap-2.5 pl-1.5">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <div className="truncate text-[0.68rem] uppercase tracking-[0.12em] text-slate-400 font-medium">
+                                    {child.name}
+                                  </div>
+                                  <h3 className={cn(
+                                    "mt-1.5 font-medium text-[var(--color-thread-dark-slate)] text-[0.98rem] leading-tight tracking-tight transition-colors",
+                                    child.isNew ? "group-hover:text-amber-600" : "group-hover:text-[var(--color-thread-mid-green)]"
+                                  )}>
+                                    {title}
+                                  </h3>
+                                </div>
+                                <span className={cn(
+                                  "shrink-0 rounded-full px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-[0.08em]",
+                                  updateStatusClasses[status]
+                                )}>
+                                  {updateStatusLabels[status]}
+                                </span>
+                              </div>
+                              <p className="text-[0.88rem] text-slate-600 leading-relaxed">
+                                {summary}
+                              </p>
+                              <div className="flex items-center justify-between gap-3 pt-1">
+                                {childrenList.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenUpdate(child, updateId)}
+                                    className="text-[0.84rem] font-medium text-[var(--color-thread-mid-green)] hover:opacity-75 transition-opacity"
+                                  >
+                                    {linkLabel}
+                                  </button>
+                                )}
+                                {status !== "read" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMarkUpdateRead(updateId)}
+                                    className="ml-auto text-[0.78rem] font-medium text-slate-400 hover:text-slate-700 transition-colors"
+                                  >
+                                    Mark read
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }) : (
+                        <div className="rounded-[16px] bg-slate-50 px-5 py-4 text-[0.88rem] leading-relaxed text-slate-500">
+                          No {updateFilter === "all" ? "" : updateFilter} updates to show.
+                        </div>
+                      )}
+                    </>
+                  ) : currentChild.isNew ? (
                     <>
                       <div className="bg-white rounded-[16px] p-4.5 relative overflow-hidden shadow-sm hover:shadow-md transition-all group">
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400" />
@@ -328,11 +527,11 @@ export default function TopBar({
                       onClick={() => setIsAlertsOpen(false)}
                       className="text-[0.84rem] font-medium text-[var(--color-thread-gray)] hover:text-[var(--color-thread-dark-slate)] transition-colors"
                     >
-                      Cleared all notices
+                      Clear notices
                     </button>
                   </div>
                   <button className="text-[0.84rem] font-medium text-[var(--color-thread-gray)] hover:text-[var(--color-thread-mid-green)] transition-colors">
-                    Refresh Logs
+                    Refresh updates
                   </button>
                 </div>
               </motion.div>
@@ -369,6 +568,29 @@ export default function TopBar({
                 </div>
 
                 <div className="flex flex-col gap-0.5 px-1.5">
+                  <div className="mx-1.5 mb-1 rounded-2xl bg-slate-50 p-3.5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-[0.82rem] font-medium text-slate-800">
+                          New child version
+                        </div>
+                        <div className="mt-1 text-[0.68rem] leading-relaxed text-slate-500">
+                          {isReviewExperience ? "Reviews flow" : "Current intake flow"}
+                        </div>
+                      </div>
+                      <Switch
+                        checked={isReviewExperience}
+                        onCheckedChange={(checked) => {
+                          setNewChildExperience(checked ? "review" : "current");
+                          if (checked && currentChild.isNew && currentPage === "roadmap") {
+                            onPageChange("home");
+                          }
+                        }}
+                        aria-label="Toggle new child version"
+                      />
+                    </div>
+                  </div>
+
                   <button
                     onClick={() => {
                       setIsProfileMenuOpen(false);
@@ -502,7 +724,7 @@ export default function TopBar({
                     {currentPage === "all-children" ? "All Children" : currentChild.name}
                   </span>
                   <span className="text-[0.74rem] text-slate-500 mt-1">
-                    {currentPage === "all-children" ? "Family Synthesis" : currentChild.isNew ? "Assessment pending" : `Age ${currentChild.age}`}
+                    {currentPage === "all-children" ? "Family Synthesis" : getChildSubheading(currentChild)}
                   </span>
                 </div>
               </div>
@@ -522,18 +744,10 @@ export default function TopBar({
               <span className="text-[0.65rem] tracking-[0.16em] uppercase text-slate-400 font-medium mb-1.5 px-3">
                 Navigation Menu
               </span>
-              {(currentChild.isNew ? [
-                { id: "home", label: "Home", icon: Home },
-                { id: "what-you-noticed", label: "What you noticed", icon: Search },
-                { id: "understanding", label: "Understanding", icon: Info },
-                { id: "resources", label: "Resources", icon: BookOpen },
-                { id: "settings", label: "App Settings", icon: Settings },
-                { id: "style-guide", label: "Style Guide & Tokens", icon: Palette },
-              ] : [
+              {(currentChild.isNew ? newChildMobileNavItems : [
                 { id: "home", label: "Home", icon: Home },
                 { id: "understanding", label: "Understanding", icon: Info },
                 { id: "priorities", label: "Priorities", icon: ListTodo },
-                { id: "roadmap", label: "Roadmap", icon: Milestone },
                 { id: "reviews", label: "Reviews", icon: LineChart },
                 { id: "resources", label: "Resources", icon: BookOpen },
                 { id: "documents", label: "Documents", icon: Lock },

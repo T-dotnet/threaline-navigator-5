@@ -15,109 +15,62 @@ import { GuideCard } from "./ui/GuideCard";
 import { ActionLink } from "./ui/ActionLink";
 import { QuestionnaireModal } from "./ui/QuestionnaireModal";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
-import { ListItemCard } from "./ui/ListItemCard";
-import { InsightSection } from "./ui/InsightSection";
-import { QUESTIONS, QUESTIONNAIRE_SECTIONS, formatAnswer, getAnsweredCount, getCompletedQuestionnaireSections } from "../questionnaire";
+import { QUESTIONS, QUESTIONNAIRE_SECTIONS, formatAnswer, getAnsweredCount, getCompletedQuestionnaireSections, normalizeQuestionnaireSectionName } from "../questionnaire";
 
 import img2912 from "../assets/images/IMG_2912.jpeg";
 import img2947 from "../assets/images/IMG_2947.jpeg";
-import homeFamilyWatercolorImg from "../assets/images/home_family_watercolor.png";
-import creativePlayImg from "../assets/images/classroom_fatigue_thumbnail_1781935350699.jpg";
-import empathyImg from "../assets/images/breathing_exercises_thumbnail_1781935364678.jpg";
+import creativePlayImg from "../assets/images/optimized/classroom-fatigue-900.jpg";
 
 import { PageContainer } from "./ui/PageContainer";
 
 import { useCurrentChild } from "../context/ChildContext";
-
-const newChildUnderstandingSections = [
-  {
-    name: "Home & family",
-    label: "Family context",
-    title: "Home life and the people around them.",
-    summary: "This helps the clinician understand daily support, family transitions, and what brings joy at home.",
-    image: homeFamilyWatercolorImg,
-  },
-  {
-    name: "Daily routines",
-    label: "Everyday rhythm",
-    title: "Sleep, mornings, meals, and regulation load.",
-    summary: "Routines often reveal where the day is flowing smoothly and where small supports may help.",
-    image: img2912,
-  },
-  {
-    name: "At school",
-    label: "Learning setting",
-    title: "School participation and peer context.",
-    summary: "School answers begin to show how learning, confidence, friendships, and support fit together.",
-    image: creativePlayImg,
-  },
-  {
-    name: "Development & history",
-    label: "Developmental picture",
-    title: "Communication, sensory patterns, and strengths.",
-    summary: "This section adds the developmental background the clinician needs before drawing conclusions.",
-    image: empathyImg,
-  },
-];
-
-function answerPreview(sectionName: string, answers: Record<string, unknown>, childName: string) {
-  return (QUESTIONS[sectionName] || [])
-    .map((question) => ({
-      question: question.text.replace(/\$\{childName\}/g, childName),
-      answer: formatAnswer(answers[question.id]),
-    }))
-    .filter((item) => item.answer.trim() !== "");
-}
+import { useDisplayMode } from "../context/DisplayModeContext";
+import { isMaintenancePhase, isPlanNotStarted } from "../lib/childStatus";
+import { getJourneyUnderstandingCopy } from "../lib/journeyCopy";
 
 function answerText(answers: Record<string, unknown>, id: string) {
   return formatAnswer(answers[id]).trim();
 }
 
-function buildSectionAnalysis(sectionName: string, answers: Record<string, unknown>, childName: string) {
-  if (sectionName === "Home & family") {
-    const interests = answerText(answers, "family_interests");
-    return `Home context is recorded: who is around ${childName}, recent changes, and ${interests ? `what keeps them engaged, including ${interests}` : "what keeps them engaged"}.`;
-  }
-
-  if (sectionName === "Daily routines") {
-    const bedtime = answerText(answers, "routines_bedtime").toLowerCase();
-    const sleep = answerText(answers, "routines_sleep").toLowerCase();
-    return `Daily rhythm is recorded: bedtime is ${bedtime}, sleep is ${sleep}, and the clinician can review where effort builds up.`;
-  }
-
-  if (sectionName === "At school") {
-    const setting = answerText(answers, "school_type").toLowerCase();
-    const feeling = answerText(answers, "school_feeling").toLowerCase();
-    return `School context is recorded: ${childName}'s setting is ${setting}, with school feeling noted as ${feeling}.`;
-  }
-
-  const sensory = answerText(answers, "dev_sensory").toLowerCase();
-  const communication = answerText(answers, "dev_communication").toLowerCase();
-  return `Developmental context is recorded: sensory notes include ${sensory}, and communication is described as ${communication}.`;
-}
-
-function buildSectionConnectionDescription(sectionName: string, answers: Record<string, unknown>, childName: string) {
-  const bedtime = answerText(answers, "routines_bedtime").toLowerCase();
-  const schoolFeeling = answerText(answers, "school_feeling").toLowerCase();
-  const social = answerText(answers, "school_social").toLowerCase();
-  const regulation = answerText(answers, "dev_regulation").toLowerCase();
-  const communication = answerText(answers, "dev_communication").toLowerCase();
-  const interests = answerText(answers, "family_interests");
-  const transitions = answerText(answers, "family_transitions").toLowerCase();
-
-  if (sectionName === "Home & family") {
-    return `Home context gives the rest of the intake its anchor. ${interests ? `${childName}'s interests, including ${interests}, can become useful motivators` : "Motivating interests and family routines can become useful supports"}, while ${transitions || "recent family transitions"} may help explain pressure points that show up in routines, school confidence, or regulation.`;
-  }
-
-  if (sectionName === "Daily routines") {
-    return `Routines often show where the day is already using most of its energy. Bedtime is marked as ${bedtime || "part of the intake picture"}, and that rhythm may shape how ${childName} arrives at school, handles peer demands, and recovers after hard moments.`;
-  }
-
-  if (sectionName === "At school") {
-    return `School shows how ${childName} manages a busier setting. Feeling ${schoolFeeling || "about school"} and peer patterns may help explain confidence, support needs, and learning fit.`;
-  }
-
-  return `Developmental history shows the deeper pattern. Communication is ${communication || "part of the profile"}, and regulation is ${regulation || "part of the profile"}, helping explain what support may need to match.`;
+function LockedQuestionnaireSection({
+  answeredCount,
+  onStart,
+  questionCount,
+}: {
+  answeredCount: number;
+  onStart: () => void;
+  questionCount: number;
+}) {
+  return (
+    <Card className="rounded-tr-[32px]">
+      <CardHeader className="flex flex-row items-start justify-between gap-5 p-7.5 pb-0">
+        <div>
+          <span className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-400 font-medium mb-2 block">
+            Locked
+          </span>
+          <CardTitle className="font-serif font-normal text-[1.45rem] leading-tight">
+            Nothing recorded yet.
+          </CardTitle>
+        </div>
+        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-slate-100 text-slate-400">
+          <Lock className="w-4.5 h-4.5" />
+        </div>
+      </CardHeader>
+      <CardContent className="p-7.5 pt-5">
+        <p className="text-[0.92rem] leading-relaxed text-slate-500 mb-5 max-w-[56ch]">
+          Answer all {questionCount} questions in this section to open it here.{answeredCount > 0 ? ` ${answeredCount} answered so far.` : ""}
+        </p>
+        <ActionLink
+          variant="forest"
+          onClick={onStart}
+          icon={ArrowRight}
+          className="text-[0.84rem]"
+        >
+          {answeredCount > 0 ? "Continue section" : "Start section"}
+        </ActionLink>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function UnderstandingPage({
@@ -128,16 +81,26 @@ export default function UnderstandingPage({
   onOpenSetup?: () => void;
 }) {
   const { currentChild, updateChild } = useCurrentChild();
+  const { isParentClarity } = useDisplayMode();
   const [activeQuestionnaireSection, setActiveQuestionnaireSection] = useState<string | null>(null);
-  const [activeConnectionSection, setActiveConnectionSection] = useState("Home & family");
   const data = getChildData(currentChild).understanding;
+  const isNoahStarting = isPlanNotStarted(currentChild);
+  const showParentClarity = isParentClarity && !currentChild.isNew && !isMaintenancePhase(currentChild) && !isNoahStarting;
   const answers = currentChild.intake?.questionnaireAnswers || {};
-  const completedSections = currentChild.intake?.completedQuestionnaireSections || getCompletedQuestionnaireSections(answers);
+  const completedSections = (currentChild.intake?.completedQuestionnaireSections || getCompletedQuestionnaireSections(answers)).map(normalizeQuestionnaireSectionName);
   const completedCount = completedSections.length;
   const totalSections = QUESTIONNAIRE_SECTIONS.length;
   const progress = Math.round((completedCount / totalSections) * 100);
   const firstIncompleteSection = QUESTIONNAIRE_SECTIONS.find((section) => !completedSections.includes(section));
-  const activeConnection = newChildUnderstandingSections.find((section) => section.name === activeConnectionSection) || newChildUnderstandingSections[0];
+  const journeyUnderstandingCopy = getJourneyUnderstandingCopy(currentChild.name, currentChild.intake?.journeyStage);
+  const strengthsSectionName = QUESTIONNAIRE_SECTIONS[0];
+  const seeingSectionName = QUESTIONNAIRE_SECTIONS[1];
+  const isStrengthsUnlocked = completedSections.includes(strengthsSectionName);
+  const isSeeingUnlocked = completedSections.includes(seeingSectionName);
+  const strengthsAnsweredCount = getAnsweredCount(strengthsSectionName, answers);
+  const seeingAnsweredCount = getAnsweredCount(seeingSectionName, answers);
+  const strengthsQuestionCount = QUESTIONS[strengthsSectionName]?.length || 0;
+  const seeingQuestionCount = QUESTIONS[seeingSectionName]?.length || 0;
 
   const saveQuestionnaireAnswers = (updatedAnswers: Record<string, unknown>) => {
     updateChild({
@@ -150,6 +113,14 @@ export default function UnderstandingPage({
     });
   };
 
+  // After saving a section, advance to the next incomplete section (or close modal if all done)
+  const saveQuestionnaireAnswersAndAdvance = (updatedAnswers: Record<string, unknown>) => {
+    saveQuestionnaireAnswers(updatedAnswers);
+    const completed = getCompletedQuestionnaireSections(updatedAnswers);
+    const next = QUESTIONNAIRE_SECTIONS.find((section) => !completed.includes(section)) || null;
+    setActiveQuestionnaireSection(next);
+  };
+
   if (currentChild.isNew) {
     return (
       <motion.div
@@ -159,8 +130,8 @@ export default function UnderstandingPage({
       >
         <PageContainer>
           <PageHeader
-            kicker="Understanding · Intake picture"
-            title={`What we know about ${currentChild.name} so far.`}
+            kicker={journeyUnderstandingCopy.kicker}
+            title={journeyUnderstandingCopy.title}
             titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[16ch]"
             className="mb-14"
             description={
@@ -179,7 +150,7 @@ export default function UnderstandingPage({
 
           <HeroQuoteCard
             kicker="The picture so far"
-            quote={`We are building ${currentChild.name}'s first understanding from the sections you complete in the questionnaire. Each completed section opens here with the information you shared, while clinical interpretation waits for review.`}
+            quote={journeyUnderstandingCopy.quote}
             evidenceLevel={completedCount > 0 ? 2 : 1}
             evidenceText={`${completedCount} of ${totalSections} sections unlocked`}
             className="mb-16"
@@ -194,132 +165,127 @@ export default function UnderstandingPage({
 
           <FadeInScroll className="mb-24">
             <div>
-              <SectionLabel>Questionnaire to understanding</SectionLabel>
-              <SectionTitle>Unlock each section.</SectionTitle>
+              <SectionLabel>
+                What's going well
+              </SectionLabel>
+              <SectionTitle>
+                Strengths to build on.
+              </SectionTitle>
             </div>
 
-            <div className="mt-8 grid grid-cols-2 gap-6 max-lg:grid-cols-1">
-              {newChildUnderstandingSections.map((section, index) => {
-                const isUnlocked = completedSections.includes(section.name);
-                const answeredCount = getAnsweredCount(section.name, answers);
-                const sectionQuestions = QUESTIONS[section.name] || [];
-                const rows = answerPreview(section.name, answers, currentChild.name);
-                const corners = ["rounded-tr-[32px]", "rounded-tl-[32px]", "rounded-br-[32px]", "rounded-bl-[32px]"];
-
-                if (isUnlocked) {
-                  return (
-                    <GuideCard
-                      key={section.name}
-                      category={`${section.label} · Complete`}
-                      title={section.title}
-                      description={buildSectionAnalysis(section.name, answers, currentChild.name)}
-                      readTime={`${rows.length} answers`}
-                      image={section.image}
-                      cornerClass={corners[index]}
-                      actionText="Open questionnaire section"
-                      onClick={() => setActiveQuestionnaireSection(section.name)}
-                      disableHover
-                      className="h-full"
-                    />
-                  );
-                }
-
-                return (
-                  <Card
-                    key={section.name}
-                    className={`${corners[index]} h-full`}
-                  >
-                    <CardHeader className="flex flex-row items-start justify-between gap-5 p-7.5 pb-0">
-                      <div>
-                        <span className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-400 font-medium mb-2 block">
-                          {section.label}
-                        </span>
-                        <CardTitle className="font-serif font-normal text-[1.45rem] leading-tight">
-                          {section.title}
-                        </CardTitle>
-                      </div>
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-slate-100 text-slate-400">
-                        <Lock className="w-4.5 h-4.5" />
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="p-7.5 pt-5">
-                      <p className="text-[0.9rem] leading-relaxed text-slate-500 mb-5">
-                        {section.summary}
-                      </p>
-
-                      <div className="pt-4">
-                        <div className="text-[0.74rem] font-semibold uppercase tracking-[0.12em] text-slate-400 mb-2">
-                          Locked
-                        </div>
-                        <p className="text-[0.9rem] leading-relaxed text-slate-500 mb-4">
-                          Answer all {sectionQuestions.length} questions in this section to open it here. {answeredCount > 0 ? `${answeredCount} answered so far.` : "Nothing recorded yet."}
-                        </p>
-                        <ActionLink
-                          variant="forest"
-                          onClick={() => setActiveQuestionnaireSection(section.name)}
-                          icon={ArrowRight}
-                          className="text-[0.84rem]"
-                        >
-                          {answeredCount > 0 ? "Continue section" : "Start section"}
-                        </ActionLink>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+            {isStrengthsUnlocked ? (
+              <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1 mt-8">
+                <GuideCard
+                  category="Strength"
+                  title={answerText(answers, "attention_focus") || "Strengths emerging"}
+                  description={`${currentChild.name} seems most confident or settled here. This gives the first session something positive to build from.`}
+                  readTime=""
+                  image={creativePlayImg}
+                  cornerClass="rounded-tr-[32px]"
+                  actionText="Review answers"
+                  onClick={() => setActiveQuestionnaireSection(strengthsSectionName)}
+                />
+                <GuideCard
+                  category="Support that helps"
+                  title={answerText(answers, "behaviour_emotions") || "Helpful support"}
+                  description="This is the kind of support that may help the day feel safer, calmer, or easier to restart."
+                  readTime=""
+                  image={img2947}
+                  cornerClass="rounded-tl-[32px]"
+                  actionText="Review answers"
+                  onClick={() => setActiveQuestionnaireSection(strengthsSectionName)}
+                />
+                <GuideCard
+                  category="Best rhythm"
+                  title={answerText(answers, "sleep") || "Best part of the day"}
+                  description="Knowing when things tend to go best helps the clinician understand what already works."
+                  readTime=""
+                  image={img2912}
+                  cornerClass="rounded-bl-[32px]"
+                  actionText="Review answers"
+                  onClick={() => setActiveQuestionnaireSection(strengthsSectionName)}
+                />
+              </div>
+            ) : (
+              <div className="mt-8">
+                <LockedQuestionnaireSection
+                  answeredCount={strengthsAnsweredCount}
+                  onStart={() => setActiveQuestionnaireSection(strengthsSectionName)}
+                  questionCount={strengthsQuestionCount}
+                />
+              </div>
+            )}
           </FadeInScroll>
 
-          {completedCount === totalSections && (
-            <>
-              <FadeInScroll className="mb-12">
-                <div>
-                  <SectionLabel>How these connect</SectionLabel>
-                  <SectionTitle>They connect.</SectionTitle>
-                </div>
-                <div className="flex items-center gap-4 max-md:flex-col max-md:items-stretch mb-6 w-full">
-                  {newChildUnderstandingSections.map((section) => (
-                    <ListItemCard
-                      key={section.name}
-                      active={activeConnectionSection === section.name}
-                      onClick={() => setActiveConnectionSection(section.name)}
-                    >
-                      {section.label}
-                    </ListItemCard>
-                  ))}
-                </div>
-              </FadeInScroll>
+          <FadeInScroll className="mb-24">
+            <div>
+              <SectionLabel>
+                What you're seeing
+              </SectionLabel>
+              <SectionTitle>
+                Areas affecting {currentChild.name}'s day.
+              </SectionTitle>
+            </div>
 
-              <InsightSection
-                className="mb-24"
-                kicker={activeConnection.label}
-                title={activeConnection.title}
-                description={buildSectionConnectionDescription(activeConnection.name, answers, currentChild.name)}
-                image={activeConnection.image}
-                equalHeight
-              />
-            </>
-          )}
+            {isSeeingUnlocked ? (
+              <div className="border-b border-black/10">
+                <AreaItem
+                  title={answerText(answers, "learning") || "Hardest right now"}
+                  impact=""
+                  description="This is the area that feels hardest at the moment, based on the intake answer."
+                  actionText="See questionnaire answers"
+                  actionPlacement="header"
+                  onAction={() => setActiveQuestionnaireSection(seeingSectionName)}
+                  sources={["Questionnaire"]}
+                />
+                <AreaItem
+                  title={answerText(answers, "movement_coordination") || "Support needed"}
+                  impact=""
+                  description="This shows where extra scaffolding, reassurance, or practical support may be most useful."
+                  actionText="See questionnaire answers"
+                  actionPlacement="header"
+                  onAction={() => setActiveQuestionnaireSection(seeingSectionName)}
+                  sources={["Questionnaire"]}
+                />
+                <AreaItem
+                  title={answerText(answers, "speech_communication") || "Overload signal"}
+                  impact=""
+                  description={`This is how ${currentChild.name} may show that something is becoming too much.`}
+                  actionText="See questionnaire answers"
+                  actionPlacement="header"
+                  onAction={() => setActiveQuestionnaireSection(seeingSectionName)}
+                  sources={["Questionnaire"]}
+                />
+              </div>
+            ) : (
+              <div className="mt-8">
+                <LockedQuestionnaireSection
+                  answeredCount={seeingAnsweredCount}
+                  onStart={() => setActiveQuestionnaireSection(seeingSectionName)}
+                  questionCount={seeingQuestionCount}
+                />
+              </div>
+            )}
+          </FadeInScroll>
 
           <FadeInScroll className="grid grid-cols-2 gap-6 mb-24 max-md:grid-cols-1">
             <ValueCard
               variant="mint"
-              title="Your words stay visible"
-              content={`The understanding page shows what you entered for ${currentChild.name} before anyone turns it into a clinical formulation.`}
+              title={journeyUnderstandingCopy.firstValueTitle}
+              content={journeyUnderstandingCopy.firstValue}
               cornerClass="rounded-tr-[32px]"
             />
             <ValueCard
               variant="white"
-              title="Interpretation waits for review"
-              content="Questionnaire answers unlock context, not conclusions. Priorities and recommendations stay limited until the clinician reviews the full intake."
+              title={journeyUnderstandingCopy.secondValueTitle}
+              content={journeyUnderstandingCopy.secondValue}
               cornerClass="rounded-bl-[32px]"
             />
           </FadeInScroll>
         </PageContainer>
 
         <PageFooterCTA
-          title={completedCount === totalSections ? "The questionnaire context is ready for review." : "Keep adding context before the session."}
+          title={completedCount === totalSections ? journeyUnderstandingCopy.footerTitle : "Keep adding context before the session."}
           buttonText={completedCount === totalSections ? "Back to home" : "Continue questionnaire"}
           onClick={() => completedCount === totalSections ? onPageChange("home") : setActiveQuestionnaireSection(firstIncompleteSection || QUESTIONNAIRE_SECTIONS[0])}
         />
@@ -330,8 +296,9 @@ export default function UnderstandingPage({
           answers={answers}
           childName={currentChild.name}
           onClose={() => setActiveQuestionnaireSection(null)}
-          onSave={saveQuestionnaireAnswers}
+          onSave={saveQuestionnaireAnswersAndAdvance}
         />
+
       </motion.div>
     );
   }
@@ -365,7 +332,7 @@ export default function UnderstandingPage({
       {/* Picture Card */}
       <HeroQuoteCard
         kicker="The picture so far"
-        quote={data.description}
+        quote={showParentClarity ? `${currentChild.name} is bright and socially steady. The clearest support need right now is classroom focus, and sleep is worth watching because tired mornings may make attention harder.` : data.description}
         evidenceLevel={3}
         evidenceText="Strong, consistent evidence"
         className="mb-24"
@@ -391,27 +358,27 @@ export default function UnderstandingPage({
 
         <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1 mt-8">
           <GuideCard
-            category="High Competency"
-            title="Creative Play"
-            description="Displays rich imaginative flow, abstract play and artistic task retention. A real strength to integrate into curriculum pathways."
+            category={isNoahStarting ? "Settled Strength" : "High Competency"}
+            title={isNoahStarting ? "Pattern spotting" : "Creative Play"}
+            description={isNoahStarting ? "Noah notices routines, details and changes quickly. This can become a useful anchor when the first support plan starts." : "Displays rich imaginative flow, abstract play and artistic task retention. A real strength to integrate into curriculum pathways."}
             readTime=""
             image={creativePlayImg}
             cornerClass="rounded-tr-[32px]"
             actionText="Explore strength"
           />
           <GuideCard
-            category="Exceptional Grasp"
-            title="Verbal Comprehension"
-            description="Excellent grasp of spoken guidelines and a highly adaptive communicative scope. Enthusiastic sharing is seen daily."
+            category={isNoahStarting ? "Good Foundation" : "Exceptional Grasp"}
+            title={isNoahStarting ? "Clear one-to-one learning" : "Verbal Comprehension"}
+            description={isNoahStarting ? "Noah responds well when instructions are calm, direct and given one step at a time. That gives the starter plan something practical to build on." : "Excellent grasp of spoken guidelines and a highly adaptive communicative scope. Enthusiastic sharing is seen daily."}
             readTime=""
             image={img2947}
             cornerClass="rounded-tl-[32px]"
             actionText="Explore strength"
           />
           <GuideCard
-            category="Active Skillset"
-            title="Social Empathy"
-            description="Deep sensitivity to family members and primary playground buddies. Welcomes constructive social feedback loop cues."
+            category={isNoahStarting ? "Protective Factor" : "Active Skillset"}
+            title={isNoahStarting ? "Warm adult connection" : "Social Empathy"}
+            description={isNoahStarting ? "Noah accepts support best when the adult relationship feels predictable. Keeping that connection steady should help the first routine land." : "Deep sensitivity to family members and primary playground buddies. Welcomes constructive social feedback loop cues."}
             readTime=""
             image={img2912}
             cornerClass="rounded-bl-[32px]"
@@ -424,10 +391,10 @@ export default function UnderstandingPage({
       <FadeInScroll className="mb-24">
         <div>
           <SectionLabel>
-            What we're seeing
+            What you're seeing
           </SectionLabel>
           <SectionTitle>
-            Areas affecting {currentChild.name}'s day.
+            {showParentClarity ? `What affects ${currentChild.name}'s day most.` : `Areas affecting ${currentChild.name}'s day.`}
           </SectionTitle>
         </div>
 

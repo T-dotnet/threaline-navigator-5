@@ -17,6 +17,7 @@ interface TimelineItemProps {
   active?: boolean;
   isFirst?: boolean;
   isCollapsible?: boolean;
+  hideMetrics?: boolean;
 }
 
 export function TimelineItem({
@@ -30,10 +31,15 @@ export function TimelineItem({
   active = false,
   isFirst = false,
   isCollapsible = false,
+  hideMetrics = false,
 }: TimelineItemProps) {
   const [isOpen, setIsOpen] = useState(isCollapsible ? active : true);
 
-  const hasFacts = facts && Object.keys(facts).length > 0;
+  // When the quarter plan is complete (or metrics are hidden), drop clinical weighting,
+  // plan progress and "See details".
+  const isComplete = progress === 100;
+  const hideMetricsRow = isComplete || hideMetrics;
+  const hasFacts = facts && Object.keys(facts).length > 0 && !hideMetricsRow;
 
   const handleHeaderClick = () => {
     if (isCollapsible) {
@@ -138,14 +144,16 @@ export function TimelineItem({
                 </div>
               </div>
 
-              <div className="mt-4 pt-3.5 flex items-center justify-between">
-                <span className="text-[0.78rem] text-slate-500 font-medium">
-                  Plan Progress: {progress}%
-                </span>
-                <ActionLink variant="slate" as="span">
-                  See details
-                </ActionLink>
-              </div>
+              {!hideMetricsRow && (
+                <div className="mt-4 pt-3.5 flex items-center justify-between">
+                  <span className="text-[0.78rem] text-slate-500 font-medium">
+                    Plan Progress: {progress}%
+                  </span>
+                  <ActionLink variant="slate" as="span">
+                    See details
+                  </ActionLink>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

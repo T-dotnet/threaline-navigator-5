@@ -1,10 +1,8 @@
 import { ReactNode } from "react";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
-import { Page, Child } from "../types";
+import { Page } from "../types";
 import { AnimatePresence } from "motion/react";
-
-import { useCurrentChild } from "../context/ChildContext";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -19,8 +17,6 @@ export default function DashboardLayout({
   onPageChange,
   onAddChildRequest,
 }: DashboardLayoutProps) {
-  const { currentChild, childrenList, setChild, addChild } = useCurrentChild();
-
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--color-thread-off-white)] font-sans antialiased text-[var(--color-thread-darkest)]">
       <Sidebar currentPage={currentPage} onPageChange={onPageChange} />

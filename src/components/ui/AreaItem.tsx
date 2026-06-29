@@ -1,6 +1,8 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 import { EvidenceBadge } from './EvidenceBadge';
+import { ActionLink } from './ActionLink';
+import { ArrowRight } from 'lucide-react';
 
 interface AreaItemProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
@@ -10,10 +12,13 @@ interface AreaItemProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: React.ReactNode;
   description: string | React.ReactNode;
   sources?: string[];
+  actionText?: string;
+  onAction?: () => void;
+  actionPlacement?: 'footer' | 'header';
 }
 
 export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
-  ({ className, title, impact = "", evidence, status, icon, description, sources, ...props }, ref) => {
+  ({ className, title, impact = "", evidence, status, icon, description, sources, actionText, onAction, actionPlacement = 'footer', ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -59,13 +64,37 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
                 {status}
               </span>
             )}
+            {actionText && onAction && actionPlacement === 'header' && (
+              <ActionLink
+                variant="forest"
+                as="button"
+                onClick={onAction}
+                icon={ArrowRight}
+                className="text-[0.84rem] mt-0.75"
+              >
+                {actionText}
+              </ActionLink>
+            )}
           </div>
         </div>
         
         {typeof description === 'string' ? (
-          <p className="text-[0.96rem] text-[var(--color-thread-gray)] leading-relaxed max-w-[62ch] mt-3 font-sans">
-            {description}
-          </p>
+          <div className="mt-3 max-w-[62ch]">
+            <p className="text-[0.96rem] text-[var(--color-thread-gray)] leading-relaxed font-sans">
+              {description}
+            </p>
+            {actionText && onAction && actionPlacement === 'footer' && (
+              <ActionLink
+                variant="forest"
+                as="button"
+                onClick={onAction}
+                icon={ArrowRight}
+                className="text-[0.84rem] mt-4"
+              >
+                {actionText}
+              </ActionLink>
+            )}
+          </div>
         ) : (
           <div className="mt-3">
             {description}
