@@ -13,3 +13,4 @@ coverage/
 .vercel-home/
 .pnpm-store/
 correct-threadline-nav-work/
+.vercel
