@@ -7,11 +7,12 @@ interface PageHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   description?: React.ReactNode;
   action?: React.ReactNode;
   titleClassName?: string;
+  titleWidthClassName?: string;
   kickerClassName?: string;
 }
 
 export const PageHeader = React.forwardRef<HTMLDivElement, PageHeaderProps>(
-  ({ className, kicker, title, description, action, titleClassName, kickerClassName, ...props }, ref) => {
+  ({ className, kicker, title, description, action, titleClassName, titleWidthClassName, kickerClassName, ...props }, ref) => {
     return (
       <div ref={ref} className={cn('mb-24', className)} {...props}>
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
@@ -26,6 +27,7 @@ export const PageHeader = React.forwardRef<HTMLDivElement, PageHeaderProps>(
             )}
             <h1 className={cn(
               "font-serif font-normal text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] tracking-[-0.075rem] text-[var(--color-thread-heading)] max-w-[22ch]",
+              titleWidthClassName,
               titleClassName
             )}>
               {title}
@@ -53,4 +55,3 @@ export const PageHeader = React.forwardRef<HTMLDivElement, PageHeaderProps>(
   }
 );
 PageHeader.displayName = 'PageHeader';
-

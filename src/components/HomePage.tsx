@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { ChevronRight, Calendar, Clock, FileText, Download, Play, Printer, Eye, LineChart, ListTodo, Users, BookOpen } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Page } from "../types";
 import { getChildData } from "../data";
 import { PageHeader } from "./ui/PageHeader";
 import { HeroQuoteCard } from "./ui/HeroQuoteCard";
@@ -20,35 +21,12 @@ import { PageContainer } from "./ui/PageContainer";
 
 import { useCurrentChild } from "../context/ChildContext";
 import { useDisplayMode } from "../context/DisplayModeContext";
-import { useNewChildExperience } from "../context/NewChildExperienceContext";
 import { SetupSummary } from "./ui/SetupSummary";
+import { ModalCloseButton, ModalShell } from "./ui/ModalShell";
 import { getJourneyHomeCopy, hasReportContext } from "../lib/journeyCopy";
 import { getChildSessionStatus, getSessionDate, isMaintenancePhase, isPlanNotStarted } from "../lib/childStatus";
 
 const newChildPreviewCards = [
-  {
-    title: "Understanding",
-    description: "Strengths, support needs, and the context behind the support picture.",
-    icon: Users,
-  },
-  {
-    title: "Priorities",
-    description: "A ranked view of what to focus on first and what can safely wait.",
-    icon: ListTodo,
-  },
-  {
-    title: "Reviews",
-    description: "A rhythm for tracking how the picture changes over time.",
-    icon: LineChart,
-  },
-  {
-    title: "Resources",
-    description: "Short preparation tools matched to the intake stage.",
-    icon: BookOpen,
-  },
-];
-
-const reviewNewChildPreviewCards = [
   {
     title: "Understanding",
     description: "What the answers are starting to show, without jumping to conclusions.",
@@ -76,12 +54,11 @@ export default function HomePage({
   onPageChange,
   onOpenSetup,
 }: {
-  onPageChange: (page: any) => void;
+  onPageChange: (page: Page) => void;
   onOpenSetup?: (step?: 1 | 2 | 3 | 4 | 5 | "welcome") => void;
 }) {
   const { currentChild } = useCurrentChild();
   const { isParentClarity } = useDisplayMode();
-  const { isReviewExperience } = useNewChildExperience();
   const [isZeroProgressMomentOpen, setIsZeroProgressMomentOpen] = useState(false);
   const data = getChildData(currentChild).home;
 
@@ -145,7 +122,7 @@ export default function HomePage({
         },
       ]
     : undefined;
-  const visibleNewChildPreviewCards = isReviewExperience ? reviewNewChildPreviewCards : newChildPreviewCards;
+  const visibleNewChildPreviewCards = newChildPreviewCards;
   const zeroProgressMomentKey = currentChild.id
     ? `threadline-zero-progress-moment-${currentChild.id}`
     : `threadline-zero-progress-moment-${currentChild.name}`;
@@ -180,19 +157,11 @@ export default function HomePage({
       animate={{ opacity: 1, y: 0 }}
       className="pt-16 pb-16"
     >
-      {isZeroProgressMomentOpen && (
-        <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="zero-progress-moment-title"
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 18, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.28, ease: "easeOut" }}
-            className="w-full max-w-[680px] overflow-hidden rounded-tr-[42px] rounded-bl-[42px] bg-white shadow-modal border border-black/5"
-          >
+      <ModalShell
+        isOpen={isZeroProgressMomentOpen}
+        titleId="zero-progress-moment-title"
+        maxWidthClassName="max-w-[680px]"
+      >
             <div className="relative h-[190px] overflow-hidden">
               <img
                 src={watercolorBgImg}
@@ -202,6 +171,12 @@ export default function HomePage({
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-white/85 via-white/20 to-transparent" />
+              <ModalCloseButton
+                onClick={closeZeroProgressMoment}
+                label="Close new chapter modal"
+                className="absolute right-5 top-5 h-9 w-9 bg-white/90 text-[var(--color-thread-heading)] shadow-sm hover:bg-white"
+                iconClassName="h-4 w-4"
+              />
               <div className="absolute bottom-5 left-7 right-7">
                 <span className="text-[0.68rem] tracking-[0.18em] uppercase font-medium text-[var(--color-thread-mid-green)]">
                   A new chapter is ready
@@ -236,14 +211,7 @@ export default function HomePage({
                 Manage sharing
               </button>
 
-              <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <Button
-                  type="button"
-                  variant="muted"
-                  onClick={closeZeroProgressMoment}
-                >
-                  Close
-                </Button>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
                 <Button
                   type="button"
                   variant="mint"
@@ -257,14 +225,13 @@ export default function HomePage({
                 </Button>
               </div>
             </div>
-          </motion.div>
-        </div>
-      )}
+      </ModalShell>
       <PageContainer>
         <PageHeader
         kicker={currentChild.isNew ? newChildHomeCopy.kicker : "Tuesday · Good morning"}
         title={currentChild.isNew ? newChildHomeCopy.title : isLiam ? `${currentChild.name} has completed this quarter's plan, Sarah.` : isNoahStarting ? `${currentChild.name}'s plan is ready to begin, Sarah.` : "Here's where to put your energy today, Sarah."}
-        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[18ch]"
+        titleClassName="md:leading-[4.5rem]"
+        titleWidthClassName="max-w-[18ch]"
         className={currentChild.isNew ? "mb-12" : "mb-28"}
       />
 

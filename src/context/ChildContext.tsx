@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { Child } from '../types';
 import { QUESTIONNAIRE_SECTIONS } from '../questionnaire';
+import watercolorBg from '../assets/images/optimized/watercolor-bg-900.jpg';
 
 interface ChildContextType {
   childrenList: Child[];
@@ -10,6 +11,29 @@ interface ChildContextType {
   updateChild: (child: Child) => void;
   deleteChild: (childId: string) => void;
   createNewChild: () => Child;
+}
+
+function mockImageAttachment(id: string, name: string, sizeLabel: string) {
+  return {
+    id,
+    name,
+    mimeType: 'image/jpeg',
+    sizeLabel,
+    kind: 'image' as const,
+    dataUrl: watercolorBg,
+  };
+}
+
+function mockDocumentAttachment(id: string, name: string, sizeLabel: string) {
+  const body = `${name}\n\nThis is a placeholder document attached to a diary entry.`;
+  return {
+    id,
+    name,
+    mimeType: 'application/pdf',
+    sizeLabel,
+    kind: 'document' as const,
+    dataUrl: `data:text/plain,${encodeURIComponent(body)}`,
+  };
 }
 
 const INITIAL_CHILDREN: Child[] = [
@@ -42,15 +66,126 @@ const INITIAL_CHILDREN: Child[] = [
       completedQuestionnaireSections: QUESTIONNAIRE_SECTIONS,
     },
   },
-  { id: 'child-maya', name: 'Maya', age: 9, initial: 'M' },
-  { id: 'child-liam', name: 'Liam', age: 10, initial: 'L' },
+  {
+    id: 'child-maya',
+    name: 'Maya',
+    age: 9,
+    initial: 'M',
+    diaryEntries: [
+      {
+        id: 'maya-diary-breakfast',
+        createdAt: '2026-06-30T07:50:00.000Z',
+        note: 'Breakfast was smoother when Maya chose the cereal first and packed the snack box herself. She seemed more settled before the school run.',
+        tags: ['Food', 'Routine'],
+        attachments: [],
+      },
+      {
+        id: 'maya-diary-photo',
+        createdAt: '2026-06-29T16:45:00.000Z',
+        note: 'Maya spent the whole afternoon drawing and was so proud of this one. She talked through every detail without being prompted.',
+        tags: ['Mood', 'Energy'],
+        attachments: [
+          mockImageAttachment('maya-att-1', 'maya-artwork.png', '184 KB'),
+        ],
+      },
+      {
+        id: 'maya-diary-1',
+        createdAt: '2026-06-28T18:10:00.000Z',
+        note: 'School pickup felt much calmer today. Maya came out tired but settled quickly after a snack and a quiet 10 minutes at home.',
+        tags: ['School', 'Food', 'Mood'],
+        attachments: [],
+      },
+      {
+        id: 'maya-diary-reading-group',
+        createdAt: '2026-06-27T15:35:00.000Z',
+        note: 'Her teacher said Maya joined the reading group without extra prompting. She stayed with the activity and told us about the story at dinner.',
+        tags: ['School', 'Activities'],
+        attachments: [],
+      },
+      {
+        id: 'maya-diary-doc',
+        createdAt: '2026-06-26T09:20:00.000Z',
+        note: 'Saved the term report from school so we can bring the focus notes to the next session.',
+        tags: ['School'],
+        attachments: [
+          mockDocumentAttachment('maya-att-2', 'maya-term-report.pdf', '320 KB'),
+        ],
+      },
+      {
+        id: 'maya-diary-mixed',
+        createdAt: '2026-06-24T19:05:00.000Z',
+        note: 'Tougher evening with a meltdown before dinner. Kept a photo of the calm-down corner we set up and the routine sheet that helped.',
+        tags: ['Behaviour', 'Routine'],
+        attachments: [
+          mockImageAttachment('maya-att-3', 'calm-corner.png', '142 KB'),
+          mockDocumentAttachment('maya-att-4', 'evening-routine.pdf', '96 KB'),
+        ],
+      },
+      {
+        id: 'maya-diary-swimming',
+        createdAt: '2026-06-23T17:25:00.000Z',
+        note: 'Swimming club went better than expected. Maya needed a quiet rest afterward, but she was proud that she stayed in the pool for the full lesson.',
+        tags: ['Activities', 'Health'],
+        attachments: [],
+      },
+      {
+        id: 'maya-diary-sleep',
+        createdAt: '2026-06-22T20:30:00.000Z',
+        note: 'Slept right through the night and woke up in a bright mood, ready for the day without the usual slow start.',
+        tags: ['Sleep', 'Mood'],
+        attachments: [],
+      },
+    ],
+  },
+  {
+    id: 'child-liam',
+    name: 'Liam',
+    age: 10,
+    initial: 'L',
+    diaryEntries: [
+      {
+        id: 'liam-diary-photo',
+        createdAt: '2026-06-29T11:15:00.000Z',
+        note: 'Long morning at the park and Liam led the whole group game. Loads of energy and stayed regulated even when he lost a round.',
+        tags: ['Energy', 'Behaviour'],
+        attachments: [
+          mockImageAttachment('liam-att-1', 'park-morning.jpg', '212 KB'),
+        ],
+      },
+      {
+        id: 'liam-diary-1',
+        createdAt: '2026-06-27T07:40:00.000Z',
+        note: 'Bedtime routine stayed smooth this week. Liam fell asleep faster after keeping screens off and reading before lights out.',
+        tags: ['Sleep', 'Routine'],
+        attachments: [],
+      },
+      {
+        id: 'liam-diary-doc',
+        createdAt: '2026-06-25T20:30:00.000Z',
+        note: 'Reading log from the last fortnight - he is well ahead of where he was and asking for harder books.',
+        tags: ['School'],
+        attachments: [
+          mockDocumentAttachment('liam-att-2', 'liam-reading-log.pdf', '78 KB'),
+        ],
+      },
+      {
+        id: 'liam-diary-photo2',
+        createdAt: '2026-06-22T17:50:00.000Z',
+        note: 'Built this Lego set on his own across two afternoons. Great focus and patience with the fiddly steps.',
+        tags: ['Mood', 'Routine'],
+        attachments: [
+          mockImageAttachment('liam-att-3', 'lego-build.png', '168 KB'),
+        ],
+      },
+    ],
+  },
   { id: 'child-noah', name: 'Noah', age: 8, initial: 'N' },
 ];
 
 const CHILDREN_STORAGE_KEY = 'threadline-children';
 const CURRENT_CHILD_STORAGE_KEY = 'threadline-current-child';
 const DEMO_DATA_VERSION_KEY = 'threadline-demo-data-version';
-const DEMO_DATA_VERSION = 'quarter-zero-noah-v1';
+const DEMO_DATA_VERSION = 'quarter-zero-noah-v6-maya-theme-highlights';
 
 const CANONICAL_CHILDREN_BY_ID: Record<string, Child> = {
   'child-maya': INITIAL_CHILDREN[2],
@@ -193,7 +328,9 @@ export function ChildProvider({ children }: { children: ReactNode }) {
       if (targetId) return item.id === targetId ? childWithId : item;
       return item === currentChild ? childWithId : item;
     }));
-    setCurrentChild(childWithId);
+    if (!targetId || currentChild.id === targetId) {
+      setCurrentChild(childWithId);
+    }
   }, [currentChild]);
 
   const deleteChild = useCallback((childId: string) => {

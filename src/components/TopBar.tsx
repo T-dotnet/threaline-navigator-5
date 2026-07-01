@@ -6,34 +6,31 @@ import {
   Settings,
   LogOut,
   Users,
-  Palette,
   Menu,
   X,
   Home,
   Info,
   ListTodo,
   LineChart,
-  Map,
   BookOpen,
   Lock,
-  Search,
+  NotebookPen,
+  Palette,
 } from "lucide-react";
-import { Child } from "../types";
+import { Child, Page } from "../types";
 import { Avatar } from "./ui/Avatar";
 import { IconButton } from "./ui/IconButton";
-import { Switch } from "./ui/Switch";
 import { cn } from "../lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { isNewChildAllowedPage } from "../navigation";
 import { getChildSessionStatus, getChildSubheading } from "../lib/childStatus";
 
 import { useCurrentChild } from "../context/ChildContext";
-import { useNewChildExperience } from "../context/NewChildExperienceContext";
 
 interface TopBarProps {
-  currentPage?: any;
+  currentPage?: Page;
   onAddChildRequest: () => void;
-  onPageChange: (page: any) => void;
+  onPageChange: (page: Page) => void;
 }
 
 type UpdateStatus = "new" | "unread" | "read";
@@ -45,7 +42,6 @@ export default function TopBar({
   onPageChange,
 }: TopBarProps) {
   const { currentChild, childrenList, setChild } = useCurrentChild();
-  const { isReviewExperience, setNewChildExperience } = useNewChildExperience();
   const isAllChildrenView = currentPage === "all-children";
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
@@ -128,27 +124,16 @@ export default function TopBar({
     unread: "bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)]",
     read: "bg-slate-100 text-slate-500",
   };
-  const currentNewChildMobileNavItems = [
-    { id: "home", label: "Home", icon: Home },
-    { id: "what-you-noticed", label: "What you noticed", icon: Search },
-    { id: "understanding", label: "Understanding", icon: Info },
-    { id: "priorities", label: "Priorities", icon: ListTodo },
-    { id: "roadmap", label: "Roadmap", icon: Map },
-    { id: "resources", label: "Resources", icon: BookOpen },
-    { id: "settings", label: "App Settings", icon: Settings },
-    { id: "style-guide", label: "Style Guide & Tokens", icon: Palette },
-  ] as const;
-  const reviewNewChildMobileNavItems = [
+  const newChildMobileNavItems = [
     { id: "home", label: "Home", icon: Home },
     { id: "understanding", label: "Understanding", icon: Info },
     { id: "priorities", label: "Priorities", icon: ListTodo },
     { id: "what-you-noticed", label: "Reviews", icon: LineChart },
     { id: "resources", label: "Resources", icon: BookOpen },
     { id: "documents", label: "Documents", icon: Lock },
+    { id: "diary", label: "Diary", icon: NotebookPen },
     { id: "settings", label: "App Settings", icon: Settings },
-    { id: "style-guide", label: "Style Guide & Tokens", icon: Palette },
   ] as const;
-  const newChildMobileNavItems = isReviewExperience ? reviewNewChildMobileNavItems : currentNewChildMobileNavItems;
 
   const handleOpenUpdate = useCallback((child: Child, updateId: string) => {
     setReadUpdateIds((prev) => ({ ...prev, [updateId]: true }));
@@ -198,11 +183,21 @@ export default function TopBar({
 
   return (
     <header className="flex items-center justify-between px-11 py-4.5 border-b border-black/5 bg-[var(--color-thread-off-white)] sticky top-0 z-10 max-md:px-5">
-      <div className="relative" ref={dropdownRef}>
+      <div className="flex items-center gap-3 min-w-0">
+        {/* Burger Menu Button (Visible on Mobile only) */}
         <button
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="flex items-center gap-3 bg-white rounded-full p-1.5 pr-2.5 cursor-pointer shadow-sm hover:shadow-md transition-all font-sans"
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="md:hidden flex items-center justify-center w-11 h-11 bg-white border border-black/5 rounded-full shadow-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 transition-all cursor-pointer"
+          aria-label="Open navigation menu"
         >
+          <Menu className="w-5 h-5 stroke-[2]" />
+        </button>
+
+        <div className="relative min-w-0" ref={dropdownRef}>
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center gap-3 bg-white rounded-full p-1.5 pr-2.5 cursor-pointer shadow-sm hover:shadow-md transition-all font-sans"
+          >
           {currentPage === "all-children" ? (
             <>
               <Avatar
@@ -242,9 +237,9 @@ export default function TopBar({
               isDropdownOpen && "rotate-180",
             )}
           />
-        </button>
+          </button>
 
-        <AnimatePresence>
+          <AnimatePresence>
           {isDropdownOpen && (
             <motion.div
               initial={{ opacity: 0, y: 8, scale: 0.96 }}
@@ -354,7 +349,8 @@ export default function TopBar({
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
+          </AnimatePresence>
+        </div>
       </div>
 
       <div className="flex gap-3 items-center">
@@ -568,42 +564,6 @@ export default function TopBar({
                 </div>
 
                 <div className="flex flex-col gap-0.5 px-1.5">
-                  <div className="mx-1.5 mb-1 rounded-2xl bg-slate-50 p-3.5">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-[0.82rem] font-medium text-slate-800">
-                          New child version
-                        </div>
-                        <div className="mt-1 text-[0.68rem] leading-relaxed text-slate-500">
-                          {isReviewExperience ? "Reviews flow" : "Current intake flow"}
-                        </div>
-                      </div>
-                      <Switch
-                        checked={isReviewExperience}
-                        onCheckedChange={(checked) => {
-                          setNewChildExperience(checked ? "review" : "current");
-                          if (checked && currentChild.isNew && currentPage === "roadmap") {
-                            onPageChange("home");
-                          }
-                        }}
-                        aria-label="Toggle new child version"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setIsProfileMenuOpen(false);
-                      onPageChange("style-guide");
-                    }}
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
-                  >
-                    <Palette className="w-[18px] h-[18px] text-slate-400 group-hover:text-[var(--color-thread-mid-green)] transition-colors" />
-                    <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
-                      Style & Design Tokens
-                    </span>
-                  </button>
-
                   <button
                     onClick={() => {
                       setIsProfileMenuOpen(false);
@@ -614,6 +574,19 @@ export default function TopBar({
                     <Settings className="w-[18px] h-[18px] text-slate-400 group-hover:text-slate-600 transition-colors" />
                     <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
                       App Settings
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      onPageChange("style-guide");
+                    }}
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl w-full text-left hover:bg-slate-50 transition-colors group min-h-[44px]"
+                  >
+                    <Palette className="w-[18px] h-[18px] text-slate-400 group-hover:text-[var(--color-thread-mid-green)] transition-colors" />
+                    <span className="text-[0.90rem] font-medium text-slate-700 group-hover:text-slate-900">
+                      Design System
                     </span>
                   </button>
 
@@ -653,14 +626,6 @@ export default function TopBar({
           </AnimatePresence>
         </div>
 
-        {/* Burger Menu Button (Visible on Mobile only, placed right of user avatar) */}
-        <button
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="md:hidden flex items-center justify-center w-11 h-11 bg-white border border-black/5 rounded-full shadow-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 transition-all cursor-pointer"
-          aria-label="Open navigation menu"
-        >
-          <Menu className="w-5 h-5 stroke-[2]" />
-        </button>
       </div>
 
       {/* Full-Page Mobile Menu Overlay */}
@@ -751,8 +716,8 @@ export default function TopBar({
                 { id: "reviews", label: "Reviews", icon: LineChart },
                 { id: "resources", label: "Resources", icon: BookOpen },
                 { id: "documents", label: "Documents", icon: Lock },
+                { id: "diary", label: "Diary", icon: NotebookPen },
                 { id: "settings", label: "App Settings", icon: Settings },
-                { id: "style-guide", label: "Style Guide & Tokens", icon: Palette },
               ]).map((item) => {
                 const isActive = currentPage === item.id;
                 return (

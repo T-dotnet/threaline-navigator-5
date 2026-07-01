@@ -8,15 +8,13 @@ import {
   Clock,
   Home,
   Layers,
-  LineChart,
-  Search,
 } from "lucide-react";
 import { Page } from "../types";
 import { useCurrentChild } from "../context/ChildContext";
 import { PageContainer } from "./ui/PageContainer";
 import { PageHeader } from "./ui/PageHeader";
+import { PageMetaRow } from "./ui/PageMetaRow";
 import { HeroQuoteCard } from "./ui/HeroQuoteCard";
-import { HeroActionCard } from "./ui/HeroActionCard";
 import { SectionDescription } from "./ui/SectionDescription";
 import { SectionLabel } from "./ui/SectionLabel";
 import { SectionTitle } from "./ui/SectionTitle";
@@ -25,9 +23,9 @@ import { AreaItem } from "./ui/AreaItem";
 import { StrategyCard } from "./ui/StrategyCard";
 import { PageFooterCTA } from "./ui/PageFooterCTA";
 import { Button } from "./ui/Button";
-import { useNewChildExperience } from "../context/NewChildExperienceContext";
 import { ReviewRhythmSection } from "./ui/ReviewRhythmSection";
-import { isSessionBooked as getIsSessionBooked } from "../lib/childStatus";
+import { FirstSessionCard } from "./ui/FirstSessionCard";
+import { getChildSessionStatus, getSessionDate, isSessionBooked as getIsSessionBooked } from "../lib/childStatus";
 
 interface WhatYouNoticedPageProps {
   onPageChange: (page: Page) => void;
@@ -57,14 +55,17 @@ function formatList(items: string[]) {
 
 export default function WhatYouNoticedPage({ onPageChange, onOpenSetup }: WhatYouNoticedPageProps) {
   const { currentChild } = useCurrentChild();
-  const { isReviewExperience } = useNewChildExperience();
   const hardestAnswers = currentChild.intake?.notices || [];
   const notes = currentChild.intake?.notes?.trim() || "";
   const hasHardestAnswers = hardestAnswers.length > 0;
   const noticedSummary = hasHardestAnswers
     ? `You marked ${formatList(hardestAnswers)} as hardest right now for ${currentChild.name}. These answers stay visible so the first session can start from what feels most important.`
     : `This page will update once you answer Hardest right now in setup. Until then, there is nothing to interpret for ${currentChild.name}.`;
+  const sessionStatus = getChildSessionStatus(currentChild);
   const isSessionBooked = getIsSessionBooked(currentChild);
+  const isSessionCancelled = sessionStatus === "cancelled";
+  const firstSessionDate = getSessionDate(currentChild);
+  const firstSessionTime = isSessionBooked ? currentChild.intake?.sessionTime || "4:00 pm" : undefined;
   const showReviewDates = !currentChild.isNew || isSessionBooked;
   const reviewRhythmItems = [
     {
@@ -106,45 +107,46 @@ export default function WhatYouNoticedPage({ onPageChange, onOpenSetup }: WhatYo
     >
       <PageContainer>
         <PageHeader
-          kicker={isReviewExperience ? "Intake · Reviews" : "Intake · What you noticed"}
-          title={isReviewExperience ? `${currentChild.name}'s reviews, kept in one place.` : `${currentChild.name}'s early signals, kept in one place.`}
-          titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[17ch]"
+          kicker="Intake · Reviews"
+          title={`${currentChild.name}'s reviews, kept in one place.`}
+          titleClassName="md:leading-[4.5rem]"
+          titleWidthClassName="max-w-[17ch]"
           className="mb-12"
           description={
-            <div className="flex gap-4.5 text-[0.82rem] text-[var(--color-thread-gray)] flex-wrap">
-              <span className="flex items-center gap-1.5">
-                <Clock className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-                Intake in progress
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Layers className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-                Based on setup step 3
-              </span>
-            </div>
+            <PageMetaRow
+              items={[
+                { icon: Clock, children: "Intake in progress" },
+                { icon: Layers, children: "Based on setup step 3" },
+              ]}
+            />
           }
         />
 
-        <HeroQuoteCard
-          kicker={isReviewExperience ? "Reviews" : "Share what you've noticed"}
-          quote={noticedSummary}
-          showQuotes={false}
-          className="mb-24"
-          rightNode={
-            <HeroActionCard
-              icon={isReviewExperience ? <LineChart className="w-[22px] h-[22px] stroke-[1.7]" /> : <Search className="w-[22px] h-[22px] stroke-[1.7]" />}
-              title={hardestAnswers.length}
-              subtitle="Hardest areas"
-            />
-          }
-          action={
-            <div className="font-medium text-[0.84rem] opacity-70">
-              Source{" "}
-              <strong className="opacity-100 ml-1">
-                Setup step 3
-              </strong> · not a clinical conclusion yet
-            </div>
-          }
-        />
+        <div className="grid grid-cols-[2fr_1fr] md:gap-6 max-md:grid-cols-1 max-md:gap-y-6 mb-24">
+          <HeroQuoteCard
+            kicker="Reviews"
+            quote={noticedSummary}
+            showQuotes={false}
+            className="h-full"
+            action={
+              <div className="font-medium text-[0.84rem] opacity-70">
+                Source{" "}
+                <strong className="opacity-100 ml-1">
+                  Setup step 3
+                </strong> · not a clinical conclusion yet
+              </div>
+            }
+          />
+
+          <FirstSessionCard
+            date={firstSessionDate}
+            time={firstSessionTime}
+            isBooked={isSessionBooked}
+            isCancelled={isSessionCancelled}
+            onBook={() => onOpenSetup?.(5)}
+            onReschedule={isSessionBooked ? () => onOpenSetup?.(5) : undefined}
+          />
+        </div>
 
         <FadeInScroll className="mb-24">
           <div>
@@ -234,13 +236,11 @@ export default function WhatYouNoticedPage({ onPageChange, onOpenSetup }: WhatYo
           </div>
         </FadeInScroll>
 
-        {isReviewExperience && (
-          <ReviewRhythmSection items={reviewRhythmItems} />
-        )}
+        <ReviewRhythmSection items={reviewRhythmItems} />
       </PageContainer>
 
       <PageFooterCTA
-        title={isReviewExperience ? "Ready to review another part of the intake?" : "Want to add or change what you noticed?"}
+        title="Ready to review another part of the intake?"
         buttonText="Review setup"
         buttonIcon={<ArrowRight className="w-4 h-4 stroke-[2]" />}
         onClick={() => {

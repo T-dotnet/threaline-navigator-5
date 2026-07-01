@@ -24,6 +24,7 @@ import {
   ChevronDown,
   ChevronRight,
   Calendar,
+  ArrowLeft,
   ArrowRight,
   Activity,
   ArrowUpRight,
@@ -599,6 +600,26 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
     },
   ];
 
+  const systemHighlights = [
+    { label: "Theme modes", value: "2", detail: "Energetic and Classic profiles" },
+    { label: "Core tokens", value: "8", detail: "Color, type, surface, and motion anchors" },
+    { label: "UI families", value: "19", detail: "Live component examples with source hints" },
+  ];
+
+  const quickSections = [
+    { label: "Foundations", href: "#foundations", icon: Sparkles },
+    { label: "Usage rules", href: "#usage-rules", icon: Check },
+    { label: "Tokens", href: "#tokens", icon: Palette },
+    { label: "Components", href: "#components", icon: Layers },
+  ];
+
+  const decisionChecks = [
+    "Is the parent being shown one clear next action?",
+    "Does the surface reflect the child's current assessment state?",
+    "Can every clinical claim point back to source evidence?",
+    "Are admin tasks quieter than insight, review, or setup progress?",
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -607,102 +628,169 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
       className="pt-16 pb-24 font-sans"
     >
       <PageContainer>
-        {/* Page Header */}
-      <div className="mb-16">
-        <span className="text-[0.75rem] tracking-[0.12em] uppercase text-[var(--color-thread-mid-green)] font-medium mb-4 block">
-          Design system · Product guidance
-        </span>
-        <h1 className="font-serif font-normal text-[2.2rem] sm:text-[3.2rem] md:text-[3.8rem] leading-[1.15] md:leading-[4.3rem] tracking-[-0.075rem] text-[var(--color-thread-heading)]">
-          The Design System.
-        </h1>
-        <p className="text-[1.02rem] text-[var(--color-thread-gray)] mt-4.5 max-w-[65ch] leading-relaxed">
-          A practical visual and UX reference for Threadline. Use this page to align product decisions,
-          AI-generated UI, and implementation details across child states, review flows, documents, and setup.
-        </p>
-      </div>
+        <div className="mb-5">
+          <Button
+            variant="white"
+            leftIcon={<ArrowLeft className="w-4 h-4" />}
+            onClick={() => onPageChange("all-children")}
+          >
+            Back to index
+          </Button>
+        </div>
 
-      {/* Grid of Contents */}
-      <div className="space-y-16">
-        <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-6">
-          <div className="bg-white rounded-tr-[36px] p-8 border border-black/5 shadow-sm">
+        {/* Page Header */}
+        <div className="mb-8 grid grid-cols-1 xl:grid-cols-[1.16fr_0.84fr] gap-6 items-stretch">
+          <section className="bg-white rounded-tr-[40px] border border-black/5 shadow-sm p-7 sm:p-10 overflow-hidden">
+            <div className="flex flex-wrap items-center gap-3 mb-7">
+              <span className="inline-flex items-center gap-2 text-[0.72rem] tracking-[0.12em] uppercase text-[var(--color-thread-mid-green)] font-medium">
+                <Palette className="w-3.5 h-3.5" />
+                Threadline design system
+              </span>
+              <span className="h-1 w-1 rounded-full bg-slate-300" />
+              <span className="text-[0.78rem] text-slate-500 font-medium">
+                Product guidance and live tokens
+              </span>
+            </div>
+            <h1 className="font-serif font-normal text-[2.45rem] sm:text-[3.35rem] md:text-[3.9rem] leading-[1.05] tracking-[-0.045rem] text-[var(--color-thread-heading)] max-w-[10ch]">
+              A calmer system for complex care.
+            </h1>
+            <p className="text-[1rem] text-[var(--color-thread-gray)] mt-6 max-w-[64ch] leading-relaxed">
+              Use this page to keep Threadline warm, structured, and clinically precise across preview states,
+              assessment flows, review surfaces, documents, and setup.
+            </p>
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {systemHighlights.map((item) => (
+                <div key={item.label} className="rounded-2xl bg-[var(--color-thread-off-white)] border border-black/5 px-4 py-3.5">
+                  <div className="font-serif text-[2rem] leading-none text-[var(--color-thread-heading)]">
+                    {item.value}
+                  </div>
+                  <div className="mt-2 text-[0.72rem] tracking-[0.1em] uppercase font-medium text-[var(--color-thread-mid-green)]">
+                    {item.label}
+                  </div>
+                  <p className="mt-1 text-[0.76rem] leading-snug text-slate-500">
+                    {item.detail}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <aside className="bg-[var(--color-thread-heading)] text-white rounded-bl-[34px] p-7 sm:p-8 shadow-sm flex flex-col justify-between">
+            <div>
+              <span className="text-[0.68rem] tracking-[0.14em] uppercase text-emerald-100/80 font-medium">
+                North star
+              </span>
+              <h2 className="mt-4 font-serif text-[2rem] leading-tight tracking-tight text-white">
+                Help parents understand what matters without making them feel behind.
+              </h2>
+              <p className="mt-5 text-[0.9rem] leading-relaxed text-emerald-50/75">
+                Every surface should lower cognitive load, show provenance, and make the next safe action obvious.
+              </p>
+            </div>
+            <div className="mt-8 space-y-3">
+              {decisionChecks.map((check) => (
+                <div key={check} className="flex items-start gap-3 text-[0.84rem] leading-relaxed text-emerald-50/85">
+                  <Check className="w-4 h-4 mt-0.5 text-emerald-100 shrink-0" />
+                  <span>{check}</span>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
+
+        <nav className="sticky top-18 z-10 mb-12 bg-[var(--color-thread-off-white)]/90 backdrop-blur-md py-3 border-y border-black/5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+            {quickSections.map((section) => {
+              const Icon = section.icon;
+              return (
+                <a
+                  key={section.href}
+                  href={section.href}
+                  className="group flex items-center justify-between gap-3 rounded-full bg-white border border-black/5 px-4 py-3 text-[0.82rem] font-medium text-slate-600 shadow-sm hover:text-[var(--color-thread-heading)] hover:border-[var(--color-thread-mid-green)]/25 transition-all"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <Icon className="w-4 h-4 text-[var(--color-thread-mid-green)]" />
+                    {section.label}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-300 group-hover:text-[var(--color-thread-mid-green)] transition-colors" />
+                </a>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* Grid of Contents */}
+        <div className="space-y-16">
+        <section id="foundations" className="scroll-mt-28 grid grid-cols-1 xl:grid-cols-[0.9fr_1.1fr] gap-6">
+          <div className="bg-white rounded-tr-[36px] p-7 sm:p-8 border border-black/5 shadow-sm">
             <div className="flex items-center gap-3.5 mb-7">
               <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
                 <h2 className="text-[1.5rem] font-serif font-normal text-[var(--color-thread-heading)]">
-                  Visual direction
+                  Foundations
                 </h2>
                 <p className="text-slate-500 text-[0.88rem] mt-0.5">
                   The product should feel warm, structured, and quietly expert.
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {visualDirectionRules.map((rule) => (
-                <div key={rule.title} className="rounded-2xl bg-[var(--color-thread-off-white)] border border-black/5 p-5">
-                  <h3 className="font-medium text-[0.98rem] text-[var(--color-thread-heading)] tracking-tight">
-                    {rule.title}
-                  </h3>
-                  <p className="mt-2 text-[0.84rem] text-slate-500 leading-relaxed">
-                    {rule.detail}
-                  </p>
+            <div className="space-y-3.5">
+              {visualDirectionRules.map((rule, index) => (
+                <div key={rule.title} className="grid grid-cols-[34px_1fr] gap-4 rounded-2xl bg-[var(--color-thread-off-white)] border border-black/5 p-4.5">
+                  <span className="font-mono text-[0.72rem] text-[var(--color-thread-mid-green)] bg-white rounded-full h-8 w-8 flex items-center justify-center border border-black/5">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <h3 className="font-medium text-[0.98rem] text-[var(--color-thread-heading)] tracking-tight">
+                      {rule.title}
+                    </h3>
+                    <p className="mt-1.5 text-[0.84rem] text-slate-500 leading-relaxed">
+                      {rule.detail}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="bg-[var(--color-thread-heading)] text-white rounded-bl-[32px] p-8 shadow-sm overflow-hidden relative">
-            <div className="absolute -right-16 -bottom-16 h-48 w-48 rounded-full border border-white/10" />
-            <div className="absolute -right-8 -bottom-8 h-32 w-32 rounded-full border border-white/10" />
-            <span className="text-[0.68rem] tracking-[0.14em] uppercase text-emerald-100/80 font-medium">
-              North star
-            </span>
-            <h2 className="mt-4 font-serif text-[2rem] leading-tight tracking-tight">
-              Help parents understand what matters without making them feel behind.
-            </h2>
-            <p className="mt-5 text-[0.9rem] leading-relaxed text-emerald-50/75 max-w-[44ch]">
-              Design choices should reduce cognitive load: fewer competing actions, plain-language explanations,
-              clear provenance, and visible states for what is new, pending, reviewed, or complete.
-            </p>
-          </div>
-        </section>
-
-        <section className="bg-white rounded-bl-[32px] p-8 border border-black/5 shadow-sm">
-          <div className="flex items-center justify-between gap-4 flex-wrap mb-7">
-            <div>
-              <span className="text-[0.68rem] tracking-[0.14em] uppercase text-[var(--color-thread-mid-green)] font-medium">
-                UX state model
-              </span>
-              <h2 className="mt-2 text-[1.5rem] font-serif font-normal text-[var(--color-thread-heading)]">
-                Child profile states drive layout, copy, and actions.
-              </h2>
-            </div>
-            <Badge variant="clinical">Current app rules</Badge>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {uxStateRules.map((rule) => (
-              <div key={rule.state} className="rounded-2xl border border-black/5 bg-slate-50/70 p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="font-medium text-[1rem] text-slate-900 tracking-tight">
-                      {rule.state}
-                    </h3>
-                    <p className="mt-1 text-[0.72rem] uppercase tracking-[0.12em] text-[var(--color-thread-mid-green)] font-medium">
-                      {rule.surface}
-                    </p>
-                  </div>
-                  <Check className="w-4 h-4 text-[var(--color-thread-mid-green)] shrink-0 mt-1" />
-                </div>
-                <p className="mt-3 text-[0.86rem] text-slate-600 leading-relaxed">
-                  {rule.guidance}
-                </p>
+          <div className="bg-white rounded-bl-[32px] p-7 sm:p-8 border border-black/5 shadow-sm">
+            <div className="flex items-center justify-between gap-4 flex-wrap mb-7">
+              <div>
+                <span className="text-[0.68rem] tracking-[0.14em] uppercase text-[var(--color-thread-mid-green)] font-medium">
+                  State model
+                </span>
+                <h2 className="mt-2 text-[1.5rem] font-serif font-normal text-[var(--color-thread-heading)]">
+                  Child profile states drive layout, copy, and actions.
+                </h2>
               </div>
-            ))}
+              <Badge variant="clinical">Current app rules</Badge>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {uxStateRules.map((rule) => (
+                <div key={rule.state} className="rounded-2xl border border-black/5 bg-slate-50/70 p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="font-medium text-[1rem] text-slate-900 tracking-tight">
+                        {rule.state}
+                      </h3>
+                      <p className="mt-1 text-[0.7rem] uppercase tracking-[0.12em] text-[var(--color-thread-mid-green)] font-medium">
+                        {rule.surface}
+                      </p>
+                    </div>
+                    <Check className="w-4 h-4 text-[var(--color-thread-mid-green)] shrink-0 mt-1" />
+                  </div>
+                  <p className="mt-3 text-[0.84rem] text-slate-600 leading-relaxed">
+                    {rule.guidance}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="bg-white rounded-tr-[36px] p-8 border border-black/5 shadow-sm">
+        <section id="usage-rules" className="scroll-mt-28 bg-white rounded-tr-[36px] p-7 sm:p-8 border border-black/5 shadow-sm">
           <div className="flex items-center gap-3.5 mb-7">
             <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
               <Layers className="w-5 h-5" />
@@ -716,19 +804,19 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
               </p>
             </div>
           </div>
-          <div className="border-y border-black/10">
+          <div className="grid grid-cols-1 gap-3">
             {componentUseRules.map((rule) => (
-              <div key={rule.component} className="grid grid-cols-1 lg:grid-cols-[220px_1fr_1fr] gap-4 py-5 border-b border-black/5 last:border-b-0">
-                <div className="font-mono text-[0.78rem] text-slate-500">
+              <div key={rule.component} className="grid grid-cols-1 lg:grid-cols-[220px_1fr_1fr] gap-4 rounded-2xl bg-[var(--color-thread-off-white)] border border-black/5 p-5">
+                <div className="font-mono text-[0.78rem] text-slate-600">
                   {rule.component}
                 </div>
                 <div>
                   <span className="text-[0.65rem] uppercase tracking-[0.12em] text-[var(--color-thread-mid-green)] font-medium">Use</span>
-                  <p className="mt-1 text-[0.86rem] text-slate-700 leading-relaxed">{rule.use}</p>
+                  <p className="mt-1 text-[0.84rem] text-slate-700 leading-relaxed">{rule.use}</p>
                 </div>
                 <div>
                   <span className="text-[0.65rem] uppercase tracking-[0.12em] text-slate-400 font-medium">Avoid</span>
-                  <p className="mt-1 text-[0.86rem] text-slate-500 leading-relaxed">{rule.avoid}</p>
+                  <p className="mt-1 text-[0.84rem] text-slate-500 leading-relaxed">{rule.avoid}</p>
                 </div>
               </div>
             ))}
@@ -736,7 +824,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
         </section>
         
         {/* Colors Palette Section */}
-        <section className="bg-white rounded-tr-[36px] p-10 border border-black/5 shadow-sm">
+        <section id="tokens" className="scroll-mt-28 bg-white rounded-tr-[36px] p-6 sm:p-10 border border-black/5 shadow-sm">
           <div className="flex items-center gap-3.5 mb-8">
             <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
               <Palette className="w-5 h-5" />
@@ -1097,7 +1185,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
         </section>
 
         {/* Typography Section */}
-        <section className="bg-white rounded-bl-[32px] p-10 border border-black/5 shadow-sm">
+        <section id="typography" className="scroll-mt-28 bg-white rounded-bl-[32px] p-6 sm:p-10 border border-black/5 shadow-sm">
           <div className="flex items-center gap-3.5 mb-8">
             <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
               <Type className="w-5 h-5" />
@@ -1241,7 +1329,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
         </section>
 
         {/* Architecture & State Management Section */}
-        <section className="bg-white rounded-tr-[36px] p-10 border border-black/5 shadow-sm">
+        <section id="architecture" className="scroll-mt-28 bg-white rounded-tr-[36px] p-6 sm:p-10 border border-black/5 shadow-sm">
           <div className="flex items-center gap-3.5 mb-8">
             <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
               <Database className="w-5 h-5" />
@@ -1310,7 +1398,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
         </section>
 
         {/* Global Layout & Grid Section */}
-        <section className="bg-white rounded-xl p-10 border border-black/5 shadow-sm">
+        <section className="bg-white rounded-xl p-6 sm:p-10 border border-black/5 shadow-sm">
           <div className="flex items-center gap-3.5 mb-8">
             <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
               <Layout className="w-5 h-5" />
@@ -1405,7 +1493,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
         </section>
 
         {/* Containers, Shapes & Borders */}
-        <section className="bg-white rounded-xl p-10 border border-black/5 shadow-sm">
+        <section className="bg-white rounded-xl p-6 sm:p-10 border border-black/5 shadow-sm">
           <div className="flex items-center gap-3.5 mb-8">
             <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
               <Layers className="w-5 h-5" />
@@ -1460,7 +1548,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
         </section>
 
         {/* Buttons and Custom Controls Section with Matrix Table */}
-        <section className="bg-white rounded-tr-[36px] p-10 border border-black/5 shadow-sm w-full font-sans">
+        <section className="bg-white rounded-tr-[36px] p-6 sm:p-10 border border-black/5 shadow-sm w-full font-sans">
           <div className="flex items-center gap-3.5 mb-8">
             <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
               <ToggleLeft className="w-5 h-5" />
@@ -1511,7 +1599,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                           const targetPage = navigationMap[btn.variant];
                           if (targetPage) onPageChange(targetPage as any);
                         }}
-                        className="cursor-pointer select-none hover:scale-102 transform active:scale-98 transition-all px-5 py-2.5 text-[0.8rem] font-medium whitespace-nowrap inline-flex shadow-sm"
+                        className="cursor-pointer select-none hover:scale-[1.02] transform active:scale-[0.98] transition-all px-5 py-2.5 text-[0.8rem] font-medium whitespace-nowrap inline-flex shadow-sm"
                       >
                         {btn.sampleText}
                       </Button>
@@ -1539,7 +1627,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                         <div className="text-[0.66rem] uppercase tracking-wider font-medium text-slate-400 mb-1.5">Codebase Integration Map</div>
                         <div className="flex flex-wrap gap-1">
                           {btn.whereUsed.split(', ').map((loc) => (
-                            <span key={loc} className="text-[0.64rem] font-mono font-medium text-slate-600 bg-slate-100 border border-black/5 px-2 py-0.5 rounded">
+                            <span key={loc} className="text-[0.64rem] font-mono font-medium text-slate-600 bg-slate-100 border border-black/5 px-2 py-0.5 rounded break-all">
                               {loc}
                             </span>
                           ))}
@@ -1579,7 +1667,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
         </section>
 
         {/* Card Style Mapping & Template Matrix */}
-        <section className="bg-white rounded-bl-[36px] p-10 border border-black/5 shadow-sm w-full font-sans">
+        <section className="bg-white rounded-bl-[36px] p-6 sm:p-10 border border-black/5 shadow-sm w-full font-sans">
           <div className="flex items-center gap-3.5 mb-8">
             <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
               <CreditCard className="w-5 h-5" />
@@ -1603,7 +1691,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                   className="bg-slate-50/50 border border-black/5 rounded-2xl overflow-hidden flex flex-col lg:flex-row shadow-sm hover:shadow-md transition-all duration-300"
                 >
                   {/* Left block: True Visual Live Preview with Grid Background */}
-                  <div className="p-8 flex items-center justify-center bg-slate-100/50 border-b lg:border-b-0 lg:border-r border-black/5 lg:w-[45%] relative min-h-[380px] overflow-hidden select-none">
+                  <div className="p-5 sm:p-8 flex items-center justify-center bg-slate-100/50 border-b lg:border-b-0 lg:border-r border-black/5 lg:w-[45%] relative min-h-[340px] sm:min-h-[380px] overflow-hidden select-none">
                     {/* Clean blueprint dot grid background */}
                     <div 
                       className="absolute inset-0 opacity-[0.03] pointer-events-none" 
@@ -1658,7 +1746,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
 
                       {card.sampleType === 'priority' && (
                         <div className="w-full max-w-[340px] bg-white p-7 overflow-hidden rounded-[20px] shadow-sm border border-black/5 flex flex-col text-left">
-                          <div className="flex gap-3.5 items-start mb-4 relative">
+                          <div className="flex flex-col sm:flex-row gap-3.5 items-start mb-4 relative">
                             <span className="text-[0.75rem] tracking-[0.1em] uppercase font-medium px-4 py-2 rounded-full bg-[var(--color-thread-light-green)] text-[var(--color-thread-mid-green)] flex-shrink-0 mt-1">
                               Next
                             </span>
@@ -1735,7 +1823,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                           <h3 className="text-[1.16rem] font-medium tracking-tight text-[var(--color-thread-heading)] mb-2 leading-tight font-sans">
                             Creative Play
                           </h3>
-                          <p className="text-[0.88rem] text-slate-550 leading-relaxed font-sans">
+                          <p className="text-[0.88rem] text-slate-500 leading-relaxed font-sans">
                             Displays rich imaginative flow, abstract play and artistic task retention. A real strength to build on.
                           </p>
                         </div>
@@ -1765,7 +1853,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                             <h3 className="text-[1.12rem] font-medium tracking-tight mb-1.5 relative font-sans">
                               Evidence &rArr; Formulation
                             </h3>
-                            <p className={cn("text-[0.86rem] leading-relaxed relative", valueCardForest ? "text-white/85" : "text-slate-650 font-sans")}>
+                            <p className={cn("text-[0.86rem] leading-relaxed relative", valueCardForest ? "text-white/85" : "text-slate-600 font-sans")}>
                               Every clinique is traced back to its source and confirmed with certified reviewers.
                             </p>
                           </div>
@@ -1834,7 +1922,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                   </div>
 
                   {/* Right block: Spec sheets and mapping details */}
-                  <div className="p-8 flex flex-col justify-between lg:w-[55%] bg-white">
+                  <div className="p-5 sm:p-8 flex flex-col justify-between lg:w-[55%] bg-white min-w-0">
                     <div>
                       <div className="flex items-center gap-2 mb-3.5">
                         <span className="text-[0.66rem] uppercase tracking-wider font-medium text-[var(--color-thread-mid-green)] bg-[var(--color-thread-light-green)] px-2.5 py-1 rounded-md">
@@ -1853,7 +1941,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
                         <div className="text-[0.66rem] uppercase tracking-wider font-medium text-slate-400 mb-2.5">Codebase Integration Map</div>
                         <div className="flex flex-wrap gap-1.5">
                           {card.whereUsed.split(', ').map((loc) => (
-                            <span key={loc} className="text-[0.68rem] font-mono font-medium text-slate-600 bg-slate-100 border border-black/5 px-2.5 py-1 rounded-md">
+                            <span key={loc} className="text-[0.68rem] font-mono font-medium text-slate-600 bg-slate-100 border border-black/5 px-2.5 py-1 rounded-md break-all">
                               {loc}
                             </span>
                           ))}
@@ -1893,7 +1981,7 @@ export default function StyleGuidePage({ onPageChange }: StyleGuidePageProps) {
         </section>
 
         {/* Unified Design System Components */}
-        <section className="bg-white rounded-tr-[36px] p-10 border border-black/5 shadow-sm">
+        <section id="components" className="scroll-mt-28 bg-white rounded-tr-[36px] p-6 sm:p-10 border border-black/5 shadow-sm">
           <div className="flex items-center gap-3.5 mb-8">
             <div className="w-10 h-10 rounded-full bg-[var(--color-thread-light-green)] flex items-center justify-center text-[var(--color-thread-mid-green)]">
               <Sparkles className="w-5 h-5" />

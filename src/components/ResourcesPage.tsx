@@ -7,7 +7,6 @@ import {
   Printer,
   Check,
 } from "lucide-react";
-import { cn } from "../lib/utils";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { ActionLink } from "./ui/ActionLink";
 import { PageHeader } from "./ui/PageHeader";
@@ -26,96 +25,7 @@ import { PageContainer } from "./ui/PageContainer";
 import { useCurrentChild } from "../context/ChildContext";
 import { useDisplayMode } from "../context/DisplayModeContext";
 import { isMaintenancePhase, isPlanNotStarted } from "../lib/childStatus";
-
-import img2912 from "../assets/images/IMG_2912.jpeg";
-import img2947 from "../assets/images/IMG_2947.jpeg";
-
-const ALL_GUIDES = [
-  {
-    category: "Tools & Templates",
-    catId: "tools",
-    title: "Developing a Calming Bedtime Wind-Down",
-    description:
-      "A visual template with calming colour shifts — steps to swap screen time for sensory, hands-on cues that help Maya settle.",
-    readTime: "8 min read",
-    image: img2912,
-  },
-  {
-    category: "Health & Clinical",
-    catId: "health",
-    title: "How Sleep and ADHD Interact in Growing Brains",
-    description:
-      "Clear, reassuring neuroscience on why dopamine profiles affect circadian rhythms — and how to work with Maya's natural bedtime schedule rather than against it.",
-    readTime: "6 min read",
-    image: img2947,
-  },
-  {
-    category: "Tools & Templates",
-    catId: "tools",
-    title: "Questions to Discuss With Your Pediatrician",
-    description:
-      "A simple printable question list to bring to your next check-up, prompting useful conversations about the biological factors affecting Maya's sleep.",
-    readTime: "5 min read",
-    image: img2912,
-  },
-  {
-    category: "Classroom Strategies",
-    catId: "classroom",
-    title: "Classroom Accommodation Strategies for ADHD Fatigue",
-    description:
-      "Creative, respectful options the school can use to help Maya restabilise — without feeling singled out — when fatigue spikes around 10:30 AM.",
-    readTime: "10 min read",
-    image: img2947,
-  },
-  {
-    category: "Emotional Regulation",
-    catId: "emotional",
-    title: "Deep Breathing & Co-Regulation for Bedtime Resistance",
-    description:
-      "Short audio prompts and play-based breathing — like blowing out imaginary stars — for a calm, cooperative parent-child bedtime ritual.",
-    readTime: "7 min read",
-    image: img2912,
-  },
-];
-
-const INTAKE_GUIDES = [
-  {
-    category: "Session Prep",
-    catId: "prep",
-    title: "Questions to Bring to the First Session",
-    description:
-      "A short planning guide for the concerns, hopes, and examples worth bringing into the first conversation.",
-    readTime: "5 min read",
-    image: img2912,
-  },
-  {
-    category: "Documents",
-    catId: "documents",
-    title: "What to Upload Before Assessment",
-    description:
-      "Reports, teacher notes, work samples, and parent observations that can help the clinician understand the full picture.",
-    readTime: "4 min read",
-    image: img2947,
-  },
-  {
-    category: "Observation",
-    catId: "observation",
-    title: "What to Notice This Week",
-    description:
-      "Simple prompts for spotting patterns around routines, transitions, sleep, school, and friendships before the call.",
-    readTime: "6 min read",
-    image: img2912,
-  },
-  {
-    category: "Family Notes",
-    catId: "prep",
-    title: "Turning Concerns Into Useful Examples",
-    description:
-      "How to describe what you are seeing without needing clinical language or a finished explanation.",
-    readTime: "7 min read",
-    image: img2947,
-  },
-];
+import { getResourceGuides } from "../lib/resourceGuides";
 
 export default function ResourcesPage() {
   const { currentChild } = useCurrentChild();
@@ -137,13 +47,7 @@ export default function ResourcesPage() {
     setFilter("all");
   }, []);
 
-  const guidesWithDynamicName = useMemo(() => {
-    const guides = isNew ? INTAKE_GUIDES : ALL_GUIDES;
-    return guides.map(g => ({
-      ...g,
-      description: g.description.replace(/Maya/g, currentChild.name)
-    }));
-  }, [currentChild.name, isNew]);
+  const guidesWithDynamicName = useMemo(() => getResourceGuides(currentChild), [currentChild]);
 
   const filteredGuides = useMemo(() => {
     return guidesWithDynamicName.filter((g) => {
@@ -165,7 +69,8 @@ export default function ResourcesPage() {
         <PageHeader
         kicker="Resource library · Clinical-grade guidance"
         title="Personalised resources."
-        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[16ch]"
+        titleClassName="md:leading-[4.5rem]"
+        titleWidthClassName="max-w-[16ch]"
         description={
           <>
             <SectionDescription>

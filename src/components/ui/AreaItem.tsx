@@ -14,7 +14,7 @@ interface AreaItemProps extends React.HTMLAttributes<HTMLDivElement> {
   sources?: string[];
   actionText?: string;
   onAction?: () => void;
-  actionPlacement?: 'footer' | 'header';
+  actionPlacement?: 'footer' | 'header' | 'after-sources';
 }
 
 export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
@@ -114,6 +114,18 @@ export const AreaItem = React.forwardRef<HTMLDivElement, AreaItemProps>(
               </span>
             ))}
           </div>
+        )}
+
+        {actionText && onAction && actionPlacement === 'after-sources' && (
+          <ActionLink
+            variant="forest"
+            as="button"
+            onClick={onAction}
+            icon={ArrowRight}
+            className="text-[0.84rem] mt-4"
+          >
+            {actionText}
+          </ActionLink>
         )}
       </div>
     );

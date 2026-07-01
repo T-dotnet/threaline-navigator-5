@@ -4,11 +4,10 @@ import {
   Info,
   ListTodo,
   LineChart,
-  Map,
   BookOpen,
   Lock,
+  NotebookPen,
   Settings,
-  Search,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -16,7 +15,6 @@ import { Page } from "../types";
 import { cn } from "../lib/utils";
 import { motion } from "motion/react";
 import { useCurrentChild } from "../context/ChildContext";
-import { useNewChildExperience } from "../context/NewChildExperienceContext";
 
 interface SidebarProps {
   currentPage: Page;
@@ -26,7 +24,6 @@ interface SidebarProps {
 export default function Sidebar({ currentPage, onPageChange }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { currentChild } = useCurrentChild();
-  const { isReviewExperience } = useNewChildExperience();
 
   const assessedNavItems = [
     { id: "home", label: "Home", icon: Home },
@@ -35,24 +32,17 @@ export default function Sidebar({ currentPage, onPageChange }: SidebarProps) {
     { id: "reviews", label: "Reviews", icon: LineChart },
     { id: "resources", label: "Resources", icon: BookOpen },
     { id: "documents", label: "Documents", icon: Lock },
+    { id: "diary", label: "Diary", icon: NotebookPen },
   ] as const;
-  const currentNewChildNavItems = [
-    { id: "home", label: "Home", icon: Home },
-    { id: "what-you-noticed", label: "What you noticed", icon: Search },
-    { id: "understanding", label: "Understanding", icon: Info },
-    { id: "priorities", label: "Priorities", icon: ListTodo },
-    { id: "roadmap", label: "Roadmap", icon: Map },
-    { id: "resources", label: "Resources", icon: BookOpen },
-  ] as const;
-  const reviewNewChildNavItems = [
+  const newChildNavItems = [
     { id: "home", label: "Home", icon: Home },
     { id: "understanding", label: "Understanding", icon: Info },
     { id: "priorities", label: "Priorities", icon: ListTodo },
     { id: "what-you-noticed", label: "Reviews", icon: LineChart },
     { id: "resources", label: "Resources", icon: BookOpen },
     { id: "documents", label: "Documents", icon: Lock },
+    { id: "diary", label: "Diary", icon: NotebookPen },
   ] as const;
-  const newChildNavItems = isReviewExperience ? reviewNewChildNavItems : currentNewChildNavItems;
   const navItems = currentChild.isNew ? newChildNavItems : assessedNavItems;
 
   const isAllChildrenPage = currentPage === "all-children";

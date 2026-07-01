@@ -197,7 +197,7 @@ export default function AllChildrenPage({
         kicker="Family Synthesis · Overview"
         title="All Children at a glance."
         description="Monitor your family's dynamic clinical profiles and milestones side-by-side. Use any profile card to dive directly into detailed assessments."
-        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[3.8rem] leading-[1.15] md:leading-[4.3rem]"
+        titleClassName="md:text-[3.8rem] md:leading-[4.3rem]"
         className="mb-28"
       />
 

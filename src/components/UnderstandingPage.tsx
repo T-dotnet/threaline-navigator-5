@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { Clock, ClipboardList, Download, Lock, Users, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Clock, ClipboardList, Download, Lock, Users, ArrowRight, NotebookPen } from "lucide-react";
+import { Page } from "../types";
 import { getChildData } from "../data";
 import { PageHeader } from "./ui/PageHeader";
+import { PageMetaRow } from "./ui/PageMetaRow";
 import { HeroQuoteCard } from "./ui/HeroQuoteCard";
 import { HeroActionCard } from "./ui/HeroActionCard";
+import { ActionPromptPanel } from "./ui/ActionPromptPanel";
 import { SectionTitle } from "./ui/SectionTitle";
 import { SectionLabel } from "./ui/SectionLabel";
+import { SectionDescription } from "./ui/SectionDescription";
 import { ValueCard } from "./ui/ValueCard";
 import { AreaItem } from "./ui/AreaItem";
 import { FadeInScroll } from "./ui/FadeInScroll";
@@ -26,7 +31,8 @@ import { PageContainer } from "./ui/PageContainer";
 import { useCurrentChild } from "../context/ChildContext";
 import { useDisplayMode } from "../context/DisplayModeContext";
 import { isMaintenancePhase, isPlanNotStarted } from "../lib/childStatus";
-import { getJourneyUnderstandingCopy } from "../lib/journeyCopy";
+import { getJourneyUnderstandingCopy, hasReportContext } from "../lib/journeyCopy";
+import { getResourceGuides } from "../lib/resourceGuides";
 
 function answerText(answers: Record<string, unknown>, id: string) {
   return formatAnswer(answers[id]).trim();
@@ -73,14 +79,45 @@ function LockedQuestionnaireSection({
   );
 }
 
+function UnderstandingDiaryPrompt({
+  childName,
+  hasContextReady,
+  onAddNote,
+}: {
+  childName: string;
+  hasContextReady: boolean;
+  onAddNote: () => void;
+}) {
+  return (
+    <ActionPromptPanel
+      label="Reports or information ready"
+      title="Add notes in Diary. We'll keep the picture updated."
+      description={
+        hasContextReady
+          ? `If a report, school note, or everyday observation changes what you understand about ${childName}, add a short note in Diary. Threadline can use those notes to keep this understanding clearer and more up to date.`
+          : `When something new happens at home, school, or in a report, add a short note in Diary. Threadline can use those notes to keep ${childName}'s understanding clearer and more up to date.`
+      }
+      action={
+        <HeroActionCard
+          icon={<NotebookPen className="w-[22px] h-[22px] stroke-[1.7]" />}
+          title="Add diary note"
+          subtitle="Open Diary"
+          onClick={onAddNote}
+        />
+      }
+    />
+  );
+}
+
 export default function UnderstandingPage({
   onPageChange,
   onOpenSetup,
 }: {
-  onPageChange: (page: any) => void;
+  onPageChange: (page: Page) => void;
   onOpenSetup?: () => void;
 }) {
   const { currentChild, updateChild } = useCurrentChild();
+  const navigate = useNavigate();
   const { isParentClarity } = useDisplayMode();
   const [activeQuestionnaireSection, setActiveQuestionnaireSection] = useState<string | null>(null);
   const data = getChildData(currentChild).understanding;
@@ -101,6 +138,9 @@ export default function UnderstandingPage({
   const seeingAnsweredCount = getAnsweredCount(seeingSectionName, answers);
   const strengthsQuestionCount = QUESTIONS[strengthsSectionName]?.length || 0;
   const seeingQuestionCount = QUESTIONS[seeingSectionName]?.length || 0;
+  const recommendedGuides = getResourceGuides(currentChild).slice(0, 3);
+  const reportOrInformationReady = !currentChild.isNew || hasReportContext(currentChild.intake?.availableInfo);
+  const openDiaryComposer = () => navigate("/diary?compose=1");
 
   const saveQuestionnaireAnswers = (updatedAnswers: Record<string, unknown>) => {
     updateChild({
@@ -132,19 +172,16 @@ export default function UnderstandingPage({
           <PageHeader
             kicker={journeyUnderstandingCopy.kicker}
             title={journeyUnderstandingCopy.title}
-            titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[16ch]"
+            titleClassName="md:leading-[4.5rem]"
+            titleWidthClassName="max-w-[16ch]"
             className="mb-14"
             description={
-              <div className="flex gap-4.5 text-[0.82rem] text-[var(--color-thread-gray)] flex-wrap">
-                <span className="flex items-center gap-1.5">
-                  <Clock className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-                  Intake in progress
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Users className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-                  Built from questionnaire answers
-                </span>
-              </div>
+              <PageMetaRow
+                items={[
+                  { icon: Clock, children: "Intake in progress" },
+                  { icon: Users, children: "Built from questionnaire answers" },
+                ]}
+              />
             }
           />
 
@@ -153,7 +190,7 @@ export default function UnderstandingPage({
             quote={journeyUnderstandingCopy.quote}
             evidenceLevel={completedCount > 0 ? 2 : 1}
             evidenceText={`${completedCount} of ${totalSections} sections unlocked`}
-            className="mb-16"
+            className="mb-8"
             rightNode={
               <HeroActionCard
                 icon={<ClipboardList className="w-[22px] h-[22px] stroke-[1.7]" />}
@@ -182,7 +219,7 @@ export default function UnderstandingPage({
                   readTime=""
                   image={creativePlayImg}
                   cornerClass="rounded-tr-[32px]"
-                  actionText="Review answers"
+                  actionText="Explore strength"
                   onClick={() => setActiveQuestionnaireSection(strengthsSectionName)}
                 />
                 <GuideCard
@@ -192,7 +229,7 @@ export default function UnderstandingPage({
                   readTime=""
                   image={img2947}
                   cornerClass="rounded-tl-[32px]"
-                  actionText="Review answers"
+                  actionText="Explore strength"
                   onClick={() => setActiveQuestionnaireSection(strengthsSectionName)}
                 />
                 <GuideCard
@@ -202,7 +239,7 @@ export default function UnderstandingPage({
                   readTime=""
                   image={img2912}
                   cornerClass="rounded-bl-[32px]"
-                  actionText="Review answers"
+                  actionText="Explore strength"
                   onClick={() => setActiveQuestionnaireSection(strengthsSectionName)}
                 />
               </div>
@@ -233,27 +270,27 @@ export default function UnderstandingPage({
                   title={answerText(answers, "learning") || "Hardest right now"}
                   impact=""
                   description="This is the area that feels hardest at the moment, based on the intake answer."
-                  actionText="See questionnaire answers"
-                  actionPlacement="header"
-                  onAction={() => setActiveQuestionnaireSection(seeingSectionName)}
+                  actionText="See coping strategies"
+                  actionPlacement="after-sources"
+                  onAction={() => onPageChange("resources")}
                   sources={["Questionnaire"]}
                 />
                 <AreaItem
                   title={answerText(answers, "movement_coordination") || "Support needed"}
                   impact=""
                   description="This shows where extra scaffolding, reassurance, or practical support may be most useful."
-                  actionText="See questionnaire answers"
-                  actionPlacement="header"
-                  onAction={() => setActiveQuestionnaireSection(seeingSectionName)}
+                  actionText="See coping strategies"
+                  actionPlacement="after-sources"
+                  onAction={() => onPageChange("resources")}
                   sources={["Questionnaire"]}
                 />
                 <AreaItem
                   title={answerText(answers, "speech_communication") || "Overload signal"}
                   impact=""
                   description={`This is how ${currentChild.name} may show that something is becoming too much.`}
-                  actionText="See questionnaire answers"
-                  actionPlacement="header"
-                  onAction={() => setActiveQuestionnaireSection(seeingSectionName)}
+                  actionText="See coping strategies"
+                  actionPlacement="after-sources"
+                  onAction={() => onPageChange("resources")}
                   sources={["Questionnaire"]}
                 />
               </div>
@@ -281,6 +318,55 @@ export default function UnderstandingPage({
               content={journeyUnderstandingCopy.secondValue}
               cornerClass="rounded-bl-[32px]"
             />
+          </FadeInScroll>
+
+          <FadeInScroll className="mb-24">
+            <UnderstandingDiaryPrompt
+              childName={currentChild.name}
+              hasContextReady={reportOrInformationReady}
+              onAddNote={openDiaryComposer}
+            />
+          </FadeInScroll>
+
+          <FadeInScroll className="mb-24">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+              <div>
+                <SectionLabel>
+                  From resources
+                </SectionLabel>
+                <SectionTitle>
+                  Three articles to read next.
+                </SectionTitle>
+              </div>
+              <ActionLink
+                variant="forest"
+                as="button"
+                onClick={() => onPageChange("resources")}
+                className="text-[0.84rem]"
+              >
+                See all resources
+              </ActionLink>
+            </div>
+
+            <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1 mt-8">
+              {recommendedGuides.map((guide, index) => {
+                const cornerClasses = [
+                  "rounded-tr-[32px]",
+                  "rounded-tl-[32px]",
+                  "rounded-bl-[32px]",
+                ];
+
+                return (
+                  <GuideCard
+                    key={guide.title}
+                    {...guide}
+                    cornerClass={cornerClasses[index] || "rounded-tr-[32px]"}
+                    actionText="Open in resources"
+                    onClick={() => onPageChange("resources")}
+                  />
+                );
+              })}
+            </div>
           </FadeInScroll>
         </PageContainer>
 
@@ -313,19 +399,16 @@ export default function UnderstandingPage({
         <PageHeader
         kicker="Understanding · What's happening"
         title={`A clear picture of how ${currentChild.name} is doing.`}
-        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[16ch]"
+        titleClassName="md:leading-[4.5rem]"
+        titleWidthClassName="max-w-[16ch]"
         className="mb-24"
         description={
-          <div className="flex gap-4.5 text-[0.82rem] text-[var(--color-thread-gray)] flex-wrap">
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-              Updated 14 June 2026
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Users className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-              Brought together from 4 sources
-            </span>
-          </div>
+          <PageMetaRow
+            items={[
+              { icon: Clock, children: "Updated 14 June 2026" },
+              { icon: Users, children: "Brought together from 4 sources" },
+            ]}
+          />
         }
       />
 
@@ -335,7 +418,7 @@ export default function UnderstandingPage({
         quote={showParentClarity ? `${currentChild.name} is bright and socially steady. The clearest support need right now is classroom focus, and sleep is worth watching because tired mornings may make attention harder.` : data.description}
         evidenceLevel={3}
         evidenceText="Strong, consistent evidence"
-        className="mb-24"
+        className="mb-8"
         rightNode={
           <HeroActionCard
             icon={<Download className="w-[22px] h-[22px] stroke-[1.7]" />}
@@ -407,6 +490,9 @@ export default function UnderstandingPage({
               evidence={3}
               description={area.description}
               sources={area.sources}
+              actionText="See coping strategies"
+              actionPlacement="after-sources"
+              onAction={() => onPageChange("resources")}
             />
           ))}
         </div>
@@ -426,6 +512,55 @@ export default function UnderstandingPage({
           content="Where the evidence isn't strong enough, we don't force a conclusion. 'More to explore' is a valid, useful result — and the picture keeps building as new information arrives."
           cornerClass="rounded-bl-[32px]"
         />
+      </FadeInScroll>
+
+      <FadeInScroll className="mb-24">
+        <UnderstandingDiaryPrompt
+          childName={currentChild.name}
+          hasContextReady={reportOrInformationReady}
+          onAddNote={openDiaryComposer}
+        />
+      </FadeInScroll>
+
+      <FadeInScroll className="mb-24">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <SectionLabel>
+              From resources
+            </SectionLabel>
+            <SectionTitle>
+              Three articles to read next.
+            </SectionTitle>
+          </div>
+          <ActionLink
+            variant="forest"
+            as="button"
+            onClick={() => onPageChange("resources")}
+            className="text-[0.84rem]"
+          >
+            See all resources
+          </ActionLink>
+        </div>
+
+        <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1 mt-8">
+          {recommendedGuides.map((guide, index) => {
+            const cornerClasses = [
+              "rounded-tr-[32px]",
+              "rounded-tl-[32px]",
+              "rounded-bl-[32px]",
+            ];
+
+            return (
+              <GuideCard
+                key={guide.title}
+                {...guide}
+                cornerClass={cornerClasses[index] || "rounded-tr-[32px]"}
+                actionText="Open in resources"
+                onClick={() => onPageChange("resources")}
+              />
+            );
+          })}
+        </div>
       </FadeInScroll>
 
       </PageContainer>

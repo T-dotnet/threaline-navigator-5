@@ -10,8 +10,9 @@ import {
 } from "lucide-react";
 import { cn } from "../lib/utils";
 
-import { Child } from "../types";
+import { Child, Page } from "../types";
 import { PageHeader } from "./ui/PageHeader";
+import { PageMetaRow } from "./ui/PageMetaRow";
 import { HeroQuoteCard } from "./ui/HeroQuoteCard";
 import { HeroActionCard } from "./ui/HeroActionCard";
 import { SectionTitle } from "./ui/SectionTitle";
@@ -33,7 +34,7 @@ import { getChildSessionStatus, getChildSubheading, getSessionDate, isMaintenanc
 export default function RoadmapPage({
   onPageChange,
 }: {
-  onPageChange: (page: any) => void;
+  onPageChange: (page: Page) => void;
 }) {
   const { currentChild } = useCurrentChild();
   const { isParentClarity } = useDisplayMode();
@@ -60,19 +61,19 @@ export default function RoadmapPage({
         <PageHeader
         kicker="Roadmap · What to do"
         title={isNewChild ? "Your setup, in clear steps." : isLiam ? "Plan complete." : isNoahStarting ? "Plan ready to start." : "Your plan, in clear steps."}
-        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[16ch]"
+        titleClassName="md:leading-[4.5rem]"
+        titleWidthClassName="max-w-[16ch]"
         className={isNewChild ? "mb-12" : "mb-24"}
         description={
-          <div className="flex gap-4.5 text-[0.82rem] text-[var(--color-thread-gray)] flex-wrap">
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-              Updated 14 June 2026
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Layers className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-              {isNewChild ? getChildSubheading(currentChild) : "Sequenced to build on itself"}
-            </span>
-          </div>
+          <PageMetaRow
+            items={[
+              { icon: Clock, children: "Updated 14 June 2026" },
+              {
+                icon: Layers,
+                children: isNewChild ? getChildSubheading(currentChild) : "Sequenced to build on itself",
+              },
+            ]}
+          />
         }
       />
 

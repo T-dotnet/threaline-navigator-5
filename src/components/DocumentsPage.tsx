@@ -56,7 +56,8 @@ export default function DocumentsPage() {
         <PageHeader
         kicker="AES-256 secure storage"
         title="Documents locker."
-        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[16ch]"
+        titleClassName="md:leading-[4.5rem]"
+        titleWidthClassName="max-w-[16ch]"
         description={
           <>
             <SectionDescription>

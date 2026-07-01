@@ -36,7 +36,7 @@ export function SetupSummary({ childName, onContinueQuestionnaire, onReviewUnder
           <div className="flex-1 space-y-8">
             <div>
               <span className="text-[0.7rem] font-bold tracking-[0.1em] uppercase text-[var(--color-thread-mid-green)] mb-3 block">Setup status</span>
-              <h3 className="font-serif font-normal text-2xl text-[var(--color-thread-heading)] mb-2">Great progress, Sarah.</h3>
+              <h3 className="font-serif font-normal text-2xl text-[var(--color-thread-heading)] mb-2">Great progress, {childName}.</h3>
               <p className="text-slate-500 text-sm">You've completed most of the setup for {childName}. A few tasks remain before your session.</p>
             </div>
 

@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
-import { Plus, Check, ChevronRight, Palette, Trash2, X, ShieldCheck, ShieldHalf } from "lucide-react";
-import { Child } from "../types";
+import { Plus, Check, Trash2, X, ShieldCheck, ShieldHalf } from "lucide-react";
+import { Child, Page } from "../types";
 import { cn } from "../lib/utils";
 import { useState } from "react";
 import { getChildSubheading } from "../lib/childStatus";
@@ -18,12 +18,11 @@ import {
 } from "../context/SecondaryUsersContext";
 
 interface SettingsPageProps {
-  onPageChange: (page: any) => void;
+  onPageChange: (page: Page) => void;
   onAddChildRequest: () => void;
 }
 
 export default function SettingsPage({
-  onPageChange,
   onAddChildRequest,
 }: SettingsPageProps) {
   const { currentChild, childrenList, setChild, deleteChild } = useCurrentChild();
@@ -66,76 +65,6 @@ export default function SettingsPage({
 
   const handleRemoveSecondaryUser = (id: string) => {
     removeSecondaryUser(id);
-  };
-
-  // Dynamic Theme States
-  const [theme, setTheme] = useState(() => {
-    try {
-      return localStorage.getItem("thread-theme") || "energetic";
-    } catch {
-      return "energetic";
-    }
-  });
-  const [font, setFont] = useState(() => {
-    try {
-      return localStorage.getItem("thread-font") || "modern-serif";
-    } catch {
-      return "modern-serif";
-    }
-  });
-  const [heroStyle, setHeroStyle] = useState(() => {
-    try {
-      return localStorage.getItem("thread-hero-style") || "white";
-    } catch {
-      return "white";
-    }
-  });
-  const [secondaryStyle, setSecondaryStyle] = useState(() => {
-    try {
-      return localStorage.getItem("thread-secondary-style") || "light";
-    } catch {
-      return "light";
-    }
-  });
-
-  const handleThemeChange = (newTheme: string) => {
-    setTheme(newTheme);
-    try {
-      localStorage.setItem("thread-theme", newTheme);
-    } catch (e) {
-      console.warn(e);
-    }
-    document.documentElement.setAttribute("data-theme", newTheme);
-  };
-
-  const handleFontChange = (newFont: string) => {
-    setFont(newFont);
-    try {
-      localStorage.setItem("thread-font", newFont);
-    } catch (e) {
-      console.warn(e);
-    }
-    document.documentElement.setAttribute("data-font", newFont);
-  };
-
-  const handleHeroStyleChange = (newStyle: string) => {
-    setHeroStyle(newStyle);
-    try {
-      localStorage.setItem("thread-hero-style", newStyle);
-    } catch (e) {
-      console.warn(e);
-    }
-    document.documentElement.setAttribute("data-hero-style", newStyle);
-  };
-
-  const handleSecondaryStyleChange = (newStyle: string) => {
-    setSecondaryStyle(newStyle);
-    try {
-      localStorage.setItem("thread-secondary-style", newStyle);
-    } catch (e) {
-      console.warn(e);
-    }
-    document.documentElement.setAttribute("data-hero-secondary", newStyle);
   };
 
   const getNextReview = (child: Child) => {
@@ -543,224 +472,6 @@ export default function SettingsPage({
 
       </div>
 
-      {/* Dynamic Theme & Colors Config Section */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-12 mt-16 border-t border-black/10 pt-16">
-        <div>
-          <h2 className="text-[1.1rem] font-medium text-slate-900 tracking-tight">
-            Interface Theme & Colors
-          </h2>
-          <p className="text-[0.9rem] text-slate-500 mt-2 leading-relaxed">
-            Customize the dynamic application layout, brand typography skins, and background contrasts to adapt the clinical interface to your aesthetic environment.
-          </p>
-        </div>
-        <div className="space-y-6">
-          {/* Theme Option Row */}
-          <div className="bg-white p-6 rounded-tr-[36px] shadow-premium-light border border-black/5">
-            <span className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-400 font-medium mb-3.5 block">
-              Primary Theme Mood
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleThemeChange("energetic")}
-                className={cn(
-                  "flex items-center justify-between p-5 rounded-2xl border text-left transition-all cursor-pointer min-h-[64px]",
-                  theme === "energetic"
-                    ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-light-green)]/30 ring-2 ring-[var(--color-thread-mid-green)]/10"
-                    : "border-black/5 hover:border-black/15 bg-slate-50/40 hover:bg-slate-50/90"
-                )}
-              >
-                <div className="flex flex-col">
-                  <span className="font-medium text-[0.95rem] text-slate-900">Energetic Mint</span>
-                  <span className="text-[0.74rem] text-slate-500 mt-0.5">Vibrant Emerald focus</span>
-                </div>
-                {theme === "energetic" && (
-                  <div className="w-5 h-5 rounded-full bg-[var(--color-thread-mid-green)] flex items-center justify-center text-white">
-                    <Check className="w-3 h-3 stroke-[3]" />
-                  </div>
-                )}
-              </motion.button>
-
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleThemeChange("classic")}
-                className={cn(
-                  "flex items-center justify-between p-5 rounded-2xl border text-left transition-all cursor-pointer min-h-[64px]",
-                  theme === "classic"
-                    ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-light-green)]/30 ring-2 ring-[var(--color-thread-mid-green)]/10"
-                    : "border-black/5 hover:border-black/15 bg-slate-50/40 hover:bg-slate-50/90"
-                )}
-              >
-                <div className="flex flex-col">
-                  <span className="font-medium text-[0.95rem] text-slate-900">Classic Vintage</span>
-                  <span className="text-[0.74rem] text-slate-500 mt-0.5">Deep forest clinical prestige</span>
-                </div>
-                {theme === "classic" && (
-                  <div className="w-5 h-5 rounded-full bg-[var(--color-thread-mid-green)] flex items-center justify-center text-white">
-                    <Check className="w-3 h-3 stroke-[3]" />
-                  </div>
-                )}
-              </motion.button>
-            </div>
-          </div>
-
-          {/* Font Option Row */}
-          <div className="bg-white p-6 rounded-tl-[36px] shadow-premium-light border border-black/5">
-            <span className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-400 font-medium mb-3.5 block">
-              Serif Typography Style
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleFontChange("modern-serif")}
-                className={cn(
-                  "flex items-center justify-between p-5 rounded-2xl border text-left transition-all cursor-pointer min-h-[64px]",
-                  font === "modern-serif"
-                    ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-light-green)]/30 ring-2 ring-[var(--color-thread-mid-green)]/10"
-                    : "border-black/5 hover:border-black/15 bg-slate-50/40 hover:bg-slate-50/90"
-                )}
-              >
-                <div className="flex flex-col">
-                  <span className="font-serif font-medium text-[1.1rem] text-slate-900">Fraunces</span>
-                  <span className="text-[0.74rem] text-slate-500 mt-0.5">Organic, warm & human</span>
-                </div>
-                {font === "modern-serif" && (
-                  <div className="w-5 h-5 rounded-full bg-[var(--color-thread-mid-green)] flex items-center justify-center text-white">
-                    <Check className="w-3 h-3 stroke-[3]" />
-                  </div>
-                )}
-              </motion.button>
-
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleFontChange("classic-serif")}
-                className={cn(
-                  "flex items-center justify-between p-5 rounded-2xl border text-left transition-all cursor-pointer min-h-[64px]",
-                  font === "classic-serif"
-                    ? "border-[var(--color-thread-mid-green)] bg-[var(--color-thread-light-green)]/30 ring-2 ring-[var(--color-thread-mid-green)]/10"
-                    : "border-black/5 hover:border-black/15 bg-slate-50/40 hover:bg-slate-50/90"
-                )}
-              >
-                <div className="flex flex-col">
-                  <span className="font-serif font-medium text-[1.1rem] text-slate-900" style={{ fontFamily: "Frank Ruhl Libre" }}>Frank Ruhl</span>
-                  <span className="text-[0.74rem] text-slate-500 mt-0.5">Traditional clinical editorial</span>
-                </div>
-                {font === "classic-serif" && (
-                  <div className="w-5 h-5 rounded-full bg-[var(--color-thread-mid-green)] flex items-center justify-center text-white">
-                    <Check className="w-3 h-3 stroke-[3]" />
-                  </div>
-                )}
-              </motion.button>
-            </div>
-          </div>
-
-          {/* Hero & Card Styles Row */}
-          <div className="bg-white p-6 rounded-br-[36px] shadow-premium-light border border-black/5">
-            <span className="text-[0.66rem] tracking-[0.16em] uppercase text-slate-400 font-medium mb-3.5 block">
-              Theme Accents & Contrast Pairs
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Hero Canvas Card Toggle */}
-              <div className="flex flex-col gap-2">
-                <span className="text-[0.7rem] font-medium text-slate-500 uppercase tracking-wider">
-                  Primary Hero Cards
-                </span>
-                <div className="flex bg-slate-100 rounded-xl p-1.5 border border-black/5">
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleHeroStyleChange("white")}
-                    className={cn(
-                      "flex-1 text-center py-3 text-[0.82rem] font-medium rounded-lg transition-all cursor-pointer min-h-[44px]",
-                      heroStyle === "white"
-                        ? "bg-white text-slate-900 shadow-sm"
-                        : "text-slate-500 hover:text-slate-900"
-                    )}
-                  >
-                    White Canvas
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleHeroStyleChange("green")}
-                    className={cn(
-                      "flex-1 text-center py-3 text-[0.82rem] font-medium rounded-lg transition-all cursor-pointer min-h-[44px]",
-                      heroStyle === "green"
-                        ? "bg-[var(--color-thread-mid-green)] text-white shadow-sm"
-                        : "text-slate-500 hover:text-slate-900"
-                    )}
-                  >
-                    Solid Accent
-                  </motion.button>
-                </div>
-              </div>
-
-              {/* Secondary Card Toggle */}
-              <div className="flex flex-col gap-2">
-                <span className="text-[0.7rem] font-medium text-slate-500 uppercase tracking-wider">
-                  Secondary Highlights
-                </span>
-                <div className="flex bg-slate-100 rounded-xl p-1.5 border border-black/5">
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleSecondaryStyleChange("light")}
-                    className={cn(
-                      "flex-1 text-center py-3 text-[0.82rem] font-medium rounded-lg transition-all cursor-pointer min-h-[44px]",
-                      secondaryStyle === "light"
-                        ? "bg-white text-slate-900 shadow-sm"
-                        : "text-slate-500 hover:text-slate-900"
-                    )}
-                  >
-                    Mint Soft
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleSecondaryStyleChange("dark")}
-                    className={cn(
-                      "flex-1 text-center py-3 text-[0.82rem] font-medium rounded-lg transition-all cursor-pointer min-h-[44px]",
-                      secondaryStyle === "dark"
-                        ? "bg-[var(--color-thread-dark-forest)] text-white shadow-sm"
-                        : "text-slate-500 hover:text-slate-900"
-                    )}
-                  >
-                    Forest Dark
-                  </motion.button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Style Guide Audit Block */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-12 mt-16 border-t border-black/10 pt-16">
-        <div>
-          <h2 className="text-[1.1rem] font-medium text-slate-900 tracking-tight">
-            Design Tokens & Styles
-          </h2>
-          <p className="text-[0.9rem] text-slate-500 mt-2 leading-relaxed">
-            Audit the fully scanned application color codes, typography hierarchy scales, 
-            micro-components, and container layout rules in an interactive style guide.
-          </p>
-        </div>
-        <div>
-          <div className="bg-white p-6 rounded-tr-[36px] shadow-premium-light flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-            <div>
-              <h3 className="font-medium text-[1.1rem] text-slate-900 tracking-tight">
-                Scanned Style Guide
-              </h3>
-              <p className="text-[0.84rem] text-slate-500 mt-0.5">
-                Fonts, interactive buttons, border shapes, and hex palettes.
-              </p>
-            </div>
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={() => onPageChange("style-guide")}
-              className="text-[0.84rem] font-medium text-[var(--color-thread-mid-green)] hover:text-white bg-[var(--color-thread-light-green)] hover:bg-[var(--color-thread-mid-green)] px-6 py-3 rounded-full transition-all whitespace-nowrap inline-flex items-center gap-1.5 shadow-sm min-h-[44px]"
-            >
-              Open Design Guide <ChevronRight className="w-4 h-4" />
-            </motion.button>
-          </div>
-        </div>
-      </div>
       </PageContainer>
     </motion.div>
   );

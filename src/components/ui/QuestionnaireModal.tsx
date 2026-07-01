@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Check, ChevronRight, X, ArrowLeft, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { QUESTIONS } from '../../questionnaire';
+import { getAnswerCue, getAnswersAfterOptionSelect, getConversationLead } from '../../lib/questionnaireFlow';
 import watercolorBg from '../../assets/images/optimized/watercolor-bg-900.jpg';
 
 interface QuestionnaireModalProps {
@@ -34,7 +35,7 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
 
   const handleSelectOption = useCallback((qId: string, option: string, type: 'choice' | 'multiple-choice' | 'text') => {
     if (type === 'choice') {
-      setAnswers(prev => ({ ...prev, [qId]: option }));
+      setAnswers(prev => getAnswersAfterOptionSelect(prev, qId, option, type));
       setTimeout(() => {
         setActiveQuestionIndex(prev => {
           if (prev < currentQuestions.length - 1) return prev + 1;
@@ -43,41 +44,13 @@ export function QuestionnaireModal({ isOpen, section, answers: initialAnswers, c
         });
       }, 350);
     } else if (type === 'multiple-choice') {
-      setAnswers(prev => {
-        const current = prev[qId] || [];
-        if (option === 'Nothing yet') {
-          return { ...prev, [qId]: current.includes(option) ? [] : ['Nothing yet'] };
-        }
-        const currentWithoutNone = current.filter((o: string) => o !== 'Nothing yet');
-        const updated = current.includes(option)
-          ? currentWithoutNone.filter((o: string) => o !== option)
-          : [...currentWithoutNone, option];
-        return { ...prev, [qId]: updated };
-      });
+      setAnswers(prev => getAnswersAfterOptionSelect(prev, qId, option, type));
     }
   }, [currentQuestions.length]);
 
   const handleTextChange = useCallback((qId: string, value: string) => {
     setAnswers(prev => ({ ...prev, [qId]: value }));
   }, []);
-
-  const getConversationLead = (sectionName: string, questionIndex: number) => {
-    if (questionIndex === 0) {
-      if (sectionName === "What's going well") return 'Let’s start with what already helps.';
-      if (sectionName === "What you're seeing") return 'Now let’s look at what feels harder right now.';
-      if (sectionName === 'At school') return 'Next, a little about learning and school life.';
-      if (sectionName === 'Development & history') return 'Finally, a few background details that may help later.';
-    }
-    if (questionIndex === 1) return 'That helps. Here’s the next piece.';
-    if (questionIndex === 2) return 'A little more context, then we’re nearly there.';
-    return 'One last thing for this part.';
-  };
-
-  const getAnswerCue = (type: 'choice' | 'multiple-choice' | 'text') => {
-    if (type === 'multiple-choice') return 'Choose any that fit. If none feel right, you can just move on.';
-    if (type === 'choice') return 'Choose the closest fit. It does not need to be perfect.';
-    return 'Use your own words. A few words is enough.';
-  };
 
   const handlePrevQuestion = useCallback(() => {
     if (isReviewing) {

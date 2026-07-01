@@ -10,6 +10,7 @@ import { PageHeader } from "./ui/PageHeader";
 import { FadeInScroll } from "./ui/FadeInScroll";
 import { HeroQuoteCard } from "./ui/HeroQuoteCard";
 import { HeroActionCard } from "./ui/HeroActionCard";
+import { ActionPromptPanel } from "./ui/ActionPromptPanel";
 import { Button } from "./ui/Button";
 import { SectionLabel } from "./ui/SectionLabel";
 import { SectionTitle } from "./ui/SectionTitle";
@@ -19,7 +20,6 @@ import { GuideCard } from "./ui/GuideCard";
 import { PageFooterCTA } from "./ui/PageFooterCTA";
 import { FirstSessionCard } from "./ui/FirstSessionCard";
 import { ActionLink } from "./ui/ActionLink";
-import { useNewChildExperience } from "../context/NewChildExperienceContext";
 
 interface NewChildPreviewPageProps {
   onPageChange: (page: Page) => void;
@@ -27,37 +27,6 @@ interface NewChildPreviewPageProps {
 }
 
 const previewSections = [
-  {
-    title: "Understanding",
-    description: "A clear synthesis of strengths, support needs, evidence sources, and what is still uncertain.",
-    icon: Users,
-    questionnaireSection: QUESTIONNAIRE_SECTIONS[0],
-    page: "understanding" as Page,
-  },
-  {
-    title: "Priorities",
-    description: "A ranked view of where to focus, why it matters, and what can safely wait.",
-    icon: ListTodo,
-    questionnaireSection: QUESTIONNAIRE_SECTIONS[1],
-    page: "priorities" as Page,
-  },
-  {
-    title: "Reviews",
-    description: "A review rhythm that tracks change without freezing the picture at the first report.",
-    icon: LineChart,
-    questionnaireSection: QUESTIONNAIRE_SECTIONS[2],
-    page: "what-you-noticed" as Page,
-  },
-  {
-    title: "Resources",
-    description: "Short preparation tools matched to the intake stage.",
-    icon: BookOpen,
-    questionnaireSection: QUESTIONNAIRE_SECTIONS[3],
-    page: "resources" as Page,
-  },
-];
-
-const reviewPreviewSections = [
   {
     title: "Understanding",
     description: "A plain-language view of what the questionnaire answers are starting to show.",
@@ -90,7 +59,6 @@ const reviewPreviewSections = [
 
 export default function NewChildPreviewPage({ onPageChange, onOpenSetup }: NewChildPreviewPageProps) {
   const { currentChild } = useCurrentChild();
-  const { isReviewExperience } = useNewChildExperience();
   const answers = currentChild.intake?.questionnaireAnswers || {};
   const completedSections = getCompletedQuestionnaireSections(answers);
   const isQuestionnaireComplete = completedSections.length === QUESTIONNAIRE_SECTIONS.length;
@@ -102,7 +70,6 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup }: NewCh
   const firstSessionTime = isSessionBooked ? currentChild.intake?.sessionTime || "4:00 pm" : undefined;
   const reportContext = hasReportContext(currentChild.intake?.availableInfo);
   const homeCopy = getJourneyHomeCopy(currentChild.name, currentChild.intake?.journeyStage, reportContext);
-  const visiblePreviewSections = isReviewExperience ? reviewPreviewSections : previewSections;
 
   return (
     <motion.div
@@ -114,7 +81,8 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup }: NewCh
         <PageHeader
           kicker={homeCopy.kicker}
           title={homeCopy.title}
-          titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[17ch]"
+          titleClassName="md:leading-[4.5rem]"
+          titleWidthClassName="max-w-[17ch]"
           className="mb-12"
           description={
             <SectionDescription>
@@ -156,11 +124,11 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup }: NewCh
         <FadeInScroll className="mb-24">
           <div>
             <SectionLabel>Workspace preview</SectionLabel>
-            <SectionTitle>{isReviewExperience ? "Understanding, priorities, reviews, and resources." : "Four sections, one clear picture."}</SectionTitle>
+            <SectionTitle>Understanding, priorities, reviews, and resources.</SectionTitle>
           </div>
 
           <div className="grid grid-cols-2 gap-6 max-md:grid-cols-1 mt-8">
-            {visiblePreviewSections.map((section, index) => {
+            {previewSections.map((section, index) => {
               const Icon = section.icon;
               const corners = ["rounded-tr-[32px]", "rounded-tl-[32px]", "rounded-br-[32px]", "rounded-bl-[32px]"];
               const hasContext = completedSections.includes(section.questionnaireSection);
@@ -258,28 +226,19 @@ export default function NewChildPreviewPage({ onPageChange, onOpenSetup }: NewCh
         </FadeInScroll>
 
         <FadeInScroll className="mb-24">
-          <div className="bg-watercolor rounded-br-[36px] p-6 sm:p-8">
-            <div className="bg-white rounded-tr-[28px] p-6 sm:p-8 border border-black/5 shadow-premium flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-              <div className="max-w-[60ch] lg:pr-8">
-                <SectionLabel>Reports or information ready</SectionLabel>
-                <SectionTitle>Upload what you have. We&apos;ll help explain it.</SectionTitle>
-                <SectionDescription className="mb-0">
-                  If you already have reports, school notes, or other useful information for {currentChild.name}, add them here now. Once they are uploaded, Threadline can help you understand the document more clearly before the first session.
-                </SectionDescription>
-              </div>
-
-              <div className="lg:self-stretch lg:w-px lg:bg-black/10 lg:flex-shrink-0" />
-
-              <div className="flex-shrink-0 lg:pl-2">
-                <HeroActionCard
-                  icon={<Upload className="w-[22px] h-[22px] stroke-[1.7]" />}
-                  title="Upload documents"
-                  subtitle="Add reports or notes"
-                  onClick={() => onPageChange("documents")}
-                />
-              </div>
-            </div>
-          </div>
+          <ActionPromptPanel
+            label="Reports or information ready"
+            title="Upload what you have. We'll help explain it."
+            description={`If you already have reports, school notes, or other useful information for ${currentChild.name}, add them here now. Once they are uploaded, Threadline can help you understand the document more clearly before the first session.`}
+            action={
+              <HeroActionCard
+                icon={<Upload className="w-[22px] h-[22px] stroke-[1.7]" />}
+                title="Upload documents"
+                subtitle="Add reports or notes"
+                onClick={() => onPageChange("documents")}
+              />
+            }
+          />
         </FadeInScroll>
 
         <FadeInScroll className="mb-16">

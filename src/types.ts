@@ -1,4 +1,21 @@
-export type Page = 'home' | 'preview' | 'what-you-noticed' | 'understanding' | 'priorities' | 'roadmap' | 'reviews' | 'resources' | 'documents' | 'settings' | 'emerging-details' | 'all-children' | 'style-guide';
+export type Page = 'home' | 'preview' | 'what-you-noticed' | 'understanding' | 'priorities' | 'roadmap' | 'reviews' | 'resources' | 'documents' | 'diary' | 'settings' | 'emerging-details' | 'all-children' | 'style-guide';
+
+export interface DiaryAttachment {
+  id: string;
+  name: string;
+  mimeType: string;
+  sizeLabel: string;
+  kind: 'image' | 'document';
+  dataUrl: string;
+}
+
+export interface DiaryEntry {
+  id: string;
+  createdAt: string;
+  note: string;
+  tags: string[];
+  attachments: DiaryAttachment[];
+}
 
 export interface Child {
   id?: string;
@@ -6,6 +23,7 @@ export interface Child {
   age: number;
   initial: string;
   isNew?: boolean;
+  diaryEntries?: DiaryEntry[];
   intake?: {
     relation?: string;
     journeyStage?: string;

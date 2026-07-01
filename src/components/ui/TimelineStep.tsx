@@ -10,10 +10,11 @@ interface TimelineStepProps extends React.HTMLAttributes<HTMLDivElement> {
   done?: boolean;
   active?: boolean;
   todo?: boolean;
+  titleClassName?: string;
 }
 
 export const TimelineStep = React.forwardRef<HTMLDivElement, TimelineStepProps>(
-  ({ className, title, meta, metaTag, description, done = false, active = false, todo = false, ...props }, ref) => {
+  ({ className, titleClassName, title, meta, metaTag, description, done = false, active = false, todo = false, ...props }, ref) => {
     // If no metaTag is provided, auto-calculate it based on step state
     const resolvedMetaTag = metaTag || (done ? "Done" : active ? "In progress" : "To do");
 
@@ -41,6 +42,7 @@ export const TimelineStep = React.forwardRef<HTMLDivElement, TimelineStepProps>(
             className={cn(
               "text-[1.12rem] font-medium tracking-tight leading-[1.3] text-[var(--color-thread-dark-slate)]",
               done && "text-[var(--color-thread-placeholder)]",
+              titleClassName,
             )}
           >
             {title}

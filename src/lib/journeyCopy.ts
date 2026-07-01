@@ -44,9 +44,9 @@ export function getJourneyReflectionCopy(journeyStage?: string) {
   }
 
   return {
-    stage: "You're noticing concerns and looking for clarity.",
+    stage: "You're noticing a few concerns and looking for a clearer next step.",
     navigatorHelp:
-      'Hold everything in one place, help you notice what matters, and guide the next gentle step.',
+      'Keep the details together, turn early worries into useful patterns, and help you choose the next gentle step.',
     nextStep:
       'Navigator will start with a few gentle questions and only ask for reports if something already exists.',
   };
@@ -72,7 +72,7 @@ export function getJourneySetupCopy(journeyStage?: string) {
   }
 
   return {
-    title: 'A few gentle questions',
+    title: 'A few questions',
     description:
       'These questions help us understand what you are noticing. Choose what fits and skip what does not.',
   };

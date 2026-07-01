@@ -14,8 +14,9 @@ import {
   Eye,
 } from "lucide-react";
 import { cn } from "../lib/utils";
-import { Child } from "../types";
+import { Child, Page } from "../types";
 import { PageHeader } from "./ui/PageHeader";
+import { PageMetaRow } from "./ui/PageMetaRow";
 import { HeroQuoteCard } from "./ui/HeroQuoteCard";
 import { PageIcon } from "./ui/PageIcon";
 import { HeroActionCard } from "./ui/HeroActionCard";
@@ -37,7 +38,7 @@ import { isMaintenancePhase } from "../lib/childStatus";
 export default function EmergingDetailsPage({
   onPageChange,
 }: {
-  onPageChange: (page: any) => void;
+  onPageChange: (page: Page) => void;
 }) {
   const { currentChild } = useCurrentChild();
   const isLiam = isMaintenancePhase(currentChild);
@@ -57,19 +58,19 @@ export default function EmergingDetailsPage({
       <PageHeader
         kicker="Emerging · Primary focus"
         title={`A clear picture of how ${currentChild.name}'s ${focusTopic.toLowerCase()} is doing.`}
-        titleClassName="text-[2.2rem] xs:text-[2.6rem] sm:text-[3.2rem] md:text-[4rem] leading-[1.15] md:leading-[4.5rem] max-w-[17ch]"
+        titleClassName="md:leading-[4.5rem]"
+        titleWidthClassName="max-w-[17ch]"
         className="mb-24"
         description={
-          <div className="flex gap-4.5 text-[0.82rem] text-[var(--color-thread-gray)] flex-wrap">
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-              Updated 14 June 2026
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Search className="w-[15px] h-[15px] stroke-[1.8] text-[var(--color-thread-mid-green)]" />{" "}
-              {isLiam ? "Consolidated from recent mastery" : "Emerging from recent observations"}
-            </span>
-          </div>
+          <PageMetaRow
+            items={[
+              { icon: Clock, children: "Updated 14 June 2026" },
+              {
+                icon: Search,
+                children: isLiam ? "Consolidated from recent mastery" : "Emerging from recent observations",
+              },
+            ]}
+          />
         }
       />
 
@@ -207,7 +208,6 @@ export default function EmergingDetailsPage({
     </motion.div>
   );
 }
-
 
 
 
